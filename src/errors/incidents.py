@@ -98,3 +98,25 @@ class ValidationIncident(LibraryIncident):
             detail=detail,
             status_code=422,
         )
+
+
+class VolumeTooLarge(LibraryIncident):
+    """TS-011: The volume content exceeds the maximum allowed size."""
+
+    def __init__(self, max_size_kb: int) -> None:
+        super().__init__(
+            code="TS-011",
+            detail=f"That volume is too thick for our shelves. Maximum: {max_size_kb}KB.",
+            status_code=413,
+        )
+
+
+class DeprecatedFeature(LibraryIncident):
+    """TS-012: A deprecated feature or config option was used."""
+
+    def __init__(self, feature: str, alternative: str) -> None:
+        super().__init__(
+            code="TS-012",
+            detail=f"'{feature}' is deprecated. Use '{alternative}' instead.",
+            status_code=400,
+        )
