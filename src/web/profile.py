@@ -1,19 +1,19 @@
 """Librarian profile route."""
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.web_session import get_current_librarian_optional
 from src.db.engine import get_session
 from src.db.tables import LibrarianRow
+from src.game.avatars import render_avatar_svg
 from src.game.badges import get_earned_badges
 from src.game.streaks import get_streak
 from src.game.xp import get_next_rank, get_rank, get_recent_awards
+from src.web.templates import templates
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/profile/{librarian_id}")
@@ -53,10 +53,13 @@ async def librarian_profile(
         earned = librarian.total_xp - current_threshold
         progress = int((earned / total_needed) * 100) if total_needed > 0 else 100
 
+    avatar_svg = render_avatar_svg(librarian.avatar_id or "avatar_01", size=80)
+
     return templates.TemplateResponse("profile.html", {
         "request": request,
         "current_user": current_user,
         "librarian": librarian,
+        "avatar_svg": avatar_svg,
         "rank": rank,
         "next_rank": next_rank,
         "xp_to_next": xp_to_next,

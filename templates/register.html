@@ -2,7 +2,7 @@
 {% block title %}Register{% endblock %}
 
 {% block content %}
-<div class="max-w-md mx-auto space-y-6">
+<div class="max-w-lg mx-auto space-y-6">
     <div class="pixel-card text-center py-6">
         <div class="text-3xl mb-3">&#128203;</div>
         <h1 class="pixel-heading-lg mb-2">New Library Card</h1>
@@ -18,7 +18,7 @@
         </div>
         {% endif %}
 
-        <form method="post" action="/register" class="space-y-5">
+        <form method="post" action="/register" class="space-y-5" x-data="{ selectedAvatar: '{{ selected_avatar|default('avatar_01') }}' }">
             <div>
                 <label for="username" class="pixel-label block mb-2">Username</label>
                 <input type="text" id="username" name="username" required minlength="3" maxlength="100"
@@ -44,6 +44,28 @@
                        autocomplete="new-password"
                        class="w-full bg-pixel-bg border-3 border-pixel-border text-parchment font-retro text-lg px-4 py-3 focus:border-gold focus:outline-none">
             </div>
+
+            <!-- Avatar Picker -->
+            <div>
+                <label class="pixel-label block mb-3">Choose Your Avatar</label>
+                <input type="hidden" name="avatar_id" :value="selectedAvatar">
+                <div class="grid grid-cols-4 sm:grid-cols-6 gap-3">
+                    {% for avatar in avatar_choices %}
+                    <button type="button"
+                            @click="selectedAvatar = '{{ avatar.id }}'"
+                            :class="selectedAvatar === '{{ avatar.id }}'
+                                ? 'border-gold bg-gold/20 scale-110'
+                                : 'border-pixel-border hover:border-ink-light'"
+                            class="p-2 border-3 transition-all duration-150 flex flex-col items-center gap-1 cursor-pointer">
+                        <div class="w-10 h-10 flex items-center justify-center">
+                            {{ render_avatar(avatar.id, 40) }}
+                        </div>
+                        <span class="font-pixel text-[6px] text-parchment-dark truncate w-full text-center">{{ avatar.name }}</span>
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+
             <button type="submit" class="pixel-btn pixel-btn-gold w-full">
                 Get Your Card
             </button>

@@ -4,7 +4,6 @@ import re
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,9 +11,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.web_session import get_current_librarian_optional, login_librarian, logout_librarian
 from src.db.engine import get_session
 from src.db.tables import LibrarianRow
+from src.game.avatars import get_avatar_choices, AVATAR_CATALOG
+from src.web.templates import templates
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 PASSWORD_PATTERN = re.compile(
@@ -77,6 +77,7 @@ async def register_page(
     return templates.TemplateResponse("register.html", {
         "request": request,
         "current_user": None,
+        "avatar_choices": get_avatar_choices(),
     })
 
 
@@ -91,6 +92,11 @@ async def register_submit(
     email = form.get("email", "").strip()
     password = form.get("password", "")
     confirm = form.get("confirm_password", "")
+    avatar_id = form.get("avatar_id", "avatar_01").strip()
+
+    # Validate avatar selection
+    if avatar_id not in AVATAR_CATALOG:
+        avatar_id = "avatar_01"
 
     errors = []
     if not username or len(username) < 3:
@@ -109,6 +115,8 @@ async def register_submit(
             "errors": errors,
             "username": username,
             "email": email,
+            "avatar_choices": get_avatar_choices(),
+            "selected_avatar": avatar_id,
         })
 
     # Check existing username/email
@@ -122,6 +130,8 @@ async def register_submit(
             "errors": ["That username is already taken."],
             "username": username,
             "email": email,
+            "avatar_choices": get_avatar_choices(),
+            "selected_avatar": avatar_id,
         })
 
     existing_email = await session.execute(
@@ -134,12 +144,15 @@ async def register_submit(
             "errors": ["That email is already registered."],
             "username": username,
             "email": email,
+            "avatar_choices": get_avatar_choices(),
+            "selected_avatar": avatar_id,
         })
 
     librarian = LibrarianRow(
         username=username,
         email=email,
         hashed_password=pwd_context.hash(password),
+        avatar_id=avatar_id,
     )
     session.add(librarian)
     await session.commit()
