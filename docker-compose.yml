@@ -1,0 +1,15 @@
+services:
+  overdue:
+    build: .
+    ports:
+      - "${OVERDUE_PORT:-8000}:8000"
+    environment:
+      - OVERDUE_DATABASE_URL=sqlite+aiosqlite:///./overdue.db
+      - OVERDUE_SECRET_KEY=${OVERDUE_SECRET_KEY:-change-me-in-production}
+      - OVERDUE_DEBUG=${OVERDUE_DEBUG:-false}
+    volumes:
+      - overdue-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  overdue-data:
