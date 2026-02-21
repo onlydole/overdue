@@ -66,6 +66,17 @@ curl -X POST http://localhost:8000/api/volumes/ \
 - **Expiry:** 24 hours (configurable via `OVERDUE_TOKEN_EXPIRY_MINUTES`)
 - **Payload:** librarian ID, username, role
 
+## Refreshing your library card
+
+Library cards can be refreshed before they expire:
+
+```bash
+curl -X POST http://localhost:8000/api/librarians/refresh \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIs..."
+```
+
+This returns a new library card with a fresh expiry.
+
 ## Roles and permissions
 
 Overdue uses a rank-based permission system. See the [gameplay guide](../guides/gameplay.md) for rank details.
