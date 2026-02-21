@@ -1,14 +1,18 @@
 # Overdue
 
-> Don't let your knowledge expire.
+> Don't let your knowledge expire. A retro pixel art knowledge library game.
 
-**Overdue** is a FastAPI-powered knowledge library game where you manage volumes of knowledge, keep them fresh, and level up as a librarian. Think of it as a Tamagotchi for your notes -- neglect the stacks and the reading room descends into chaos.
+**Overdue** is a FastAPI-powered knowledge library game wrapped in a retro pixel art aesthetic. Manage volumes of knowledge, keep them fresh, and level up as a librarian -- complete with 16x16 pixel art avatars, custom 8x8 pixel art icons, AI bot opponents, and a dark parchment palette straight out of an 8-bit library. Think of it as a Tamagotchi for your notes -- neglect the stacks and the reading room descends into chaos.
 
 ## What You'll Find Here
 
-- A full-stack web app with an interactive **Reading Room** dashboard
+- A full-stack web app with an interactive **Reading Room** dashboard rendered in pixel art style
 - A REST API with JWT auth, fuzzy search, webhooks, and rate limiting
 - A game layer with XP, ranks, badges, and daily streaks
+- **12 pixel art librarian avatars** -- diverse 16x16 shoulders-up portraits built from code
+- **Custom pixel art icon system** -- 8x8 SVG icons replacing all emoji throughout the UI
+- **AI bot players** -- simulated librarians that populate the leaderboard with three difficulty tiers
+- "Press Start 2P" headings and "VT323" body text for full retro typography
 - All wrapped in a cozy library metaphor (your 404 says "That volume isn't on any of our shelves")
 
 ## Getting Started
@@ -49,6 +53,16 @@ Open [http://localhost:8000](http://localhost:8000) for the dashboard, or hit th
 3. **Review** volumes to keep them fresh and earn pages read (XP)
 4. Level up your **librarian rank** from Page all the way to Head Librarian
 5. Unlock **badges** and maintain your **review streak** for bonus XP
+6. Compete against **AI bot librarians** on the leaderboard
+
+## Pixel Art Design System
+
+Overdue uses a fully custom pixel art rendering pipeline -- no emoji, no icon fonts, everything built from code:
+
+- **Avatars** (16x16): 12 diverse librarian portraits with unique hair styles, skin tones, outfits, and optional glasses. Rendered as inline SVG via `render_avatar()` in Jinja2 templates.
+- **Icons** (8x8): Decorative pixel art icons for UI elements. Rendered as inline SVG via `render_icon()` in Jinja2 templates.
+- **Typography**: "Press Start 2P" for headings, "VT323" for body text.
+- **Palette**: Dark parchment theme -- `#0f0e17` background, `#1a1a2e` surfaces, `#232342` cards, `#3d3d6b` borders, `#f0e6d3` parchment text, `#f0c543` gold accents.
 
 ## API at a Glance
 
@@ -95,12 +109,21 @@ overdue/
     auth/                  # Authentication & authorization
     config/                # Settings and constants
     errors/                # Exception handling
-    game/                  # XP, badges, streaks, mood
+    game/
+      avatars.py           # 12 pixel art librarian avatars (16x16 SVG)
+      icons.py             # Pixel art icon system (8x8 SVG)
+      bots.py              # AI bot player engine
+      xp.py                # XP / pages-read calculations
+      badges.py            # Badge unlock logic
+      streaks.py           # Daily streak tracking
+      mood.py              # Volume mood / dust state
+      engine.py            # Game action processor
     models/                # Pydantic & SQLAlchemy models
-    db/                    # Database engine
-    web/                   # Dashboard routes
+    db/                    # Database engine and seed data
+    web/                   # Dashboard routes and template config
   templates/               # Jinja2 HTML templates
-  static/                  # CSS, JS, badge SVGs
+    partials/              # Reusable template fragments
+  static/                  # CSS, JS
   tests/                   # Test suite
   docs/                    # Guides and API reference
 ```
@@ -123,9 +146,10 @@ See [docs/guides/configuration.md](docs/guides/configuration.md) for the full li
 - **Python 3.12+**
 - **FastAPI** -- API and web server
 - **Jinja2 + HTMX** -- Interactive dashboard without heavy JS
-- **Tailwind CSS** -- Warm library-themed styling
+- **Tailwind CSS** -- Dark parchment-themed styling
 - **SQLAlchemy (async)** -- Database with aiosqlite
 - **Pydantic v2** -- Request/response validation
+- **Custom pixel art renderer** -- Programmatic SVG generation for avatars and icons
 - **Docker** -- Containerized deployment
 
 ## Documentation
@@ -136,7 +160,10 @@ See [docs/guides/configuration.md](docs/guides/configuration.md) for the full li
 - [API Endpoints](docs/api/endpoints.md)
 - [Authentication](docs/api/authentication.md)
 - [Gameplay Guide](docs/guides/gameplay.md)
+- [Bot Players Guide](docs/guides/bots.md)
 - [Architecture](docs/architecture/overview.md)
+- [AGENTS.md](AGENTS.md) -- AI agent conventions and project guide
+- [CLAUDE.md](CLAUDE.md) -- Symlink to AGENTS.md
 
 ## Contributing
 
