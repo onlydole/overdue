@@ -7,46 +7,75 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.tables import BadgeRow, LibrarianRow, ReviewRow, StreakRow, VolumeRow
 
+BADGE_TIERS = ("Common", "Rare")
+
 BADGE_DEFINITIONS = {
     "First Shelve": {
         "description": "Created your first volume",
         "icon": "book-open",
+        "tier": "Common",
         "check": "volume_count >= 1",
     },
     "Dust Buster": {
         "description": "Reviewed 10 overdue volumes",
         "icon": "sparkles",
+        "tier": "Common",
         "check": "overdue_reviews >= 10",
     },
     "Streak Master": {
         "description": "7-day review streak",
         "icon": "fire",
+        "tier": "Common",
         "check": "current_streak >= 7",
     },
     "Pristine Stacks": {
         "description": "All volumes above Dewey 75 at once",
         "icon": "star",
+        "tier": "Common",
         "check": "all_above_75",
     },
     "Encyclopedist": {
         "description": "50 volumes authored",
         "icon": "library",
+        "tier": "Common",
         "check": "volume_count >= 50",
     },
     "Night Owl": {
         "description": "Reviewed a volume after midnight",
         "icon": "moon",
+        "tier": "Common",
         "check": "night_review",
     },
     "Speed Reader": {
         "description": "Reviewed 5 volumes in under a minute",
         "icon": "zap",
+        "tier": "Common",
         "check": "speed_reviews >= 5",
     },
     "Completionist": {
         "description": "Earned all other badges",
         "icon": "trophy",
+        "tier": "Common",
         "check": "all_badges",
+    },
+    # --- Rare tier badges ---
+    "Marathon Reader": {
+        "description": "30-day review streak",
+        "icon": "fire",
+        "tier": "Rare",
+        "check": "current_streak >= 30",
+    },
+    "Dewey Devotee": {
+        "description": "Maintained average Dewey Score above 90 for 7 days",
+        "icon": "award",
+        "tier": "Rare",
+        "check": "avg_dewey_7d >= 90",
+    },
+    "Centurion": {
+        "description": "Reviewed 100 volumes total",
+        "icon": "trophy",
+        "tier": "Rare",
+        "check": "total_reviews >= 100",
     },
 }
 
@@ -64,6 +93,7 @@ async def get_earned_badges(session: AsyncSession, librarian_id: int) -> list[di
             "name": row.badge_name,
             "description": BADGE_DEFINITIONS.get(row.badge_name, {}).get("description", ""),
             "icon": BADGE_DEFINITIONS.get(row.badge_name, {}).get("icon", "award"),
+            "tier": BADGE_DEFINITIONS.get(row.badge_name, {}).get("tier", "Common"),
             "earned_at": row.earned_at,
         }
         for row in rows
