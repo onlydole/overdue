@@ -4,8 +4,27 @@
  */
 
 /* ============================================================
-   TOAST SYSTEM
+   TOAST SYSTEM (with stagger queue)
    ============================================================ */
+
+var toastQueue = [];
+var toastProcessing = false;
+
+function queueToast(text, type) {
+    toastQueue.push({ text: text, type: type });
+    if (!toastProcessing) processToastQueue();
+}
+
+function processToastQueue() {
+    if (toastQueue.length === 0) {
+        toastProcessing = false;
+        return;
+    }
+    toastProcessing = true;
+    var item = toastQueue.shift();
+    showToast(item.text, item.type);
+    setTimeout(processToastQueue, 400);
+}
 
 function showToast(text, type) {
     var container = document.getElementById('toast-container');
@@ -20,7 +39,7 @@ function showToast(text, type) {
     var span = document.createElement('span');
     span.className = 'font-pixel text-[10px]';
     if (type === 'xp') {
-        span.className += ' text-dewey-pristine xp-pop';
+        span.className += ' text-dewey-pristine';
     } else if (type === 'streak') {
         span.className += ' text-streak';
     } else if (type === 'badge') {
@@ -42,6 +61,50 @@ function showToast(text, type) {
 }
 
 /* ============================================================
+   REVIEW CELEBRATION EFFECT
+   ============================================================ */
+
+function showReviewCelebration() {
+    // Respect prefers-reduced-motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    // Gold screen flash overlay
+    var flash = document.createElement('div');
+    flash.className = 'review-flash-overlay';
+    flash.style.cssText = 'position:fixed;inset:0;background:rgba(240,197,67,0.25);pointer-events:none;z-index:9999;animation:review-flash 0.4s ease-out forwards;';
+    document.body.appendChild(flash);
+    setTimeout(function() { if (flash.parentNode) flash.parentNode.removeChild(flash); }, 500);
+
+    // Pixel particle burst from review section
+    var target = document.getElementById('review-section');
+    if (!target) return;
+    var rect = target.getBoundingClientRect();
+    var cx = rect.left + rect.width / 2;
+    var cy = rect.top + rect.height / 2;
+    var colors = ['#f0c543', '#5cdb5c', '#b76ef0', '#e8563e', '#7eb5e3', '#ffe9a0', '#a0d468', '#f6bb42'];
+
+    for (var i = 0; i < 8; i++) {
+        var particle = document.createElement('div');
+        var angle = (i / 8) * 2 * Math.PI;
+        var dx = Math.cos(angle) * 80;
+        var dy = Math.sin(angle) * 80;
+        particle.style.cssText = 'position:fixed;width:6px;height:6px;pointer-events:none;z-index:9999;' +
+            'left:' + cx + 'px;top:' + cy + 'px;background:' + colors[i] + ';' +
+            'animation:star-burst 0.6s ease-out forwards;' +
+            '--dx:' + dx + 'px;--dy:' + dy + 'px;';
+        // Use inline transform for each particle direction
+        particle.animate([
+            { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+            { transform: 'translate(' + dx + 'px, ' + dy + 'px) scale(0)', opacity: 0 }
+        ], { duration: 600, easing: 'ease-out', fill: 'forwards' });
+        document.body.appendChild(particle);
+        (function(p) {
+            setTimeout(function() { if (p.parentNode) p.parentNode.removeChild(p); }, 700);
+        })(particle);
+    }
+}
+
+/* ============================================================
    GAME EVENT HANDLER
    ============================================================ */
 
@@ -49,22 +112,25 @@ document.body.addEventListener('gameEvent', function(evt) {
     var data = evt.detail;
     if (!data) return;
 
+    // Trigger celebration effect
+    showReviewCelebration();
+
     if (data.xp_awarded > 0) {
-        showToast('+' + data.xp_awarded + ' XP', 'xp');
+        queueToast('\u2605 +' + data.xp_awarded + ' XP', 'xp');
     }
 
     if (data.streak_bonus_awarded) {
-        showToast('Streak Bonus!', 'streak');
+        queueToast('\uD83D\uDD25 Streak Bonus!', 'streak');
     }
 
     if (data.badges_earned && data.badges_earned.length > 0) {
         data.badges_earned.forEach(function(badge) {
-            showToast(badge + ' earned!', 'badge');
+            queueToast('\uD83C\uDFC6 ' + badge + ' earned!', 'badge');
         });
     }
 
     if (data.rank_changed && data.new_rank) {
-        showToast('Ranked up to ' + data.new_rank + '!', 'rank');
+        queueToast('\uD83D\uDC51 Ranked up to ' + data.new_rank + '!', 'rank');
     }
 });
 
