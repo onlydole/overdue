@@ -14,27 +14,27 @@ def calculate_mood(average_dewey_score: float) -> dict:
     visuals = {
         "Quiet study": {
             "description": "Warm golden light fills the reading room. Knowledge is well-tended.",
-            "color": "#F5E6C8",
+            "color": "#5cdb5c",
             "ambiance": "soft_pages",
         },
         "Gentle hum": {
             "description": "A pleasant bustle of activity. Most volumes are in good shape.",
-            "color": "#E8D5B7",
+            "color": "#a0d468",
             "ambiance": "gentle_hum",
         },
         "Getting noisy": {
             "description": "The stacks are getting restless. Several volumes need attention.",
-            "color": "#D4A574",
+            "color": "#f6bb42",
             "ambiance": "restless",
         },
         "Call for order": {
             "description": "Warning! Many volumes are gathering dust. Review needed urgently.",
-            "color": "#C45D3E",
+            "color": "#e8563e",
             "ambiance": "urgent",
         },
         "Closed for renovation": {
             "description": "The library needs serious attention. Knowledge is at risk.",
-            "color": "#8B2500",
+            "color": "#9e1b1b",
             "ambiance": "closed",
         },
     }
