@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["*"]
     host: str = "0.0.0.0"
     port: int = 8000
+    webhook_secret: str = ""
 
 
 settings = Settings()
