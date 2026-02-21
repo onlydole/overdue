@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from src.api.volumes import calculate_dewey_score
 from src.auth.web_session import get_current_librarian_optional
@@ -48,9 +49,12 @@ async def reading_room(
     avg_score = sum(scores) / len(scores) if scores else 100.0
     mood = calculate_mood(avg_score)
 
-    # Recent reviews
+    # Recent reviews (eager-load volume title and librarian name)
     recent_result = await session.execute(
-        select(ReviewRow).order_by(ReviewRow.reviewed_at.desc()).limit(10)
+        select(ReviewRow)
+        .options(selectinload(ReviewRow.volume), selectinload(ReviewRow.librarian))
+        .order_by(ReviewRow.reviewed_at.desc())
+        .limit(10)
     )
     recent_reviews = recent_result.scalars().all()
 
