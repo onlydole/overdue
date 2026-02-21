@@ -4,7 +4,7 @@
 {% block content %}
 <div class="space-y-6">
     <div class="pixel-card text-center py-6">
-        <div class="text-3xl mb-3">&#128269;</div>
+        <div class="mb-3">{{ render_icon('search', 32) }}</div>
         <h1 class="pixel-heading-lg mb-4">Search the Catalog</h1>
         <div class="max-w-xl mx-auto">
             <input type="text" name="q" value="{{ query }}"
