@@ -2,15 +2,15 @@
 
 > Don't let your knowledge expire. A retro pixel art knowledge library game.
 
-**Overdue** is a FastAPI-powered knowledge library game wrapped in a retro pixel art aesthetic. Manage volumes of knowledge, keep them fresh, and level up as a librarian -- complete with 16x16 pixel art avatars, custom 8x8 pixel art icons, AI bot opponents, and a dark parchment palette straight out of an 8-bit library. Think of it as a Tamagotchi for your notes -- neglect the stacks and the reading room descends into chaos.
+**Overdue** is a FastAPI-powered knowledge library game wrapped in a retro pixel art aesthetic. Manage volumes of knowledge, keep them fresh, and level up as a librarian -- complete with 32x32 pixel art avatars, custom 16x16 pixel art icons, AI bot opponents, and a dark parchment palette straight out of a GBA-era library. Think of it as a Tamagotchi for your notes -- neglect the stacks and the reading room descends into chaos.
 
 ## What You'll Find Here
 
 - A full-stack web app with an interactive **Reading Room** dashboard rendered in pixel art style
 - A REST API with JWT auth, fuzzy search, webhooks, and rate limiting
 - A game layer with XP, ranks, badges, and daily streaks
-- **12 pixel art librarian avatars** -- diverse 16x16 shoulders-up portraits built from code
-- **Custom pixel art icon system** -- 8x8 SVG icons replacing all emoji throughout the UI
+- **12 pixel art librarian avatars** -- diverse 32x32 shoulders-up portraits built from code
+- **Custom pixel art icon system** -- 16x16 GBA-era SVG icons replacing all emoji throughout the UI
 - **AI bot players** -- simulated librarians that populate the leaderboard with three difficulty tiers
 - "Press Start 2P" headings and "VT323" body text for full retro typography
 - All wrapped in a cozy library metaphor (your 404 says "That volume isn't on any of our shelves")
@@ -59,8 +59,8 @@ Open [http://localhost:8000](http://localhost:8000) for the dashboard, or hit th
 
 Overdue uses a fully custom pixel art rendering pipeline -- no emoji, no icon fonts, everything built from code:
 
-- **Avatars** (16x16): 12 diverse librarian portraits with unique hair styles, skin tones, outfits, and optional glasses. Rendered as inline SVG via `render_avatar()` in Jinja2 templates.
-- **Icons** (8x8): Decorative pixel art icons for UI elements. Rendered as inline SVG via `render_icon()` in Jinja2 templates.
+- **Avatars** (32x32): 12 diverse librarian portraits with unique hair styles, skin tones, outfits, and optional glasses. Rendered as inline SVG via `render_avatar()` in Jinja2 templates.
+- **Icons** (16x16): GBA-era decorative pixel art icons for UI elements. Pre-rendered as static SVG files in `static/icons/`, served via `<img>` tags through `render_icon()` in Jinja2 templates.
 - **Typography**: "Press Start 2P" for headings, "VT323" for body text.
 - **Palette**: Dark parchment theme -- `#0f0e17` background, `#1a1a2e` surfaces, `#232342` cards, `#3d3d6b` borders, `#f0e6d3` parchment text, `#f0c543` gold accents.
 
@@ -110,8 +110,8 @@ overdue/
     config/                # Settings and constants
     errors/                # Exception handling
     game/
-      avatars.py           # 12 pixel art librarian avatars (16x16 SVG)
-      icons.py             # Pixel art icon system (8x8 SVG)
+      avatars.py           # 12 pixel art librarian avatars (32x32 SVG)
+      icons/               # Pixel art icon system (16x16 SVG, GBA-era)
       bots.py              # AI bot player engine
       xp.py                # XP / pages-read calculations
       badges.py            # Badge unlock logic
@@ -123,7 +123,7 @@ overdue/
     web/                   # Dashboard routes and template config
   templates/               # Jinja2 HTML templates
     partials/              # Reusable template fragments
-  static/                  # CSS, JS
+  static/                  # CSS, JS, pre-rendered icon SVGs
   tests/                   # Test suite
   docs/                    # Guides and API reference
 ```
