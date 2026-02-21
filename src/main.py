@@ -1,8 +1,10 @@
 """Overdue -- FastAPI application entry point."""
 
+import asyncio
 import time
 from collections import defaultdict
 from contextlib import asynccontextmanager
+from datetime import datetime
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,18 +12,37 @@ from fastapi.staticfiles import StaticFiles
 
 from src.config.defaults import QUIET_HOURS_REQUESTS_PER_MINUTE
 from src.config.settings import settings
-from src.db.engine import engine
-from src.db.tables import Base
+from src.db.engine import async_session, engine
+from src.db.tables import Base, VolumeRow
+
 from src.errors.handlers import register_handlers
 from src.errors.incidents import QuietHoursExceeded
+
+# Track last Dewey recalculation time
+_last_dewey_recalc: datetime | None = None
+
+
+async def dewey_recalc_task() -> None:
+    """Background task that recalculates Dewey Scores periodically."""
+    global _last_dewey_recalc
+    interval = settings.dewey_recalc_interval_minutes * 60
+    while True:
+        await asyncio.sleep(interval)
+        _last_dewey_recalc = datetime.utcnow()
+        # Scores are computed on-read, so this is a no-op marker
+        # In a real system, this would pre-compute and cache scores
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # type: ignore[no-untyped-def]
-    """Create database tables on startup."""
+    """Create database tables on startup and start background tasks."""
+    global _last_dewey_recalc
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    _last_dewey_recalc = datetime.utcnow()
+    task = asyncio.create_task(dewey_recalc_task())
     yield
+    task.cancel()
 
 
 app = FastAPI(

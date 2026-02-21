@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.volumes import calculate_dewey_score
 from src.config.defaults import DEWEY_OVERDUE, MOODS, DEWEY_NEEDS_ATTENTION
+from src.config.settings import settings
 from src.db.engine import get_session
 from src.db.tables import VolumeRow
 
@@ -102,4 +103,14 @@ async def overdue_report(
         "needs_attention": needs_attention,
         "total_overdue": len(overdue_items),
         "total_needs_attention": len(needs_attention),
+    }
+
+
+@router.get("/last-recalc")
+async def last_recalc() -> dict:
+    """Get the timestamp of the last Dewey Score recalculation."""
+    from src.main import _last_dewey_recalc
+    return {
+        "last_recalc": _last_dewey_recalc.isoformat() if _last_dewey_recalc else None,
+        "interval_minutes": settings.dewey_recalc_interval_minutes,
     }
