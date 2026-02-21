@@ -71,6 +71,16 @@ The library's mood reflects the overall health of your knowledge collection:
 | 20-39 | Call for order | Red accents, warning indicators |
 | 0-19 | Closed for renovation | Dimmed, urgent status |
 
+## Avatars
+
+When you register, you choose from 12 unique pixel art librarian avatars. Your avatar appears on your profile, the leaderboard, and in the navigation bar. Each avatar has a distinct look -- different skin tones, hairstyles, outfits, and accessories.
+
+## AI Bot players
+
+The leaderboard includes AI bot players that simulate library activity. Bots are marked with a robot indicator so you can tell them apart from real players. Their XP shifts each time the server restarts, keeping competition dynamic.
+
+Bots come in three difficulty levels: **casual** (low activity), **diligent** (regular reviews), and **obsessive** (power users). See the [Bot Players guide](bots.md) for CLI management commands.
+
 ## API endpoints
 
 - `GET /api/librarians/me/xp` -- Your XP summary, rank, and recent awards
