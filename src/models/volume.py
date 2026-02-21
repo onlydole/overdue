@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 class VolumeCreate(BaseModel):
     """Request body for creating a new volume."""
 
-    title: str = Field(..., min_length=1, max_length=255)
+    title: str = Field(..., min_length=1, max_length=60)
     content: str = Field(..., min_length=1)
     shelf_id: int
     bookmarks: list[str] = Field(default_factory=list)
@@ -17,7 +17,7 @@ class VolumeCreate(BaseModel):
 class VolumeUpdate(BaseModel):
     """Request body for updating a volume."""
 
-    title: str | None = Field(None, min_length=1, max_length=255)
+    title: str | None = Field(None, min_length=1, max_length=60)
     content: str | None = Field(None, min_length=1)
     shelf_id: int | None = None
     bookmarks: list[str] | None = None
