@@ -1,17 +1,17 @@
 """Leaderboard route."""
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.web_session import get_current_librarian_optional
 from src.db.engine import get_session
 from src.db.tables import BadgeRow, LibrarianRow, StreakRow
+from src.game.avatars import render_avatar_svg
 from src.game.xp import get_rank
+from src.web.templates import templates
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/leaderboard")
@@ -45,6 +45,9 @@ async def leaderboard(
             "rank": get_rank(lib.total_xp),
             "badge_count": badge_count,
             "current_streak": streak.current_streak if streak else 0,
+            "is_bot": lib.is_bot,
+            "avatar_svg": render_avatar_svg(lib.avatar_id or "avatar_01", size=28),
+            "librarian_id": lib.id,
         })
 
     return templates.TemplateResponse("leaderboard.html", {

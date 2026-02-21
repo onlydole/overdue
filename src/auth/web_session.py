@@ -35,6 +35,7 @@ async def get_current_librarian_optional(
             "username": librarian.username,
             "role": librarian.role,
             "total_xp": librarian.total_xp,
+            "avatar_id": librarian.avatar_id,
         }
     except JWTError:
         request.session.clear()

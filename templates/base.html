@@ -66,7 +66,10 @@
                 <div class="hidden md:flex items-center gap-4">
                     {% if current_user %}
                     <a href="/my-library" class="nav-link">My Library</a>
-                    <a href="/profile/{{ current_user.id }}" class="font-pixel text-[8px] text-gold hover:text-gold-light">{{ current_user.username }}</a>
+                    <a href="/profile/{{ current_user.id }}" class="flex items-center gap-2 font-pixel text-[8px] text-gold hover:text-gold-light">
+                        <span class="w-6 h-6 inline-flex items-center justify-center">{{ render_avatar(current_user.avatar_id|default('avatar_01'), 24) }}</span>
+                        {{ current_user.username }}
+                    </a>
                     <form method="post" action="/logout" class="inline">
                         <button type="submit" class="nav-link text-ink-light hover:text-dewey-overdue">Logout</button>
                     </form>
@@ -97,7 +100,10 @@
                 <a href="/how-to-play" class="block nav-link">How to Play</a>
                 {% if current_user %}
                 <a href="/my-library" class="block nav-link">My Library</a>
-                <a href="/profile/{{ current_user.id }}" class="block nav-link text-gold">{{ current_user.username }}</a>
+                <a href="/profile/{{ current_user.id }}" class="flex items-center gap-2 nav-link text-gold">
+                    <span class="w-6 h-6 inline-flex items-center justify-center">{{ render_avatar(current_user.avatar_id|default('avatar_01'), 24) }}</span>
+                    {{ current_user.username }}
+                </a>
                 <form method="post" action="/logout">
                     <button type="submit" class="block nav-link text-ink-light hover:text-dewey-overdue w-full text-left">Logout</button>
                 </form>
