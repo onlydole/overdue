@@ -1,8 +1,9 @@
 """Librarian registration, login, and profile."""
 
 import re
+from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from passlib.context import CryptContext
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -160,13 +161,51 @@ async def get_my_streak(
 async def get_leaderboard(
     session: AsyncSession = Depends(get_session),
     limit: int = 10,
+    timeframe: str = Query("all-time", description="Filter: week, month, or all-time"),
+    sort_by: str = Query("xp", description="Sort by: xp or streak"),
 ) -> dict:
-    """Get the top librarians by pages read."""
-    result = await session.execute(
-        select(LibrarianRow)
-        .order_by(LibrarianRow.total_xp.desc())
-        .limit(limit)
-    )
+    """Get the top librarians by pages read or streak length."""
+    from src.db.tables import XPLedgerRow
+
+    if timeframe == "week":
+        cutoff = datetime.utcnow() - timedelta(weeks=1)
+    elif timeframe == "month":
+        cutoff = datetime.utcnow() - timedelta(days=30)
+    else:
+        cutoff = None
+
+    if sort_by == "streak":
+        # Sort by current streak
+        result = await session.execute(
+            select(LibrarianRow)
+            .join(StreakRow, StreakRow.librarian_id == LibrarianRow.id, isouter=True)
+            .order_by(func.coalesce(StreakRow.current_streak, 0).desc())
+            .limit(limit)
+        )
+    elif cutoff:
+        # Sort by XP earned in timeframe
+        subq = (
+            select(
+                XPLedgerRow.librarian_id,
+                func.sum(XPLedgerRow.amount).label("period_xp"),
+            )
+            .where(XPLedgerRow.created_at >= cutoff)
+            .group_by(XPLedgerRow.librarian_id)
+            .subquery()
+        )
+        result = await session.execute(
+            select(LibrarianRow)
+            .join(subq, subq.c.librarian_id == LibrarianRow.id)
+            .order_by(subq.c.period_xp.desc())
+            .limit(limit)
+        )
+    else:
+        result = await session.execute(
+            select(LibrarianRow)
+            .order_by(LibrarianRow.total_xp.desc())
+            .limit(limit)
+        )
+
     librarians = result.scalars().all()
 
     entries = []
@@ -190,4 +229,9 @@ async def get_leaderboard(
             "current_streak": streak.current_streak if streak else 0,
         })
 
-    return {"entries": entries, "total_librarians": len(entries)}
+    return {
+        "entries": entries,
+        "total_librarians": len(entries),
+        "timeframe": timeframe,
+        "sort_by": sort_by,
+    }

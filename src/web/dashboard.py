@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.api.volumes import calculate_dewey_score
 from src.config.defaults import DEWEY_GOOD_SHAPE, DEWEY_NEEDS_ATTENTION, DEWEY_OVERDUE
 from src.db.engine import get_session
-from src.db.tables import ReviewRow, VolumeRow
+from src.db.tables import LibrarianRow, ReviewRow, StreakRow, VolumeRow
 from src.game.mood import calculate_mood
 
 router = APIRouter()
@@ -53,6 +53,19 @@ async def reading_room(
     )
     recent_reviews = recent_result.scalars().all()
 
+    # Streak leaderboard
+    streak_result = await session.execute(
+        select(LibrarianRow.username, StreakRow.current_streak)
+        .join(StreakRow, StreakRow.librarian_id == LibrarianRow.id)
+        .where(StreakRow.current_streak > 0)
+        .order_by(StreakRow.current_streak.desc())
+        .limit(5)
+    )
+    streak_leaders = [
+        {"username": row[0], "current_streak": row[1]}
+        for row in streak_result
+    ]
+
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "mood": mood,
@@ -60,4 +73,5 @@ async def reading_room(
         "distribution": distribution,
         "overdue_count": distribution["overdue"],
         "recent_reviews": recent_reviews,
+        "streak_leaders": streak_leaders,
     })
