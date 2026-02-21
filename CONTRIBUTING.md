@@ -1,59 +1,93 @@
 # Contributing to Overdue
 
-Thank you for your interest in contributing to Overdue! This document provides guidelines and information for contributors.
+Thanks for wanting to help out! Whether you're fixing a typo, adding a feature, or reporting a bug, every contribution makes the library a better place.
 
-## Development setup
+## Getting Set Up
+
+### With Docker
+
+The fastest way to get a working environment:
 
 ```bash
-# Clone the repository
+git clone https://github.com/onlydole/overdue.git
+cd overdue
+docker compose up --build
+```
+
+The app will be running at [http://localhost:8000](http://localhost:8000).
+
+### Without Docker
+
+```bash
 git clone https://github.com/onlydole/overdue.git
 cd overdue
 
-# Create a virtual environment
+# Create and activate a virtual environment
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
 # Install with dev dependencies
 pip install -e ".[dev]"
+
+# Start the dev server
+uvicorn src.main:app --reload
 ```
 
-## Running tests
+## Running Tests
 
 ```bash
 pytest
 ```
 
-## Code style
+To run with coverage:
 
-We use [Ruff](https://docs.astral.sh/ruff/) for linting and formatting:
+```bash
+pytest --cov=src
+```
+
+## Code Style
+
+We use [Ruff](https://docs.astral.sh/ruff/) for linting and formatting. Run both before submitting a PR:
 
 ```bash
 ruff check src/ tests/
 ruff format src/ tests/
 ```
 
-## Commit conventions
+## Commit Conventions
 
-We follow [Conventional Commits](https://www.conventionalcommits.org/):
+We follow [Conventional Commits](https://www.conventionalcommits.org/). Scope is optional but encouraged:
 
-- `feat:` new feature
-- `fix:` bug fix
-- `docs:` documentation changes
-- `test:` adding or updating tests
-- `refactor:` code changes that neither fix a bug nor add a feature
-- `chore:` maintenance tasks
+```
+feat(game): add Marathon Reader badge
+fix(catalog): handle empty search queries
+docs: update quickstart guide
+test(auth): add token refresh tests
+chore: bump dependencies
+```
 
-## Pull requests
+## Making a Pull Request
 
-1. Create a feature branch from `main`
-2. Make your changes with clear, focused commits
-3. Ensure tests pass and linting is clean
-4. Open a PR with a descriptive title and summary
+1. Fork the repo and create a branch from `main`
+2. Make your changes -- keep commits focused and atomic
+3. Run `pytest` and `ruff check` to make sure everything's clean
+4. Push your branch and open a PR
+5. Describe what you changed and why in the PR body
+
+That's it. We'll review and get back to you.
+
+## Reporting Issues
+
+Found a bug or have an idea? [Open an issue](https://github.com/onlydole/overdue/issues/new). Include:
+
+- What you expected to happen
+- What actually happened
+- Steps to reproduce (if applicable)
 
 ## Architecture
 
-See [docs/architecture/overview.md](docs/architecture/overview.md) for an overview of the project architecture.
+If you're diving into the code, [docs/architecture/overview.md](docs/architecture/overview.md) gives you the lay of the land.
 
-## Questions?
+## License
 
-Open an issue or start a discussion. We're happy to help!
+By contributing, you agree that your contributions will be licensed under the [MIT License](LICENSE).
