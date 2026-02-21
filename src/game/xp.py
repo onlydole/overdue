@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.config.defaults import RANKS, XP_DAILY_STREAK_BONUS, XP_REVIEW_CURRENT, XP_REVIEW_OVERDUE, XP_SHELVE_VOLUME
+from src.config.defaults import RANKS, XP_DAILY_STREAK_BONUS, XP_REVIEW_CURRENT, XP_REVIEW_OVERDUE_MULTIPLIER, XP_SHELVE_VOLUME
 from src.db.tables import LibrarianRow, XPLedgerRow
 
 
@@ -67,9 +67,16 @@ async def award_review_xp(
     librarian_id: int,
     was_overdue: bool,
 ) -> int:
-    """Award XP for reviewing a volume."""
-    amount = XP_REVIEW_OVERDUE if was_overdue else XP_REVIEW_CURRENT
-    reason = "Reviewed an overdue volume" if was_overdue else "Reviewed a current volume"
+    """Award XP for reviewing a volume.
+
+    Overdue reviews earn base XP * multiplier (2x by default).
+    """
+    if was_overdue:
+        amount = XP_REVIEW_CURRENT * XP_REVIEW_OVERDUE_MULTIPLIER
+        reason = f"Reviewed an overdue volume ({XP_REVIEW_OVERDUE_MULTIPLIER}x bonus)"
+    else:
+        amount = XP_REVIEW_CURRENT
+        reason = "Reviewed a current volume"
     return await award_xp(session, librarian_id, amount, reason)
 
 
