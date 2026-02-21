@@ -63,6 +63,28 @@ Typer-based command-line interface for managing the library without the web UI.
 5. Data is persisted via SQLAlchemy
 6. Response is returned (JSON for API, HTML for web)
 
+## Database schema
+
+The data layer uses SQLAlchemy ORM with the following tables:
+
+| Table | Purpose |
+|---|---|
+| `volumes` | Knowledge entries with title, content, shelf assignment, and review timestamps |
+| `shelves` | Categorized collections that group related volumes |
+| `librarians` | Authenticated users with username, email, role, and XP totals |
+| `reviews` | History of volume reviews with before-review Dewey Scores |
+| `xp_ledger` | Itemized XP awards with reasons (shelving, reviewing, streaks) |
+| `badges` | Achievement badges earned by librarians |
+| `streaks` | Daily review streak tracking per librarian |
+| `volume_bookmarks` | Many-to-many association for volume tags |
+
+### Relationships
+
+- A **shelf** contains many **volumes**
+- A **librarian** authors many **volumes** and creates many **shelves**
+- A **volume** has many **reviews**, each linked to a **librarian**
+- A **librarian** has one **streak** record and many **badges** and **XP ledger** entries
+
 ## Dewey Score calculation
 
 Dewey Scores decay over time. Each volume starts with a score of 100 (pristine) and loses points daily based on the configured decay rate. Reviewing a volume resets its score to 100. The calculation is synchronous -- scores are computed on read based on the time elapsed since the last review.
