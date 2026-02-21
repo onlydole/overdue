@@ -1,6 +1,6 @@
 """Golden Sun: The Lost Age style pixel art librarian avatar system.
 
-Provides 12 custom 32x32 pixel art librarian avatars rendered as inline SVG.
+Provides 12 32x32 pixel art librarian avatars rendered as inline SVG.
 Each avatar is a tight close-up portrait matching Golden Sun GBA portrait
 proportions: 6-row expressive eyes (9px wide) with 2px catchlights as the
 centerpiece, volumetric hair covering rows 0-10, oval face filling ~80% of

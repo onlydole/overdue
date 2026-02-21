@@ -97,6 +97,12 @@ ruff check src/ tests/
 ruff format src/ tests/
 ```
 
+Quick CLI sanity check after install:
+
+```bash
+overdue version
+```
+
 When avatar or icon source code changes, regenerate static SVG assets:
 
 ```bash

@@ -41,7 +41,7 @@ All decorative visuals are custom-built pixel art SVGs. This is a hard rule:
 
 - **NO emoji** anywhere in templates, JS, or Python-rendered HTML. Every decorative element uses a pixel art icon or avatar.
 - **Icons** (16x16 pixel grid, GBA-era fidelity): Defined in the `src/game/icons/` package (split by category: `_books.py`, `_nature.py`, `_achievements.py`, `_objects.py`, `_characters.py`). Shared palette and shading helpers in `_palette.py`. Rendered via the `render_icon(name, size)` Jinja2 global, which returns a `Markup()` object containing an inline SVG. Use `{{ render_icon("star", 16) }}` in templates.
-- **Avatars** (32x32 pixel grid, GBA-era fidelity): Defined in `src/game/avatars.py`. 12 custom librarian portraits with detailed facial features, strand-level hair, skin shading, and outfit detail. Rendered via the `render_avatar(avatar_id, size)` Jinja2 global. Use `{{ render_avatar("avatar_01", 32) }}` in templates.
+- **Avatars** (32x32 pixel grid, GBA-era fidelity): Defined in `src/game/avatars.py`. 12 librarian portraits with detailed facial features, strand-level hair, skin shading, and outfit detail. Rendered via the `render_avatar(avatar_id, size)` Jinja2 global. Use `{{ render_avatar("avatar_01", 32) }}` in templates.
 - **Shared palette**: `src/game/icons/_palette.py` provides 4-step shading ramps (highlight, base, shadow, deep_shadow) for GOLD, FLAME, GREEN, BLUE, PURPLE, PARCHMENT, INK. Also provides `darken()`, `lighten()`, and `blend_colors()` helpers used by both icons and avatars.
 - **Rendering pipeline**: Pixel coordinates -> list of `(x, y, color)` tuples -> SVG `<rect>` elements -> joined into `<svg>` string -> wrapped in `Markup()` -> registered as Jinja2 global -> called in templates.
 
