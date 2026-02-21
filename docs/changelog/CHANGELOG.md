@@ -9,6 +9,15 @@ All notable changes to Overdue will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] - 2025-02-12
+
+### Added
+- Card catalog search (POST /catalog/search)
+- Autocomplete suggestions (GET /catalog/suggest)
+- Overdue report endpoint (GET /reading-room/overdue)
+- Dewey Score decay calculation with configurable rate
+- Overdue detection based on score thresholds
+
 ## [0.3.0] - 2025-02-05
 
 ### Added
