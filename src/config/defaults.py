@@ -16,8 +16,8 @@ DEWEY_DECAY_RATE = 3
 # XP awards ("pages read")
 # ---------------------------------------------------------------------------
 XP_SHELVE_VOLUME = 10
-XP_REVIEW_OVERDUE = 25
 XP_REVIEW_CURRENT = 5
+XP_REVIEW_OVERDUE_MULTIPLIER = 2  # overdue reviews earn base * multiplier
 XP_DAILY_STREAK_BONUS = 15
 XP_SHELF_BONUS = 50  # all volumes on a shelf above DEWEY_GOOD_SHAPE
 
