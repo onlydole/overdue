@@ -15,7 +15,8 @@ class Settings(BaseSettings):
     debug: bool = False
     database_url: str = "sqlite+aiosqlite:///./overdue.db"
     secret_key: str = "change-me-in-production"
-    token_expiry_minutes: int = 1440  # 24 hours
+    token_expiry_minutes: int = 60  # 1 hour
+    token_refresh_window_minutes: int = 15  # refresh allowed in last 15 min
     cors_origins: list[str] = ["*"]
     host: str = "0.0.0.0"
     port: int = 8000
