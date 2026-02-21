@@ -11,6 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
+from sqlalchemy import text
+
 from src.config.defaults import QUIET_HOURS_REQUESTS_PER_MINUTE
 from src.config.settings import settings
 from src.db.engine import async_session, engine
@@ -41,11 +43,36 @@ async def lifespan(app: FastAPI):  # type: ignore[no-untyped-def]
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+    # Migrate existing DBs: add new columns if missing (idempotent)
+    async with engine.begin() as conn:
+        for col_name, col_def in [
+            ("is_bot", "BOOLEAN NOT NULL DEFAULT 0"),
+            ("bot_difficulty", "VARCHAR(50)"),
+            ("avatar_id", "VARCHAR(20) NOT NULL DEFAULT 'avatar_01'"),
+        ]:
+            try:
+                await conn.execute(
+                    text(
+                        f"ALTER TABLE librarians ADD COLUMN {col_name} {col_def}"
+                    )
+                )
+            except Exception:
+                pass  # Column already exists
+
     # Auto-seed if database is empty (for docker compose demo experience)
     from src.db.seed import is_db_empty, seed_demo_data
     async with async_session() as session:
         if await is_db_empty(session):
             await seed_demo_data(session)
+
+    # Auto-simulate bot activity on startup so leaderboard shifts
+    from src.game.bots import simulate_bot_activity
+    async with async_session() as session:
+        try:
+            await simulate_bot_activity(session)
+            await session.commit()
+        except Exception:
+            pass  # No bots yet or other issue
 
     _last_dewey_recalc = datetime.utcnow()
     task = asyncio.create_task(dewey_recalc_task())
