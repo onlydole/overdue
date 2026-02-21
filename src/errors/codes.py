@@ -10,4 +10,6 @@ INCIDENT_CODES = {
     "TS-006": "Duplicate entry",
     "TS-007": "Quiet hours exceeded",
     "TS-008": "Validation error",
+    "TS-009": "Bulletin not found",
+    "TS-010": "Webhook delivery failed",
 }

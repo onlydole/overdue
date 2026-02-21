@@ -139,3 +139,17 @@ class StreakRow(Base):
     last_review_date = Column(DateTime, nullable=True)
 
     librarian = relationship("LibrarianRow", back_populates="streak")
+
+
+class BulletinRow(Base):
+    """Webhook subscription (bulletin board posting)."""
+
+    __tablename__ = "bulletins"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    url = Column(String(2048), nullable=False)
+    events = Column(String(500), nullable=False)
+    secret = Column(String(255), nullable=False, default="")
+    librarian_id = Column(Integer, ForeignKey("librarians.id"), nullable=False)
+    active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
