@@ -37,6 +37,7 @@ class BadgeEarned(BaseModel):
     name: str
     description: str
     icon: str
+    tier: str = "Common"
     earned_at: datetime
 
 
