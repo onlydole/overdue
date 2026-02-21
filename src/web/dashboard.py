@@ -6,6 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.volumes import calculate_dewey_score
+from src.auth.web_session import get_current_librarian_optional
 from src.config.defaults import DEWEY_GOOD_SHAPE, DEWEY_NEEDS_ATTENTION, DEWEY_OVERDUE
 from src.db.engine import get_session
 from src.db.tables import LibrarianRow, ReviewRow, StreakRow, VolumeRow
@@ -20,6 +21,7 @@ async def reading_room(
     request: Request,
     session: AsyncSession = Depends(get_session),
 ):
+    current_user = await get_current_librarian_optional(request, session)
     """Render the Reading Room dashboard."""
     # Get all active volumes
     volumes_result = await session.execute(
@@ -68,6 +70,7 @@ async def reading_room(
 
     return templates.TemplateResponse("dashboard.html", {
         "request": request,
+        "current_user": current_user,
         "mood": mood,
         "total_volumes": total_volumes,
         "distribution": distribution,
