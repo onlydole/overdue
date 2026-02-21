@@ -1,5 +1,7 @@
 """Application settings loaded from environment variables."""
 
+import warnings
+
 from pydantic_settings import BaseSettings
 
 
@@ -17,12 +19,25 @@ class Settings(BaseSettings):
     secret_key: str = "change-me-in-production"
     token_expiry_minutes: int = 60  # 1 hour
     token_refresh_window_minutes: int = 15  # refresh allowed in last 15 min
-    cors_origins: list[str] = ["*"]
+    cors_origins: list[str] = ["*"]  # deprecated -- use allowed_origins
+    allowed_origins: list[str] = ["*"]
     host: str = "0.0.0.0"
     port: int = 8000
     webhook_secret: str = ""
     dewey_recalc_interval_minutes: int = 15
     search_min_score: float = 0.3
+    max_volume_size_kb: int = 512  # max content size in KB
+
+    def get_origins(self) -> list[str]:
+        """Return the effective CORS origins, preferring allowed_origins."""
+        if self.cors_origins != ["*"]:
+            warnings.warn(
+                "OVERDUE_CORS_ORIGINS is deprecated. Use OVERDUE_ALLOWED_ORIGINS instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return self.cors_origins
+        return self.allowed_origins
 
 
 settings = Settings()
