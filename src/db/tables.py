@@ -76,6 +76,9 @@ class LibrarianRow(Base):
     role = Column(String(50), default="Page", nullable=False)
     total_xp = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    is_bot = Column(Boolean, default=False, nullable=False)
+    bot_difficulty = Column(String(50), nullable=True)
+    avatar_id = Column(String(20), default="avatar_01", nullable=False)
 
     volumes = relationship("VolumeRow", back_populates="author")
     shelves_created = relationship("ShelfRow", back_populates="creator")
