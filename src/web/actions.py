@@ -5,7 +5,6 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,9 +15,9 @@ from src.db.engine import get_session
 from src.db.tables import ReviewRow, ShelfRow, VolumeRow, volume_bookmarks
 from src.errors.incidents import VolumeTooLarge
 from src.game.engine import on_volume_reviewed, on_volume_shelved
+from src.web.templates import templates
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
 
 
 def _game_trigger_header(game_result) -> dict[str, str]:

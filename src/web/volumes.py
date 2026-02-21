@@ -1,7 +1,6 @@
 """Volume detail routes."""
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,9 +8,9 @@ from src.api.volumes import calculate_dewey_score
 from src.auth.web_session import get_current_librarian_optional
 from src.db.engine import get_session
 from src.db.tables import ReviewRow, VolumeRow, volume_bookmarks
+from src.web.templates import templates
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/volumes/{volume_id}")
