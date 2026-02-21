@@ -1,0 +1,7 @@
+<div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
+    <h3 class="font-bold text-sm">{{ volume.title }}</h3>
+    <div class="mt-2 flex items-center justify-between">
+        <div class="dewey-gauge w-12 h-12" data-score="{{ dewey_score }}"></div>
+        <span class="text-xs text-bark-light">{{ volume.last_reviewed_at.strftime('%b %d') }}</span>
+    </div>
+</div>

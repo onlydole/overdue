@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <h1 class="text-3xl font-bold">Leaderboard</h1>
+    <p class="text-bark-light">Top librarians ranked by pages read.</p>
+
+    {% if entries %}
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-bark text-cream">
+                <tr>
+                    <th class="px-6 py-3 text-left text-sm font-medium">#</th>
+                    <th class="px-6 py-3 text-left text-sm font-medium">Librarian</th>
+                    <th class="px-6 py-3 text-left text-sm font-medium">Rank</th>
+                    <th class="px-6 py-3 text-right text-sm font-medium">Pages Read</th>
+                    <th class="px-6 py-3 text-right text-sm font-medium">Badges</th>
+                    <th class="px-6 py-3 text-right text-sm font-medium">Streak</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for entry in entries %}
+                <tr class="hover:bg-cream/50 transition-colors {% if entry.position <= 3 %}font-medium{% endif %}">
+                    <td class="px-6 py-4">
+                        {% if entry.position == 1 %}
+                        <span class="text-amber-dark text-lg">&#9733;</span>
+                        {% elif entry.position == 2 %}
+                        <span class="text-bark-light text-lg">&#9733;</span>
+                        {% elif entry.position == 3 %}
+                        <span class="text-rust text-lg">&#9733;</span>
+                        {% else %}
+                        {{ entry.position }}
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">{{ entry.username }}</td>
+                    <td class="px-6 py-4 text-sm text-bark-light">{{ entry.rank }}</td>
+                    <td class="px-6 py-4 text-right font-mono">{{ entry.total_xp }}</td>
+                    <td class="px-6 py-4 text-right">{{ entry.badge_count }}</td>
+                    <td class="px-6 py-4 text-right">
+                        {% if entry.current_streak > 0 %}
+                        <span class="text-rust">{{ entry.current_streak }}d</span>
+                        {% else %}
+                        <span class="text-bark-light">--</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-12 text-bark-light">
+        <p class="text-lg">No librarians yet.</p>
+        <p class="mt-2">Register to be the first on the leaderboard!</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

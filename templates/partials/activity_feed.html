@@ -1,0 +1,14 @@
+<h2 class="text-xl font-bold mb-4">Recent Activity</h2>
+{% if reviews %}
+<ul class="space-y-3">
+    {% for review in reviews %}
+    <li class="flex items-center space-x-3 text-sm">
+        <span class="w-2 h-2 bg-forest rounded-full"></span>
+        <span class="text-bark-light">{{ review.reviewed_at.strftime('%b %d, %H:%M') }}</span>
+        <span>Volume #{{ review.volume_id }} reviewed</span>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="text-bark-light">No recent activity.</p>
+{% endif %}

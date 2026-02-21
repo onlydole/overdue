@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ volume.title }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <a href="/shelves/{{ volume.shelf_id }}" class="text-bark-light hover:text-bark transition-colors">&larr; Back to shelf</a>
+
+    <div class="bg-white rounded-lg shadow-md p-8">
+        <div class="flex items-start justify-between">
+            <div>
+                <h1 class="text-3xl font-bold">{{ volume.title }}</h1>
+                <div class="flex items-center space-x-4 mt-2">
+                    {% for tag in bookmarks %}
+                    <span class="bg-amber-light text-bark text-xs px-2 py-1 rounded-full">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="dewey-gauge w-24 h-24" data-score="{{ dewey_score }}">
+                <div class="text-center">
+                    <div class="text-3xl font-bold">{{ dewey_score }}</div>
+                    <div class="text-xs text-bark-light">Dewey Score</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 prose max-w-none">
+            <p>{{ volume.content }}</p>
+        </div>
+
+        <div class="mt-6 flex items-center space-x-4 text-sm text-bark-light">
+            <span>Created {{ volume.created_at.strftime('%B %d, %Y') }}</span>
+            <span>&middot;</span>
+            <span>Last reviewed {{ volume.last_reviewed_at.strftime('%B %d, %Y at %H:%M') }}</span>
+        </div>
+
+        <div class="mt-6">
+            <button hx-post="/api/volumes/{{ volume.id }}/review"
+                    hx-swap="none"
+                    class="bg-forest text-cream px-6 py-2 rounded-lg hover:bg-forest-dark transition-colors font-medium">
+                Review This Volume
+            </button>
+        </div>
+    </div>
+
+    <!-- Review History -->
+    {% if reviews %}
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-bold mb-4">Review History</h2>
+        <ul class="space-y-2">
+            {% for review in reviews %}
+            <li class="flex items-center justify-between text-sm py-2 border-b border-gray-100 last:border-0">
+                <span>{{ review.reviewed_at.strftime('%B %d, %Y at %H:%M') }}</span>
+                <span class="text-bark-light">Score before: {{ review.dewey_score_before|round(1) }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

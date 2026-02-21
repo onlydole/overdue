@@ -1,0 +1,84 @@
+/* Overdue -- Custom styles */
+
+/* Book spine vertical text */
+.writing-vertical {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+}
+
+/* Bookmark ribbon progress bar */
+.bookmark-ribbon {
+    position: relative;
+}
+.bookmark-ribbon::after {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: 0;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid #2D5A3D;
+}
+
+/* Dewey gauge circular styling */
+.dewey-gauge {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 3px solid #e5e7eb;
+}
+
+/* Subtle dust animation for overdue volumes */
+@keyframes dust-float {
+    0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+    50% { transform: translateY(-8px) rotate(180deg); opacity: 0.6; }
+}
+
+.dust-particle {
+    animation: dust-float 4s ease-in-out infinite;
+}
+
+/* Page turn transition */
+@keyframes page-turn {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(-180deg); }
+}
+
+.page-turn {
+    animation: page-turn 0.6s ease-in-out;
+    transform-origin: left center;
+}
+
+/* Warm glow for pristine scores */
+.glow-warm {
+    box-shadow: 0 0 15px rgba(212, 165, 116, 0.3);
+}
+
+/* Book spine hover effect */
+.book-spine {
+    transition: transform 0.2s ease;
+}
+.book-spine:hover {
+    transform: translateY(-4px) scaleX(1.05);
+}
+
+/* HTMX loading indicator */
+.htmx-indicator {
+    display: none;
+}
+.htmx-request .htmx-indicator {
+    display: inline-block;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .book-spine {
+        min-width: 30px;
+        padding: 0.5rem 0.25rem;
+        font-size: 0.65rem;
+    }
+}
