@@ -115,10 +115,9 @@ register_handlers(app)
 
 # Custom error pages for web routes
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-_templates = Jinja2Templates(directory="templates")
+from src.web.templates import templates as _templates
 
 
 @app.exception_handler(404)
