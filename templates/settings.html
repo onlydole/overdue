@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto space-y-6">
+    <div class="pixel-card text-center py-6">
+        <div class="mb-3">{{ render_icon('gear', 32) }}</div>
+        <h1 class="pixel-heading-lg mb-2">Settings</h1>
+        <p class="text-parchment-dark text-lg">Customize your library card.</p>
+    </div>
+
+    <div class="pixel-card">
+        <h2 class="pixel-heading mb-4">Avatar</h2>
+
+        <div class="flex justify-center mb-6">
+            <div class="w-20 h-20 bg-pixel-highlight border-3 border-gold flex items-center justify-center">
+                {{ render_avatar(current_user.avatar_id|default('avatar_01'), 64) }}
+            </div>
+        </div>
+
+        <form method="post" action="/settings/avatar" class="space-y-5" x-data="{ selectedAvatar: '{{ current_user.avatar_id|default('avatar_01') }}' }">
+            <input type="hidden" name="avatar_id" :value="selectedAvatar">
+            <div class="grid grid-cols-4 sm:grid-cols-6 gap-3">
+                {% for avatar in avatar_choices %}
+                <button type="button"
+                        @click="selectedAvatar = '{{ avatar.id }}'"
+                        :class="selectedAvatar === '{{ avatar.id }}'
+                            ? 'border-gold bg-gold/20 scale-110'
+                            : 'border-pixel-border hover:border-ink-light'"
+                        class="p-2 border-3 transition-all duration-150 flex flex-col items-center gap-1 cursor-pointer">
+                    <div class="w-10 h-10 flex items-center justify-center">
+                        {{ render_avatar(avatar.id, 40) }}
+                    </div>
+                    <span class="font-pixel text-[6px] text-parchment-dark truncate w-full text-center">{{ avatar.name }}</span>
+                </button>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="pixel-btn pixel-btn-gold w-full">
+                Save Avatar
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

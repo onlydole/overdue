@@ -12,6 +12,11 @@
             <div>
                 <h1 class="pixel-heading-lg mb-1">{{ librarian.username }}</h1>
                 <span class="font-pixel text-[10px] text-streak uppercase tracking-widest">{{ rank }}</span>
+                {% if current_user and current_user.id == librarian.id %}
+                <div class="mt-2">
+                    <a href="/settings" class="pixel-btn pixel-btn-outline text-[7px] py-1 px-3">Edit Avatar</a>
+                </div>
+                {% endif %}
             </div>
         </div>
 
@@ -34,7 +39,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Streak -->
         <div class="pixel-card">
-            <h2 class="pixel-heading mb-4"><span class="fire-flicker">&#128293;</span> Review Streak</h2>
+            <h2 class="pixel-heading mb-4"><span class="fire-flicker">{{ render_icon('fire', 18) }}</span> Review Streak</h2>
             <div class="flex items-center gap-8">
                 <div class="text-center">
                     <div class="pixel-stat text-streak">{{ streak.current_streak if streak else 0 }}</div>
@@ -67,7 +72,7 @@
 
     <!-- Badges -->
     <div class="pixel-card">
-        <h2 class="pixel-heading mb-4">&#127942; Badges</h2>
+        <h2 class="pixel-heading mb-4">{{ render_icon('trophy', 18) }} Badges</h2>
         {% if badges %}
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             {% for badge in badges %}
@@ -75,18 +80,7 @@
                         {% if badge.tier == 'Legendary' %}badge-legendary badge-glow-legendary
                         {% elif badge.tier == 'Rare' %}badge-rare badge-glow-rare
                         {% else %}badge-common{% endif %}">
-                <div class="text-2xl mb-2">
-                    {% if badge.icon == 'book-open' %}&#128214;
-                    {% elif badge.icon == 'sparkles' %}&#10024;
-                    {% elif badge.icon == 'fire' %}&#128293;
-                    {% elif badge.icon == 'star' %}&#11088;
-                    {% elif badge.icon == 'library' %}&#127979;
-                    {% elif badge.icon == 'moon' %}&#127769;
-                    {% elif badge.icon == 'zap' %}&#9889;
-                    {% elif badge.icon == 'trophy' %}&#127942;
-                    {% elif badge.icon == 'award' %}&#127941;
-                    {% else %}&#127942;{% endif %}
-                </div>
+                <div class="mb-2">{{ render_icon(badge.icon, 24) }}</div>
                 <div class="font-pixel text-[8px] text-parchment uppercase mb-1">{{ badge.name }}</div>
                 <div class="text-ink-light text-sm">{{ badge.description }}</div>
                 {% if badge.tier != 'Common' %}
