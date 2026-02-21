@@ -1,0 +1,631 @@
+"""Achievement-themed 16x16 pixel art icons.
+
+Four GBA-era icons with full 4-step shading, dark outlines, and
+anti-aliased diagonal edges.  Inspired by Golden Sun's item sprites.
+
+Icons: trophy, crown, award, chart.
+"""
+
+from __future__ import annotations
+
+from src.game.icons._palette import (
+    BLUE,
+    DARK,
+    FLAME,
+    GOLD,
+    GREEN,
+    INK,
+    PURPLE,
+    WHITE,
+    blend_colors,
+)
+
+
+def register_icons(register) -> None:  # noqa: C901 — pixel data is inherently long
+    """Register all achievement-themed icons."""
+
+    # Shorthand aliases for the 4-step ramps
+    g0, g1, g2, g3 = GOLD  # highlight, base, shadow, deep
+    f0, f1, f2, f3 = FLAME
+    gr0, gr1, gr2, gr3 = GREEN
+    p0, p1, _, p3 = PURPLE
+    _, b1, _, _ = BLUE  # only base needed for jewel dots
+    _, _, i2, i3 = INK
+    w = WHITE
+    dk = DARK
+
+    # Anti-alias blend helpers
+    g_aa = blend_colors(g3, dk, 0.5)  # gold outline anti-alias
+    gr_aa = blend_colors(gr3, dk, 0.5)  # green outline anti-alias
+    g_hi = blend_colors(w, g0, 0.4)  # gold specular highlight
+
+    # ------------------------------------------------------------------
+    # TROPHY — ornate cup on a two-tier pedestal
+    # ------------------------------------------------------------------
+    register(
+        "trophy",
+        [
+            # --- Cup rim (row 1) ---
+            (5, 1, g3),
+            (6, 1, g0),
+            (7, 1, g0),
+            (8, 1, g1),
+            (9, 1, g1),
+            (10, 1, g3),
+            # --- Cup body rows ---
+            # Row 2 — wide opening with handles starting
+            (4, 2, g3),
+            (5, 2, g0),
+            (6, 2, g_hi),
+            (7, 2, g0),
+            (8, 2, g1),
+            (9, 2, g1),
+            (10, 2, g2),
+            (11, 2, g3),
+            # Row 3 — handles extend, cup body lit
+            (3, 3, g3),
+            (4, 3, g0),
+            (5, 3, g0),
+            (6, 3, g_hi),
+            (7, 3, g0),
+            (8, 3, g1),
+            (9, 3, g1),
+            (10, 3, g2),
+            (11, 3, g2),
+            (12, 3, g3),
+            # Row 4 — handle arms curve outward
+            (2, 4, g3),
+            (3, 4, g2),
+            (4, 4, g0),
+            (5, 4, g0),
+            (6, 4, g0),
+            (7, 4, g1),
+            (8, 4, g1),
+            (9, 4, g2),
+            (10, 4, g2),
+            (11, 4, g2),
+            (12, 4, g3),
+            (13, 4, g_aa),
+            # Row 5 — handles at widest, jewel on front
+            (2, 5, g3),
+            (3, 5, g2),
+            (4, 5, g0),
+            (5, 5, g0),
+            (6, 5, g0),
+            (7, 5, f1),
+            (8, 5, f0),
+            (9, 5, g1),
+            (10, 5, g2),
+            (11, 5, g2),
+            (12, 5, g3),
+            (13, 5, g_aa),
+            # Row 6 — handles return inward
+            (2, 6, g_aa),
+            (3, 6, g3),
+            (4, 6, g0),
+            (5, 6, g0),
+            (6, 6, g1),
+            (7, 6, g1),
+            (8, 6, g1),
+            (9, 6, g2),
+            (10, 6, g2),
+            (11, 6, g3),
+            (12, 6, g_aa),
+            # Row 7 — cup tapers
+            (4, 7, g3),
+            (5, 7, g0),
+            (6, 7, g1),
+            (7, 7, g1),
+            (8, 7, g1),
+            (9, 7, g2),
+            (10, 7, g2),
+            (11, 7, g3),
+            # Row 8 — cup narrows to stem
+            (5, 8, g3),
+            (6, 8, g1),
+            (7, 8, g1),
+            (8, 8, g2),
+            (9, 8, g2),
+            (10, 8, g3),
+            # Row 9 — stem
+            (6, 9, g3),
+            (7, 9, g1),
+            (8, 9, g2),
+            (9, 9, g3),
+            # Row 10 — stem continues
+            (6, 10, g3),
+            (7, 10, g1),
+            (8, 10, g2),
+            (9, 10, g3),
+            # Row 11 — flare to base top tier
+            (5, 11, g3),
+            (6, 11, g2),
+            (7, 11, g1),
+            (8, 11, g2),
+            (9, 11, g2),
+            (10, 11, g3),
+            # Row 12 — base upper tier
+            (4, 12, g3),
+            (5, 12, g2),
+            (6, 12, g1),
+            (7, 12, g0),
+            (8, 12, g1),
+            (9, 12, g2),
+            (10, 12, g2),
+            (11, 12, g3),
+            # Row 13 — base lower tier (wider)
+            (3, 13, g3),
+            (4, 13, g2),
+            (5, 13, g1),
+            (6, 13, g0),
+            (7, 13, g0),
+            (8, 13, g1),
+            (9, 13, g1),
+            (10, 13, g2),
+            (11, 13, g2),
+            (12, 13, g3),
+            # Row 14 — base bottom edge
+            (3, 14, g_aa),
+            (4, 14, g3),
+            (5, 14, g2),
+            (6, 14, g2),
+            (7, 14, g2),
+            (8, 14, g2),
+            (9, 14, g3),
+            (10, 14, g3),
+            (11, 14, g3),
+            (12, 14, g_aa),
+            # Star on cup face (row 4-5 area, already the jewel f1/f0 above)
+        ],
+    )
+
+    # ------------------------------------------------------------------
+    # CROWN — royal crown with 5 peaks, jewelled tips, ermine trim
+    # ------------------------------------------------------------------
+    register(
+        "crown",
+        [
+            # Peak tips (row 2) — jewels at the top of each peak
+            (2, 2, f1),
+            (5, 2, gr1),
+            (8, 2, b1),
+            (11, 2, f1),
+            (13, 2, gr1),
+            # Peak bodies (row 3) — gold points rise
+            (2, 3, g3),
+            (3, 3, g_aa),
+            (5, 3, g3),
+            (6, 3, g_aa),
+            (7, 3, g_aa),
+            (8, 3, g3),
+            (10, 3, g_aa),
+            (11, 3, g3),
+            (13, 3, g3),
+            # Row 4 — peaks widen, valleys between
+            (1, 4, g_aa),
+            (2, 4, g0),
+            (3, 4, g1),
+            (4, 4, g3),
+            (5, 4, g0),
+            (6, 4, g1),
+            (7, 4, g1),
+            (8, 4, g0),
+            (9, 4, g3),
+            (10, 4, g1),
+            (11, 4, g0),
+            (12, 4, g3),
+            (13, 4, g0),
+            (14, 4, g_aa),
+            # Row 5 — crown body widens
+            (1, 5, g3),
+            (2, 5, g0),
+            (3, 5, g0),
+            (4, 5, g1),
+            (5, 5, g0),
+            (6, 5, g1),
+            (7, 5, g1),
+            (8, 5, g0),
+            (9, 5, g1),
+            (10, 5, g1),
+            (11, 5, g0),
+            (12, 5, g1),
+            (13, 5, g0),
+            (14, 5, g3),
+            # Row 6 — crown body main
+            (1, 6, g3),
+            (2, 6, g0),
+            (3, 6, g_hi),
+            (4, 6, g0),
+            (5, 6, g0),
+            (6, 6, g1),
+            (7, 6, g1),
+            (8, 6, g1),
+            (9, 6, g1),
+            (10, 6, g1),
+            (11, 6, g2),
+            (12, 6, g2),
+            (13, 6, g2),
+            (14, 6, g3),
+            # Row 7 — crown body continues
+            (1, 7, g3),
+            (2, 7, g0),
+            (3, 7, g0),
+            (4, 7, g1),
+            (5, 7, g1),
+            (6, 7, g1),
+            (7, 7, g1),
+            (8, 7, g1),
+            (9, 7, g2),
+            (10, 7, g2),
+            (11, 7, g2),
+            (12, 7, g2),
+            (13, 7, g2),
+            (14, 7, g3),
+            # Row 8 — crown body lower
+            (1, 8, g3),
+            (2, 8, g0),
+            (3, 8, g1),
+            (4, 8, g1),
+            (5, 8, g1),
+            (6, 8, g1),
+            (7, 8, g1),
+            (8, 8, g2),
+            (9, 8, g2),
+            (10, 8, g2),
+            (11, 8, g2),
+            (12, 8, g2),
+            (13, 8, g2),
+            (14, 8, g3),
+            # Row 9 — jewelled band across crown
+            (1, 9, g3),
+            (2, 9, g2),
+            (3, 9, f1),
+            (4, 9, g2),
+            (5, 9, g2),
+            (6, 9, b1),
+            (7, 9, g2),
+            (8, 9, g2),
+            (9, 9, gr1),
+            (10, 9, g2),
+            (11, 9, g2),
+            (12, 9, f1),
+            (13, 9, g2),
+            (14, 9, g3),
+            # Row 10 — band shadow
+            (1, 10, g3),
+            (2, 10, g3),
+            (3, 10, g2),
+            (4, 10, g2),
+            (5, 10, g3),
+            (6, 10, g2),
+            (7, 10, g3),
+            (8, 10, g3),
+            (9, 10, g2),
+            (10, 10, g3),
+            (11, 10, g3),
+            (12, 10, g2),
+            (13, 10, g3),
+            (14, 10, g3),
+            # Row 11 — ermine trim (white with dark spots)
+            (1, 11, g3),
+            (2, 11, w),
+            (3, 11, w),
+            (4, 11, dk),
+            (5, 11, w),
+            (6, 11, w),
+            (7, 11, dk),
+            (8, 11, w),
+            (9, 11, w),
+            (10, 11, dk),
+            (11, 11, w),
+            (12, 11, w),
+            (13, 11, dk),
+            (14, 11, g3),
+            # Row 12 — ermine trim bottom edge
+            (1, 12, g_aa),
+            (2, 12, w),
+            (3, 12, w),
+            (4, 12, w),
+            (5, 12, dk),
+            (6, 12, w),
+            (7, 12, w),
+            (8, 12, dk),
+            (9, 12, w),
+            (10, 12, w),
+            (11, 12, dk),
+            (12, 12, w),
+            (13, 12, w),
+            (14, 12, g_aa),
+        ],
+    )
+
+    # ------------------------------------------------------------------
+    # AWARD — medal on a V-shaped ribbon
+    # ------------------------------------------------------------------
+
+    register(
+        "award",
+        [
+            # --- Ribbon tails (rows 1-5) ---
+            # Row 1 — ribbon top ends
+            (3, 1, p3),
+            (4, 1, p1),
+            (5, 1, p0),
+            (10, 1, p0),
+            (11, 1, p1),
+            (12, 1, p3),
+            # Row 2 — ribbon descends in V
+            (4, 2, p3),
+            (5, 2, p1),
+            (6, 2, p0),
+            (9, 2, p0),
+            (10, 2, p1),
+            (11, 2, p3),
+            # Row 3
+            (5, 3, p3),
+            (6, 3, p1),
+            (7, 3, p0),
+            (8, 3, p0),
+            (9, 3, p1),
+            (10, 3, p3),
+            # Row 4 — ribbon meets at center V
+            (6, 4, p3),
+            (7, 4, p1),
+            (8, 4, p1),
+            (9, 4, p3),
+            # Row 5 — ribbon tail bottom, medal chain starts
+            (7, 5, p3),
+            (8, 5, p3),
+            # --- Medal body (rows 5-13) ---
+            # Row 5 — medal top edge
+            (5, 5, g_aa),
+            (6, 5, g3),
+            (7, 5, g3),
+            (8, 5, g3),
+            (9, 5, g3),
+            (10, 5, g_aa),
+            # Row 6 — medal top
+            (4, 6, g3),
+            (5, 6, g0),
+            (6, 6, g0),
+            (7, 6, g0),
+            (8, 6, g1),
+            (9, 6, g1),
+            (10, 6, g2),
+            (11, 6, g3),
+            # Row 7
+            (3, 7, g_aa),
+            (4, 7, g0),
+            (5, 7, g0),
+            (6, 7, g_hi),
+            (7, 7, g0),
+            (8, 7, g1),
+            (9, 7, g1),
+            (10, 7, g2),
+            (11, 7, g2),
+            (12, 7, g_aa),
+            # Row 8 — medal widest, star emblem starts
+            (3, 8, g3),
+            (4, 8, g0),
+            (5, 8, g0),
+            (6, 8, g1),
+            (7, 8, w),
+            (8, 8, w),
+            (9, 8, g1),
+            (10, 8, g2),
+            (11, 8, g2),
+            (12, 8, g3),
+            # Row 9 — star center row
+            (3, 9, g3),
+            (4, 9, g0),
+            (5, 9, g1),
+            (6, 9, w),
+            (7, 9, w),
+            (8, 9, w),
+            (9, 9, w),
+            (10, 9, g2),
+            (11, 9, g2),
+            (12, 9, g3),
+            # Row 10 — star continues
+            (3, 10, g3),
+            (4, 10, g0),
+            (5, 10, g1),
+            (6, 10, g1),
+            (7, 10, w),
+            (8, 10, w),
+            (9, 10, g2),
+            (10, 10, g2),
+            (11, 10, g2),
+            (12, 10, g3),
+            # Row 11
+            (3, 11, g_aa),
+            (4, 11, g1),
+            (5, 11, g1),
+            (6, 11, g1),
+            (7, 11, g1),
+            (8, 11, g2),
+            (9, 11, g2),
+            (10, 11, g2),
+            (11, 11, g3),
+            (12, 11, g_aa),
+            # Row 12 — medal narrows
+            (4, 12, g3),
+            (5, 12, g1),
+            (6, 12, g1),
+            (7, 12, g2),
+            (8, 12, g2),
+            (9, 12, g2),
+            (10, 12, g3),
+            (11, 12, g3),
+            # Row 13 — medal bottom point
+            (5, 13, g_aa),
+            (6, 13, g3),
+            (7, 13, g2),
+            (8, 13, g3),
+            (9, 13, g3),
+            (10, 13, g_aa),
+        ],
+    )
+
+    # ------------------------------------------------------------------
+    # CHART — 3-bar chart with axes and upward trend arrow
+    # ------------------------------------------------------------------
+
+    # Axis colors (use two steps from INK ramp to stay within budget)
+    ax = i2
+    ax_dk = i3
+
+    register(
+        "chart",
+        [
+            # --- Vertical axis (left edge, rows 1-13) ---
+            (1, 1, ax_dk),
+            (1, 2, ax),
+            (1, 3, ax),
+            (1, 4, ax),
+            (1, 5, ax),
+            (1, 6, ax),
+            (1, 7, ax),
+            (1, 8, ax),
+            (1, 9, ax),
+            (1, 10, ax),
+            (1, 11, ax),
+            (1, 12, ax),
+            (1, 13, ax),
+            # Vertical axis tick marks
+            (2, 3, ax),
+            (2, 6, ax),
+            (2, 9, ax),
+            # --- Horizontal axis (bottom, cols 1-14) ---
+            (1, 13, ax_dk),
+            (2, 13, ax),
+            (3, 13, ax),
+            (4, 13, ax),
+            (5, 13, ax),
+            (6, 13, ax),
+            (7, 13, ax),
+            (8, 13, ax),
+            (9, 13, ax),
+            (10, 13, ax),
+            (11, 13, ax),
+            (12, 13, ax),
+            (13, 13, ax),
+            (14, 13, ax),
+            # Horizontal axis tick marks
+            (4, 12, ax),
+            (8, 12, ax),
+            (12, 12, ax),
+            # --- Left bar: GREEN (tallest, cols 3-5, rows 3-12) ---
+            # Outline top
+            (3, 2, gr3),
+            (4, 2, gr3),
+            (5, 2, gr3),
+            # Bar body rows 3-12
+            (3, 3, gr3),
+            (4, 3, gr0),
+            (5, 3, gr1),
+            (3, 4, gr3),
+            (4, 4, gr0),
+            (5, 4, gr1),
+            (3, 5, gr3),
+            (4, 5, gr0),
+            (5, 5, gr1),
+            (3, 6, gr3),
+            (4, 6, gr0),
+            (5, 6, gr1),
+            (3, 7, gr3),
+            (4, 7, gr1),
+            (5, 7, gr2),
+            (3, 8, gr3),
+            (4, 8, gr1),
+            (5, 8, gr2),
+            (3, 9, gr3),
+            (4, 9, gr1),
+            (5, 9, gr2),
+            (3, 10, gr3),
+            (4, 10, gr1),
+            (5, 10, gr2),
+            (3, 11, gr3),
+            (4, 11, gr2),
+            (5, 11, gr2),
+            (3, 12, gr3),
+            (4, 12, gr2),
+            (5, 12, gr3),
+            # Anti-alias on green bar top corners
+            (2, 2, gr3),
+            (6, 2, gr3),
+            # --- Middle bar: GOLD (medium height, cols 7-9, rows 5-12) ---
+            # Outline top
+            (7, 4, g3),
+            (8, 4, g3),
+            (9, 4, g3),
+            # Bar body rows 5-12
+            (7, 5, g3),
+            (8, 5, g0),
+            (9, 5, g1),
+            (7, 6, g3),
+            (8, 6, g0),
+            (9, 6, g1),
+            (7, 7, g3),
+            (8, 7, g1),
+            (9, 7, g2),
+            (7, 8, g3),
+            (8, 8, g1),
+            (9, 8, g2),
+            (7, 9, g3),
+            (8, 9, g1),
+            (9, 9, g2),
+            (7, 10, g3),
+            (8, 10, g2),
+            (9, 10, g2),
+            (7, 11, g3),
+            (8, 11, g2),
+            (9, 11, g2),
+            (7, 12, g3),
+            (8, 12, g2),
+            (9, 12, g3),
+            # Anti-alias on gold bar top corners
+            (6, 4, g3),
+            (10, 4, g3),
+            # --- Right bar: FLAME (shortest, cols 11-13, rows 8-12) ---
+            # Outline top
+            (11, 7, f3),
+            (12, 7, f3),
+            (13, 7, f3),
+            # Bar body rows 8-12
+            (11, 8, f3),
+            (12, 8, f0),
+            (13, 8, f1),
+            (11, 9, f3),
+            (12, 9, f0),
+            (13, 9, f1),
+            (11, 10, f3),
+            (12, 10, f1),
+            (13, 10, f2),
+            (11, 11, f3),
+            (12, 11, f2),
+            (13, 11, f2),
+            (11, 12, f3),
+            (12, 12, f2),
+            (13, 12, f3),
+            # Anti-alias on flame bar top corners
+            (10, 7, f3),
+            (14, 7, f3),
+            # --- Upward trend line connecting bar tops ---
+            # From green top (col 4, row 2) to gold top (col 8, row 4) to flame top (col 12, row 7)
+            (4, 1, gr1),
+            (5, 1, g1),
+            (6, 2, g1),
+            (6, 3, g1),
+            (7, 3, g1),
+            (9, 4, g1),
+            (10, 5, g1),
+            (10, 6, f1),
+            (11, 6, f1),
+            # Arrow head at top-left of trend line
+            (3, 1, gr1),
+            (4, 0, gr0),
+            (5, 0, gr1),
+            (3, 0, gr_aa),
+        ],
+    )
