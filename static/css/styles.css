@@ -9,6 +9,12 @@
 /* Pixel art icons */
 .pixel-icon { display: inline-block; vertical-align: middle; }
 
+/* Opt-in smooth rendering for pixel art (non-breaking, keeps pixelated default) */
+.pixel-smooth svg,
+.pixel-smooth .pixel-icon {
+    image-rendering: auto;
+}
+
 /* Nav links -- minimum 44px touch target */
 .nav-link {
     font-family: 'VT323', monospace;
@@ -215,6 +221,7 @@
 .fire-flicker {
     animation: fire-flicker 0.6s ease-in-out infinite;
     display: inline-block;
+    image-rendering: auto;
 }
 
 /* Dust particles for overdue items */
@@ -238,6 +245,8 @@
 }
 .xp-pop {
     animation: xp-pop 0.6s ease-out forwards;
+    animation-delay: 350ms;
+    opacity: 0;
     font-family: 'Press Start 2P', cursive;
     color: #f0c543;
 }
@@ -285,6 +294,8 @@
 }
 .stamp-in {
     animation: stamp-in 0.5s ease-out forwards;
+    animation-delay: 350ms;
+    opacity: 0;
 }
 
 /* Review button hover glow */
