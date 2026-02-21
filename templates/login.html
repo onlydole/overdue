@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto space-y-6">
+    <div class="pixel-card text-center py-6">
+        <div class="text-3xl mb-3">&#128273;</div>
+        <h1 class="pixel-heading-lg mb-2">Library Card</h1>
+        <p class="text-parchment-dark text-lg">Present your credentials to enter the stacks.</p>
+    </div>
+
+    <div class="pixel-card">
+        {% if error %}
+        <div class="bg-dewey-overdue/20 border-2 border-dewey-overdue text-parchment px-4 py-3 mb-6 text-sm">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="post" action="/login" class="space-y-5">
+            <div>
+                <label for="username" class="pixel-label block mb-2">Username</label>
+                <input type="text" id="username" name="username" required autocomplete="username"
+                       class="w-full bg-pixel-bg border-3 border-pixel-border text-parchment font-retro text-lg px-4 py-3 focus:border-gold focus:outline-none">
+            </div>
+            <div>
+                <label for="password" class="pixel-label block mb-2">Password</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password"
+                       class="w-full bg-pixel-bg border-3 border-pixel-border text-parchment font-retro text-lg px-4 py-3 focus:border-gold focus:outline-none">
+            </div>
+            <button type="submit" class="pixel-btn pixel-btn-gold w-full">
+                Enter the Stacks
+            </button>
+        </form>
+
+        <div class="text-center mt-6 text-ink-light">
+            <span>New to the library?</span>
+            <a href="/register" class="text-gold hover:text-gold-light ml-1">Get a Library Card</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

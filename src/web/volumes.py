@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.volumes import calculate_dewey_score
+from src.auth.web_session import get_current_librarian_optional
 from src.db.engine import get_session
 from src.db.tables import ReviewRow, VolumeRow, volume_bookmarks
 
@@ -20,10 +21,12 @@ async def volume_detail(
     session: AsyncSession = Depends(get_session),
 ):
     """Render a volume detail page."""
+    current_user = await get_current_librarian_optional(request, session)
     volume = await session.get(VolumeRow, volume_id)
     if not volume:
         return templates.TemplateResponse("dashboard.html", {
             "request": request,
+            "current_user": current_user,
             "error": "Volume not found",
         })
 
@@ -46,6 +49,7 @@ async def volume_detail(
 
     return templates.TemplateResponse("volume_detail.html", {
         "request": request,
+        "current_user": current_user,
         "volume": volume,
         "dewey_score": round(score, 1),
         "bookmarks": bookmarks,

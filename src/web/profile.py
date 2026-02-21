@@ -5,6 +5,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.auth.web_session import get_current_librarian_optional
 from src.db.engine import get_session
 from src.db.tables import LibrarianRow
 from src.game.badges import get_earned_badges
@@ -22,10 +23,12 @@ async def librarian_profile(
     session: AsyncSession = Depends(get_session),
 ):
     """Render a librarian's profile page."""
+    current_user = await get_current_librarian_optional(request, session)
     librarian = await session.get(LibrarianRow, librarian_id)
     if not librarian:
         return templates.TemplateResponse("dashboard.html", {
             "request": request,
+            "current_user": current_user,
             "error": "Librarian not found",
         })
 
@@ -52,6 +55,7 @@ async def librarian_profile(
 
     return templates.TemplateResponse("profile.html", {
         "request": request,
+        "current_user": current_user,
         "librarian": librarian,
         "rank": rank,
         "next_rank": next_rank,
