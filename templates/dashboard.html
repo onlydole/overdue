@@ -50,25 +50,50 @@
         </div>
     </div>
 
-    <!-- Recent Activity -->
-    <div class="bg-white rounded-lg shadow-md p-6"
-         hx-get="/partials/activity-feed"
-         hx-trigger="every 30s"
-         hx-swap="innerHTML">
-        <h2 class="text-xl font-bold mb-4">Recent Activity</h2>
-        {% if recent_reviews %}
-        <ul class="space-y-3">
-            {% for review in recent_reviews %}
-            <li class="flex items-center space-x-3 text-sm">
-                <span class="w-2 h-2 bg-forest rounded-full"></span>
-                <span class="text-bark-light">{{ review.reviewed_at.strftime('%b %d, %H:%M') }}</span>
-                <span>Volume #{{ review.volume_id }} reviewed</span>
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p class="text-bark-light">No recent activity. Time to review some volumes!</p>
-        {% endif %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-lg shadow-md p-6"
+             hx-get="/partials/activity-feed"
+             hx-trigger="every 30s"
+             hx-swap="innerHTML">
+            <h2 class="text-xl font-bold mb-4">Recent Activity</h2>
+            {% if recent_reviews %}
+            <ul class="space-y-3">
+                {% for review in recent_reviews %}
+                <li class="flex items-center space-x-3 text-sm">
+                    <span class="w-2 h-2 bg-forest rounded-full"></span>
+                    <span class="text-bark-light">{{ review.reviewed_at.strftime('%b %d, %H:%M') }}</span>
+                    <span>Volume #{{ review.volume_id }} reviewed</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-bark-light">No recent activity. Time to review some volumes!</p>
+            {% endif %}
+        </div>
+
+        <!-- Streak Leaderboard -->
+        <div class="bg-white rounded-lg shadow-md p-6"
+             hx-get="/partials/streak-leaderboard"
+             hx-trigger="every 60s"
+             hx-swap="innerHTML">
+            <h2 class="text-xl font-bold mb-4">Top Streaks</h2>
+            {% if streak_leaders %}
+            <ol class="space-y-3">
+                {% for entry in streak_leaders %}
+                <li class="flex items-center justify-between text-sm">
+                    <div class="flex items-center space-x-3">
+                        <span class="w-6 h-6 bg-amber rounded-full flex items-center justify-center text-white text-xs font-bold">{{ loop.index }}</span>
+                        <span class="font-medium">{{ entry.username }}</span>
+                    </div>
+                    <span class="text-rust font-bold">{{ entry.current_streak }} day{{ 's' if entry.current_streak != 1 }}</span>
+                </li>
+                {% endfor %}
+            </ol>
+            {% else %}
+            <p class="text-bark-light">No active streaks yet. Start reviewing!</p>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}
