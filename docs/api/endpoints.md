@@ -5,7 +5,36 @@ category: api
 
 # API Endpoints
 
-All API endpoints are prefixed with `/api`.
+All API endpoints are prefixed with `/api`. Endpoints marked with a lock icon require a valid library card (JWT token) in the `Authorization` header.
+
+## Librarians
+
+### `POST /api/librarians/register`
+Register a new librarian account.
+
+**Request body:**
+```json
+{
+  "username": "ada",
+  "email": "ada@example.com",
+  "password": "lovelace1815"
+}
+```
+
+**Response:** `201 Created` with the librarian profile.
+
+### `POST /api/librarians/login`
+Log in and receive a library card (JWT token).
+
+**Request body:**
+```json
+{
+  "username": "ada",
+  "password": "lovelace1815"
+}
+```
+
+**Response:** Library card with `access_token`, `token_type`, and `expires_in`.
 
 ## Volumes
 
