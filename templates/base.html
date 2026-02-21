@@ -4,41 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Overdue{% endblock %} -- The Knowledge Library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/static/js/htmx.min.js"></script>
-    <script src="/static/js/alpine.min.js" defer></script>
     <link rel="stylesheet" href="/static/css/styles.css">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        cream: '#FDF6E3',
-                        amber: { light: '#F5E6C8', DEFAULT: '#D4A574', dark: '#8B6914' },
-                        bark: { light: '#8B7355', DEFAULT: '#5C4033', dark: '#3E2723' },
-                        forest: { light: '#4A7C59', DEFAULT: '#2D5A3D', dark: '#1B3A26' },
-                        rust: '#C45D3E',
-                    }
+                        pixel: {
+                            bg: '#0f0e17',
+                            surface: '#1a1a2e',
+                            card: '#232342',
+                            border: '#3d3d6b',
+                            highlight: '#4a4a7a',
+                        },
+                        parchment: { light: '#fff8ee', DEFAULT: '#f0e6d3', dark: '#d4c4a8' },
+                        gold: { light: '#ffe9a0', DEFAULT: '#f0c543', dark: '#c49b22' },
+                        ink: { light: '#8b8b9e', DEFAULT: '#5a5a7a', dark: '#2e2e4a' },
+                        dewey: {
+                            pristine: '#5cdb5c',
+                            good: '#a0d468',
+                            attention: '#f6bb42',
+                            overdue: '#e8563e',
+                            lost: '#9e1b1b',
+                        },
+                        badge: { common: '#7eb5e3', rare: '#b76ef0', legendary: '#f0c543' },
+                        streak: '#f07a3e',
+                    },
+                    fontFamily: {
+                        pixel: ['"Press Start 2P"', 'cursive'],
+                        retro: ['"VT323"', 'monospace'],
+                    },
                 }
             }
         }
     </script>
 </head>
-<body class="bg-cream text-bark-dark min-h-screen">
-    <nav class="bg-bark text-cream shadow-lg">
+<body class="bg-pixel-bg text-parchment min-h-screen font-retro text-lg">
+    <!-- Navigation -->
+    <nav class="bg-pixel-surface border-b-4 border-gold relative z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center space-x-8">
-                    <a href="/" class="text-xl font-bold tracking-wide">
-                        <span class="text-amber">Overdue</span>
+                    <a href="/" class="font-pixel text-gold text-sm tracking-wider hover:text-gold-light transition-colors flex items-center gap-3">
+                        <span class="text-2xl leading-none">&#128218;</span> OVERDUE
                     </a>
-                    <div class="hidden md:flex space-x-4">
-                        <a href="/" class="hover:text-amber transition-colors px-3 py-2">Reading Room</a>
-                        <a href="/shelves" class="hover:text-amber transition-colors px-3 py-2">Shelves</a>
-                        <a href="/leaderboard" class="hover:text-amber transition-colors px-3 py-2">Leaderboard</a>
+                    <div class="hidden md:flex space-x-1">
+                        <a href="/" class="nav-link">Reading Room</a>
+                        <a href="/shelves" class="nav-link">Shelves</a>
+                        <a href="/leaderboard" class="nav-link">Leaderboard</a>
+                        <a href="/how-to-play" class="nav-link">How to Play</a>
                     </div>
                 </div>
-                <div class="text-sm opacity-75">Don't let your knowledge expire.</div>
+                <div class="hidden md:block font-pixel text-ink-light text-[8px] tracking-wide">
+                    Don't let your knowledge expire.
+                </div>
+                <!-- Mobile menu button -->
+                <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="md:hidden text-parchment hover:text-gold p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden border-t-2 border-pixel-border bg-pixel-surface">
+            <div class="px-4 py-3 space-y-2">
+                <a href="/" class="block nav-link">Reading Room</a>
+                <a href="/shelves" class="block nav-link">Shelves</a>
+                <a href="/leaderboard" class="block nav-link">Leaderboard</a>
+                <a href="/how-to-play" class="block nav-link">How to Play</a>
             </div>
         </div>
     </nav>
@@ -47,8 +86,8 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-bark-dark text-cream/60 text-center py-6 mt-12">
-        <p class="text-sm">Overdue &middot; A knowledge library game</p>
+    <footer class="bg-pixel-surface border-t-4 border-pixel-border text-center py-6 mt-12">
+        <p class="font-pixel text-[8px] text-ink-light tracking-wider">OVERDUE &middot; A knowledge library game</p>
     </footer>
 
     <script src="/static/js/gauges.js"></script>

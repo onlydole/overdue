@@ -1,37 +1,43 @@
 {% extends "base.html" %}
-{% block title %}Shelves{% endblock %}
+{% block title %}The Stacks{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-    <h1 class="text-3xl font-bold">The Stacks</h1>
-    <p class="text-bark-light">Browse the library's shelves and their volumes.</p>
+<div class="space-y-8">
+    <div class="pixel-card text-center py-6">
+        <div class="text-3xl mb-3">&#128218;</div>
+        <h1 class="pixel-heading-lg mb-2">The Stacks</h1>
+        <p class="text-parchment-dark text-lg">Browse the library's shelves and their volumes.</p>
+    </div>
 
     {% if shelves %}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {% for shelf in shelves %}
-        <a href="/shelves/{{ shelf.id }}" class="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border-l-4"
-           style="border-left-color: {% if shelf.average_dewey >= 75 %}#2D5A3D{% elif shelf.average_dewey >= 50 %}#D4A574{% elif shelf.average_dewey >= 25 %}#C45D3E{% else %}#8B2500{% endif %}">
-            <h3 class="text-lg font-bold">{{ shelf.name }}</h3>
+        <a href="/shelves/{{ shelf.id }}" class="pixel-card block group">
+            <div class="flex items-start justify-between mb-3">
+                <h3 class="font-pixel text-[10px] text-gold uppercase tracking-wider">{{ shelf.name }}</h3>
+                <span class="pixel-label">{{ shelf.volume_count }} vol{{ 's' if shelf.volume_count != 1 }}</span>
+            </div>
             {% if shelf.description %}
-            <p class="text-sm text-bark-light mt-1">{{ shelf.description }}</p>
+            <p class="text-ink-light text-base mb-4">{{ shelf.description }}</p>
             {% endif %}
-            <div class="mt-4 flex items-center justify-between">
-                <span class="text-sm text-bark-light">{{ shelf.volume_count }} volume{{ 's' if shelf.volume_count != 1 }}</span>
-                <div class="flex items-center space-x-2">
-                    <div class="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div class="h-full rounded-full transition-all"
-                             style="width: {{ shelf.average_dewey }}%; background-color: {% if shelf.average_dewey >= 75 %}#2D5A3D{% elif shelf.average_dewey >= 50 %}#D4A574{% elif shelf.average_dewey >= 25 %}#C45D3E{% else %}#8B2500{% endif %}"></div>
-                    </div>
-                    <span class="text-xs font-mono">{{ shelf.average_dewey }}</span>
+            <div class="space-y-2">
+                <div class="dewey-gauge dewey-gauge-bar h-8 w-full" data-score="{{ shelf.average_dewey }}"></div>
+                <div class="flex items-center justify-between">
+                    <span class="pixel-label">Dewey Score</span>
+                    <span class="font-pixel text-[10px]"
+                          style="color: {% if shelf.average_dewey >= 75 %}#5cdb5c{% elif shelf.average_dewey >= 50 %}#a0d468{% elif shelf.average_dewey >= 25 %}#f6bb42{% else %}#e8563e{% endif %}">
+                        {{ shelf.average_dewey }}
+                    </span>
                 </div>
             </div>
         </a>
         {% endfor %}
     </div>
     {% else %}
-    <div class="text-center py-12 text-bark-light">
-        <p class="text-lg">The stacks are empty.</p>
-        <p class="mt-2">Create a shelf to start organizing knowledge.</p>
+    <div class="pixel-card text-center py-12">
+        <div class="text-4xl mb-4">&#128214;</div>
+        <p class="text-parchment text-lg mb-2">The stacks are empty.</p>
+        <p class="text-ink-light">Create a shelf to start organizing knowledge.</p>
     </div>
     {% endif %}
 </div>

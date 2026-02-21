@@ -1,7 +1,13 @@
-<div class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
-    <h3 class="font-bold text-sm">{{ volume.title }}</h3>
-    <div class="mt-2 flex items-center justify-between">
-        <div class="dewey-gauge w-12 h-12" data-score="{{ dewey_score }}"></div>
-        <span class="text-xs text-bark-light">{{ volume.last_reviewed_at.strftime('%b %d') }}</span>
+<a href="/volumes/{{ volume.id }}" class="pixel-card block group">
+    <h3 class="font-retro text-lg text-parchment mb-3">{{ volume.title }}</h3>
+    <div class="flex items-center justify-between">
+        <div class="dewey-gauge dewey-gauge-bar h-6 flex-1 mr-3" data-score="{{ dewey_score }}"></div>
+        <div class="text-right">
+            <span class="font-pixel text-[10px]"
+                  style="color: {% if dewey_score >= 75 %}#5cdb5c{% elif dewey_score >= 50 %}#a0d468{% elif dewey_score >= 25 %}#f6bb42{% else %}#e8563e{% endif %}">
+                {{ dewey_score }}
+            </span>
+            <div class="pixel-label mt-1">{{ volume.last_reviewed_at.strftime('%b %d') }}</div>
+        </div>
     </div>
-</div>
+</a>

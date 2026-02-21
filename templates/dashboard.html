@@ -4,94 +4,98 @@
 {% block content %}
 <div class="space-y-8">
     <!-- Mood Banner -->
-    <div class="rounded-xl p-8 text-center" style="background-color: {{ mood.color }}20; border: 2px solid {{ mood.color }}">
-        <h1 class="text-3xl font-bold mb-2">{{ mood.mood }}</h1>
-        <p class="text-lg opacity-80">{{ mood.description }}</p>
-        <div class="mt-4 inline-flex items-center space-x-2 bg-white/50 rounded-full px-4 py-2">
-            <span class="text-sm font-medium">Library Dewey Score</span>
-            <span class="text-2xl font-bold" style="color: {{ mood.color }}">{{ mood.average_dewey_score }}</span>
+    <div class="pixel-card text-center py-8 mood-{{ mood.ambiance }}" style="border-color: {{ mood.color }}">
+        <div class="pixel-bounce inline-block text-4xl mb-3">
+            {% if mood.ambiance == 'soft_pages' %}&#128214;
+            {% elif mood.ambiance == 'gentle_hum' %}&#128218;
+            {% elif mood.ambiance == 'restless' %}&#128216;
+            {% elif mood.ambiance == 'urgent' %}&#128293;
+            {% else %}&#128679;{% endif %}
+        </div>
+        <h1 class="pixel-heading-lg mb-2">{{ mood.mood }}</h1>
+        <p class="text-parchment-dark text-xl mb-4">{{ mood.description }}</p>
+        <div class="inline-flex items-center gap-3 bg-pixel-bg/50 border-2 border-pixel-border px-5 py-2">
+            <span class="pixel-label">Library Score</span>
+            <span class="pixel-stat" style="color: {{ mood.color }}">{{ mood.average_dewey_score }}</span>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Stats Cards -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="text-sm text-bark-light uppercase tracking-wide">Total Volumes</div>
-            <div class="text-4xl font-bold mt-2">{{ total_volumes }}</div>
+    <!-- Stats Row -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="pixel-card text-center">
+            <div class="pixel-label mb-2">Total Volumes</div>
+            <div class="pixel-stat text-parchment">{{ total_volumes }}</div>
         </div>
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="text-sm text-bark-light uppercase tracking-wide">Overdue</div>
-            <div class="text-4xl font-bold mt-2 text-rust">{{ overdue_count }}</div>
+        <div class="pixel-card text-center">
+            <div class="pixel-label mb-2">Gathering Dust</div>
+            <div class="pixel-stat text-dewey-overdue">{{ overdue_count }}</div>
         </div>
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="text-sm text-bark-light uppercase tracking-wide">Mood</div>
-            <div class="text-2xl font-bold mt-2" style="color: {{ mood.color }}">{{ mood.mood }}</div>
+        <div class="pixel-card text-center">
+            <div class="pixel-label mb-2">Mood</div>
+            <div class="font-pixel text-sm" style="color: {{ mood.color }}">{{ mood.mood }}</div>
         </div>
     </div>
 
     <!-- Dewey Score Distribution -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-xl font-bold mb-4">Dewey Score Distribution</h2>
-        <div class="flex h-8 rounded-full overflow-hidden">
+    <div class="pixel-card">
+        <h2 class="pixel-heading mb-4">Dewey Score Distribution</h2>
+        <div class="flex h-6 gap-[2px] overflow-hidden">
             {% if total_volumes > 0 %}
-            <div class="bg-forest" style="width: {{ (distribution.pristine / total_volumes * 100)|round }}%" title="Pristine: {{ distribution.pristine }}"></div>
-            <div class="bg-forest-light" style="width: {{ (distribution.good / total_volumes * 100)|round }}%" title="Good: {{ distribution.good }}"></div>
-            <div class="bg-amber" style="width: {{ (distribution.attention / total_volumes * 100)|round }}%" title="Needs attention: {{ distribution.attention }}"></div>
-            <div class="bg-rust" style="width: {{ (distribution.overdue / total_volumes * 100)|round }}%" title="Overdue: {{ distribution.overdue }}"></div>
+            <div class="bg-dewey-pristine" style="width: {{ (distribution.pristine / total_volumes * 100)|round }}%" title="Pristine: {{ distribution.pristine }}"></div>
+            <div class="bg-dewey-good" style="width: {{ (distribution.good / total_volumes * 100)|round }}%" title="Good: {{ distribution.good }}"></div>
+            <div class="bg-dewey-attention" style="width: {{ (distribution.attention / total_volumes * 100)|round }}%" title="Needs attention: {{ distribution.attention }}"></div>
+            <div class="bg-dewey-overdue" style="width: {{ (distribution.overdue / total_volumes * 100)|round }}%" title="Overdue: {{ distribution.overdue }}"></div>
             {% else %}
-            <div class="bg-gray-200 w-full flex items-center justify-center text-sm text-gray-500">No volumes yet</div>
+            <div class="bg-pixel-highlight w-full flex items-center justify-center font-retro text-ink-light">Your shelves are empty. Every great library starts with a single volume.</div>
             {% endif %}
         </div>
-        <div class="flex justify-between mt-2 text-xs text-bark-light">
-            <span>Pristine ({{ distribution.pristine }})</span>
-            <span>Good ({{ distribution.good }})</span>
-            <span>Needs attention ({{ distribution.attention }})</span>
-            <span>Overdue ({{ distribution.overdue }})</span>
+        {% if total_volumes > 0 %}
+        <div class="flex justify-between mt-3 text-sm">
+            <span class="text-dewey-pristine">Pristine {{ distribution.pristine }}</span>
+            <span class="text-dewey-good">Good {{ distribution.good }}</span>
+            <span class="text-dewey-attention">Dusty {{ distribution.attention }}</span>
+            <span class="text-dewey-overdue">Overdue {{ distribution.overdue }}</span>
         </div>
+        {% endif %}
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Activity + Streaks -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Recent Activity -->
-        <div class="bg-white rounded-lg shadow-md p-6"
-             hx-get="/partials/activity-feed"
-             hx-trigger="every 30s"
-             hx-swap="innerHTML">
-            <h2 class="text-xl font-bold mb-4">Recent Activity</h2>
+        <div class="pixel-card">
+            <h2 class="pixel-heading mb-4">Recent Activity</h2>
             {% if recent_reviews %}
             <ul class="space-y-3">
                 {% for review in recent_reviews %}
-                <li class="flex items-center space-x-3 text-sm">
-                    <span class="w-2 h-2 bg-forest rounded-full"></span>
-                    <span class="text-bark-light">{{ review.reviewed_at.strftime('%b %d, %H:%M') }}</span>
+                <li class="flex items-center gap-3 text-base">
+                    <span class="text-dewey-pristine">&#9654;</span>
+                    <span class="text-ink-light">{{ review.reviewed_at.strftime('%b %d, %H:%M') }}</span>
                     <span>Volume #{{ review.volume_id }} reviewed</span>
                 </li>
                 {% endfor %}
             </ul>
             {% else %}
-            <p class="text-bark-light">No recent activity. Time to review some volumes!</p>
+            <p class="text-ink-light">No recent activity. Your volumes are waiting for your wisdom.</p>
             {% endif %}
         </div>
 
         <!-- Streak Leaderboard -->
-        <div class="bg-white rounded-lg shadow-md p-6"
-             hx-get="/partials/streak-leaderboard"
-             hx-trigger="every 60s"
-             hx-swap="innerHTML">
-            <h2 class="text-xl font-bold mb-4">Top Streaks</h2>
+        <div class="pixel-card">
+            <h2 class="pixel-heading mb-4"><span class="fire-flicker">&#128293;</span> Top Streaks</h2>
             {% if streak_leaders %}
             <ol class="space-y-3">
                 {% for entry in streak_leaders %}
-                <li class="flex items-center justify-between text-sm">
-                    <div class="flex items-center space-x-3">
-                        <span class="w-6 h-6 bg-amber rounded-full flex items-center justify-center text-white text-xs font-bold">{{ loop.index }}</span>
-                        <span class="font-medium">{{ entry.username }}</span>
+                <li class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="w-7 h-7 bg-pixel-highlight border-2 border-gold flex items-center justify-center font-pixel text-[8px] text-gold">{{ loop.index }}</span>
+                        <span class="text-parchment">{{ entry.username }}</span>
                     </div>
-                    <span class="text-rust font-bold">{{ entry.current_streak }} day{{ 's' if entry.current_streak != 1 }}</span>
+                    <span class="text-streak font-pixel text-[10px]">{{ entry.current_streak }}d</span>
                 </li>
                 {% endfor %}
             </ol>
             {% else %}
-            <p class="text-bark-light">No active streaks yet. Start reviewing!</p>
+            <p class="text-ink-light">No active streaks yet. Start reviewing to ignite yours.</p>
             {% endif %}
         </div>
     </div>

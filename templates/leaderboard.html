@@ -2,46 +2,67 @@
 {% block title %}Leaderboard{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-    <h1 class="text-3xl font-bold">Leaderboard</h1>
-    <p class="text-bark-light">Top librarians ranked by pages read.</p>
+<div class="space-y-8">
+    <div class="pixel-card text-center py-6">
+        <div class="text-3xl mb-3">&#127942;</div>
+        <h1 class="pixel-heading-lg mb-2">Leaderboard</h1>
+        <p class="text-parchment-dark text-lg">Top librarians ranked by pages read.</p>
+    </div>
 
     {% if entries %}
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="pixel-card overflow-x-auto">
         <table class="w-full">
-            <thead class="bg-bark text-cream">
-                <tr>
-                    <th class="px-6 py-3 text-left text-sm font-medium">#</th>
-                    <th class="px-6 py-3 text-left text-sm font-medium">Librarian</th>
-                    <th class="px-6 py-3 text-left text-sm font-medium">Rank</th>
-                    <th class="px-6 py-3 text-right text-sm font-medium">Pages Read</th>
-                    <th class="px-6 py-3 text-right text-sm font-medium">Badges</th>
-                    <th class="px-6 py-3 text-right text-sm font-medium">Streak</th>
+            <thead>
+                <tr class="border-b-3 border-gold">
+                    <th class="px-4 py-3 text-left pixel-label">#</th>
+                    <th class="px-4 py-3 text-left pixel-label">Librarian</th>
+                    <th class="px-4 py-3 text-left pixel-label">Rank</th>
+                    <th class="px-4 py-3 text-right pixel-label">Pages</th>
+                    <th class="px-4 py-3 text-right pixel-label">Badges</th>
+                    <th class="px-4 py-3 text-right pixel-label">Streak</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
+            <tbody>
                 {% for entry in entries %}
-                <tr class="hover:bg-cream/50 transition-colors {% if entry.position <= 3 %}font-medium{% endif %}">
-                    <td class="px-6 py-4">
+                <tr class="border-b-2 border-pixel-border/30 hover:bg-pixel-highlight/20 transition-colors">
+                    <td class="px-4 py-4">
                         {% if entry.position == 1 %}
-                        <span class="text-amber-dark text-lg">&#9733;</span>
+                        <span class="w-8 h-8 inline-flex items-center justify-center bg-gold/20 border-2 border-gold">
+                            <span class="font-pixel text-[10px] text-gold">1</span>
+                        </span>
                         {% elif entry.position == 2 %}
-                        <span class="text-bark-light text-lg">&#9733;</span>
+                        <span class="w-8 h-8 inline-flex items-center justify-center bg-ink-light/20 border-2 border-ink-light">
+                            <span class="font-pixel text-[10px] text-ink-light">2</span>
+                        </span>
                         {% elif entry.position == 3 %}
-                        <span class="text-rust text-lg">&#9733;</span>
+                        <span class="w-8 h-8 inline-flex items-center justify-center bg-streak/20 border-2 border-streak">
+                            <span class="font-pixel text-[10px] text-streak">3</span>
+                        </span>
                         {% else %}
-                        {{ entry.position }}
+                        <span class="w-8 h-8 inline-flex items-center justify-center border-2 border-pixel-border">
+                            <span class="font-pixel text-[10px] text-ink-light">{{ entry.position }}</span>
+                        </span>
                         {% endif %}
                     </td>
-                    <td class="px-6 py-4">{{ entry.username }}</td>
-                    <td class="px-6 py-4 text-sm text-bark-light">{{ entry.rank }}</td>
-                    <td class="px-6 py-4 text-right font-mono">{{ entry.total_xp }}</td>
-                    <td class="px-6 py-4 text-right">{{ entry.badge_count }}</td>
-                    <td class="px-6 py-4 text-right">
+                    <td class="px-4 py-4">
+                        <span class="text-parchment text-lg {% if entry.position <= 3 %}font-bold{% endif %}">{{ entry.username }}</span>
+                    </td>
+                    <td class="px-4 py-4">
+                        <span class="pixel-label" style="color: {% if entry.rank == 'Head Librarian' %}#f0c543{% elif entry.rank == 'Archivist' %}#b76ef0{% else %}#8b8b9e{% endif %}">
+                            {{ entry.rank }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-4 text-right">
+                        <span class="font-pixel text-[10px] text-dewey-pristine">{{ entry.total_xp }}</span>
+                    </td>
+                    <td class="px-4 py-4 text-right">
+                        <span class="font-pixel text-[10px] text-badge-common">{{ entry.badge_count }}</span>
+                    </td>
+                    <td class="px-4 py-4 text-right">
                         {% if entry.current_streak > 0 %}
-                        <span class="text-rust">{{ entry.current_streak }}d</span>
+                        <span class="font-pixel text-[10px] text-streak">{{ entry.current_streak }}d &#128293;</span>
                         {% else %}
-                        <span class="text-bark-light">--</span>
+                        <span class="text-ink-light">--</span>
                         {% endif %}
                     </td>
                 </tr>
@@ -50,9 +71,10 @@
         </table>
     </div>
     {% else %}
-    <div class="text-center py-12 text-bark-light">
-        <p class="text-lg">No librarians yet.</p>
-        <p class="mt-2">Register to be the first on the leaderboard!</p>
+    <div class="pixel-card text-center py-12">
+        <div class="text-4xl mb-4">&#128100;</div>
+        <p class="text-parchment text-lg mb-2">No librarians yet.</p>
+        <p class="text-ink-light">Register to be the first on the leaderboard!</p>
     </div>
     {% endif %}
 </div>
