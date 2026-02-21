@@ -114,6 +114,32 @@ Delete a shelf and all its volumes.
 
 **Response:** `204 No Content`
 
+## Catalog
+
+### `POST /api/catalog/search`
+Search the card catalog for volumes.
+
+**Request body:**
+```json
+{
+  "query": "kubernetes",
+  "shelf_id": 1,
+  "bookmarks": ["containers"],
+  "include_archived": false
+}
+```
+
+**Response:** List of matching volumes with relevance scores.
+
+### `GET /api/catalog/suggest`
+Get autocomplete suggestions from volume titles.
+
+**Query parameters:**
+- `q` (string, required) -- Search query
+- `limit` (int, default: 5) -- Maximum suggestions
+
+**Response:** List of title suggestions.
+
 ## Reading Room
 
 ### `GET /api/reading-room/health`
@@ -130,3 +156,8 @@ Get the library's overall health status.
   "average_dewey_score": 82.5
 }
 ```
+
+### `GET /api/reading-room/overdue`
+Get a report of volumes needing review.
+
+**Response:** Lists of overdue volumes and volumes needing attention with their Dewey Scores.
