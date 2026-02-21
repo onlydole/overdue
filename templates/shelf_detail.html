@@ -2,47 +2,56 @@
 {% block title %}{{ shelf.name }}{% endblock %}
 
 {% block content %}
-<div class="space-y-6">
-    <div class="flex items-center space-x-4">
-        <a href="/shelves" class="text-bark-light hover:text-bark transition-colors">&larr; Back to shelves</a>
+<div class="space-y-8">
+    <div class="flex items-center gap-4">
+        <a href="/shelves" class="pixel-btn pixel-btn-outline text-[8px]">&larr; Back</a>
+        <h1 class="pixel-heading-lg">{{ shelf.name }}</h1>
     </div>
-
-    <h1 class="text-3xl font-bold">{{ shelf.name }}</h1>
     {% if shelf.description %}
-    <p class="text-bark-light">{{ shelf.description }}</p>
+    <p class="text-parchment-dark text-lg">{{ shelf.description }}</p>
     {% endif %}
 
-    <!-- Volume Spines -->
     {% if volumes %}
-    <div class="bg-bark-dark rounded-lg p-6">
-        <div class="flex flex-wrap gap-2">
+    <!-- Book Spines Shelf -->
+    <div class="pixel-card" style="background: #1a1a2e;">
+        <div class="pixel-label mb-4">Bookshelf</div>
+        <div class="flex flex-wrap gap-[3px] items-end min-h-[160px] p-3 border-b-4 border-pixel-border">
             {% for vol in volumes %}
             <a href="/volumes/{{ vol.id }}"
-               class="book-spine block rounded px-3 py-8 text-cream text-xs font-medium writing-vertical hover:opacity-80 transition-opacity min-w-[40px] text-center"
-               style="background-color: {% if vol.dewey_score >= 75 %}#2D5A3D{% elif vol.dewey_score >= 50 %}#D4A574{% elif vol.dewey_score >= 25 %}#C45D3E{% else %}#8B2500{% endif %}"
+               class="book-spine flex items-center justify-center writing-vertical px-2 font-retro text-sm text-parchment-light"
+               style="min-width: 36px;
+                      height: {{ 100 + (vol.dewey_score|int * 0.6)|int }}px;
+                      background: {% if vol.dewey_score >= 75 %}linear-gradient(180deg, #3d9e3d, #2a7a2a){% elif vol.dewey_score >= 50 %}linear-gradient(180deg, #7ab34d, #5a8a32){% elif vol.dewey_score >= 25 %}linear-gradient(180deg, #d49b32, #b07a18){% else %}linear-gradient(180deg, #c44a2e, #8b2500){% endif %};"
                title="{{ vol.title }} (Dewey: {{ vol.dewey_score }})">
-                <span class="block truncate" style="max-width: 120px; writing-mode: vertical-rl; text-orientation: mixed;">
-                    {{ vol.title[:30] }}
-                </span>
+                <span class="truncate" style="max-height: 100px;">{{ vol.title[:20] }}</span>
             </a>
             {% endfor %}
         </div>
     </div>
 
+    <!-- Volume Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {% for vol in volumes %}
-        <a href="/volumes/{{ vol.id }}" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
-            <h3 class="font-bold text-sm">{{ vol.title }}</h3>
-            <div class="mt-2 flex items-center justify-between">
-                <div class="dewey-gauge w-16 h-16" data-score="{{ vol.dewey_score }}"></div>
-                <span class="text-xs text-bark-light">Reviewed {{ vol.last_reviewed_at.strftime('%b %d') }}</span>
+        <a href="/volumes/{{ vol.id }}" class="pixel-card block group">
+            <h3 class="font-retro text-lg text-parchment mb-3">{{ vol.title }}</h3>
+            <div class="flex items-center justify-between">
+                <div class="dewey-gauge dewey-gauge-bar h-6 flex-1 mr-3" data-score="{{ vol.dewey_score }}"></div>
+                <div class="text-right">
+                    <span class="font-pixel text-[10px]"
+                          style="color: {% if vol.dewey_score >= 75 %}#5cdb5c{% elif vol.dewey_score >= 50 %}#a0d468{% elif vol.dewey_score >= 25 %}#f6bb42{% else %}#e8563e{% endif %}">
+                        {{ vol.dewey_score }}
+                    </span>
+                    <div class="pixel-label mt-1">{{ vol.last_reviewed_at.strftime('%b %d') }}</div>
+                </div>
             </div>
         </a>
         {% endfor %}
     </div>
     {% else %}
-    <div class="text-center py-12 text-bark-light">
-        <p>This shelf is empty. Shelve some volumes to fill it!</p>
+    <div class="pixel-card text-center py-12">
+        <div class="text-4xl mb-4">&#128366;</div>
+        <p class="text-parchment text-lg mb-2">This shelf is empty.</p>
+        <p class="text-ink-light">Shelve some volumes to fill it!</p>
     </div>
     {% endif %}
 </div>

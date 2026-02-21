@@ -3,81 +3,104 @@
 
 {% block content %}
 <div class="space-y-8">
-    <!-- Header -->
-    <div class="bg-white rounded-lg shadow-md p-8">
-        <div class="flex items-center space-x-6">
-            <div class="w-20 h-20 bg-bark rounded-full flex items-center justify-center text-cream text-2xl font-bold">
+    <!-- Header Card -->
+    <div class="pixel-card">
+        <div class="flex items-center gap-6">
+            <div class="w-20 h-20 bg-pixel-highlight border-3 border-gold flex items-center justify-center font-pixel text-2xl text-gold">
                 {{ librarian.username[0]|upper }}
             </div>
             <div>
-                <h1 class="text-3xl font-bold">{{ librarian.username }}</h1>
-                <p class="text-bark-light text-lg">{{ rank }}</p>
+                <h1 class="pixel-heading-lg mb-1">{{ librarian.username }}</h1>
+                <span class="font-pixel text-[10px] text-streak uppercase tracking-widest">{{ rank }}</span>
             </div>
         </div>
 
         <!-- XP Progress Bar -->
         <div class="mt-6">
-            <div class="flex items-center justify-between text-sm mb-2">
-                <span class="font-medium">{{ librarian.total_xp }} pages read</span>
+            <div class="flex items-center justify-between mb-2">
+                <span class="pixel-label">{{ librarian.total_xp }} pages read</span>
                 {% if next_rank %}
-                <span class="text-bark-light">{{ xp_to_next }} to {{ next_rank }}</span>
+                <span class="pixel-label">{{ xp_to_next }} to <span class="text-gold">{{ next_rank }}</span></span>
                 {% else %}
-                <span class="text-amber-dark font-medium">Max rank achieved!</span>
+                <span class="font-pixel text-[8px] gold-shimmer">MAX RANK</span>
                 {% endif %}
             </div>
-            <div class="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-amber to-forest rounded-full transition-all bookmark-ribbon"
-                     style="width: {{ progress }}%"></div>
+            <div class="xp-bar">
+                <div class="xp-bar-fill" style="width: {{ progress }}%"></div>
             </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Streak -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-xl font-bold mb-4">Review Streak</h2>
-            <div class="flex items-center space-x-8">
+        <div class="pixel-card">
+            <h2 class="pixel-heading mb-4"><span class="fire-flicker">&#128293;</span> Review Streak</h2>
+            <div class="flex items-center gap-8">
                 <div class="text-center">
-                    <div class="text-4xl font-bold text-rust">{{ streak.current_streak }}</div>
-                    <div class="text-xs text-bark-light mt-1">Current</div>
+                    <div class="pixel-stat text-streak">{{ streak.current_streak if streak else 0 }}</div>
+                    <div class="pixel-label mt-2">Current</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-4xl font-bold text-amber-dark">{{ streak.longest_streak }}</div>
-                    <div class="text-xs text-bark-light mt-1">Longest</div>
+                    <div class="pixel-stat text-gold">{{ streak.longest_streak if streak else 0 }}</div>
+                    <div class="pixel-label mt-2">Longest</div>
                 </div>
             </div>
         </div>
 
         <!-- Recent XP -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-xl font-bold mb-4">Recent Pages</h2>
+        <div class="pixel-card">
+            <h2 class="pixel-heading mb-4">Recent Pages</h2>
             {% if recent_awards %}
-            <ul class="space-y-2">
+            <ul class="space-y-3">
                 {% for award in recent_awards %}
-                <li class="flex items-center justify-between text-sm">
-                    <span>{{ award.reason }}</span>
-                    <span class="font-bold text-forest">+{{ award.amount }}</span>
+                <li class="flex items-center justify-between">
+                    <span class="text-parchment-dark text-base">{{ award.reason }}</span>
+                    <span class="font-pixel text-[10px] text-dewey-pristine">+{{ award.amount }}</span>
                 </li>
                 {% endfor %}
             </ul>
             {% else %}
-            <p class="text-bark-light">No recent activity.</p>
+            <p class="text-ink-light">No recent activity. Start reviewing to earn pages!</p>
             {% endif %}
         </div>
     </div>
 
     <!-- Badges -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-xl font-bold mb-4">Badges</h2>
+    <div class="pixel-card">
+        <h2 class="pixel-heading mb-4">&#127942; Badges</h2>
+        {% if badges %}
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             {% for badge in badges %}
-            <div class="text-center p-4 bg-cream rounded-lg">
-                <img src="/static/img/badges/{{ badge.icon }}.svg" alt="{{ badge.name }}" class="w-12 h-12 mx-auto">
-                <div class="font-medium text-sm mt-2">{{ badge.name }}</div>
-                <div class="text-xs text-bark-light">{{ badge.description }}</div>
+            <div class="text-center p-4 bg-pixel-surface border-2 border-pixel-border
+                        {% if badge.tier == 'Legendary' %}badge-legendary badge-glow-legendary
+                        {% elif badge.tier == 'Rare' %}badge-rare badge-glow-rare
+                        {% else %}badge-common{% endif %}">
+                <div class="text-2xl mb-2">
+                    {% if badge.icon == 'book-open' %}&#128214;
+                    {% elif badge.icon == 'sparkles' %}&#10024;
+                    {% elif badge.icon == 'fire' %}&#128293;
+                    {% elif badge.icon == 'star' %}&#11088;
+                    {% elif badge.icon == 'library' %}&#127979;
+                    {% elif badge.icon == 'moon' %}&#127769;
+                    {% elif badge.icon == 'zap' %}&#9889;
+                    {% elif badge.icon == 'trophy' %}&#127942;
+                    {% elif badge.icon == 'award' %}&#127941;
+                    {% else %}&#127942;{% endif %}
+                </div>
+                <div class="font-pixel text-[8px] text-parchment uppercase mb-1">{{ badge.name }}</div>
+                <div class="text-ink-light text-sm">{{ badge.description }}</div>
+                {% if badge.tier != 'Common' %}
+                <div class="font-pixel text-[7px] mt-2 uppercase tracking-widest
+                            {% if badge.tier == 'Rare' %}text-badge-rare{% else %}text-badge-legendary{% endif %}">
+                    {{ badge.tier }}
+                </div>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
+        {% else %}
+        <p class="text-ink-light text-center py-4">No badges earned yet. Start your journey to unlock achievements!</p>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
