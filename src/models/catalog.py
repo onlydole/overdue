@@ -12,13 +12,15 @@ class CatalogQuery(BaseModel):
     shelf_id: int | None = None
     bookmarks: list[str] = Field(default_factory=list)
     include_archived: bool = False
+    min_dewey_score: float | None = None
 
 
 class CatalogResult(BaseModel):
-    """A single search result."""
+    """A single search result with excerpt."""
 
     volume: VolumeResponse
     relevance: float = Field(..., ge=0.0, le=1.0)
+    excerpt: str = ""
 
 
 class CatalogResponse(BaseModel):
