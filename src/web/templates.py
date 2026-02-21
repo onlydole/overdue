@@ -3,15 +3,20 @@
 from fastapi.templating import Jinja2Templates
 from markupsafe import Markup
 
-from src.game.avatars import render_avatar_svg
 from src.game.icons import render_icon_svg
 
 templates = Jinja2Templates(directory="templates")
 
 
 def _render_avatar(avatar_id: str, size: int = 32) -> Markup:
-    """Render an avatar SVG, safe for use in templates."""
-    return Markup(render_avatar_svg(avatar_id or "avatar_01", size=size))
+    """Render an avatar as an ``<img>`` tag pointing to a static SVG file."""
+    aid = avatar_id or "avatar_01"
+    return Markup(
+        f'<img src="/static/icons/{aid}.svg" '
+        f'width="{size}" height="{size}" '
+        f'class="pixel-icon" role="img" aria-hidden="true" '
+        f'style="image-rendering: pixelated;" alt="">'
+    )
 
 
 def _render_icon(name: str, size: int = 16, color: str | None = None) -> Markup:
