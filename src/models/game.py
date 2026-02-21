@@ -75,3 +75,16 @@ class ReadingRoomMood(BaseModel):
     total_volumes: int
     overdue_volumes: int
     description: str
+
+
+class GameResult(BaseModel):
+    """Structured feedback from a game action (shelve/review)."""
+
+    xp_awarded: int = 0
+    total_xp: int = 0
+    rank: str = "Page"
+    rank_changed: bool = False
+    new_rank: str | None = None
+    badges_earned: list[str] = []
+    streak: int = 0
+    streak_bonus_awarded: bool = False

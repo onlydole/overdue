@@ -103,6 +103,7 @@ async def update_shelf(
     shelf_id: int,
     body: ShelfUpdate,
     session: AsyncSession = Depends(get_session),
+    payload: dict = Depends(verify_library_card),
 ) -> ShelfResponse:
     """Update an existing shelf."""
     shelf = await session.get(ShelfRow, shelf_id)

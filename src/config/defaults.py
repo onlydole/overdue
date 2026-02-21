@@ -9,8 +9,11 @@ DEWEY_NEEDS_ATTENTION = 50
 DEWEY_OVERDUE = 25
 DEWEY_LOST = 0
 
-# Decay rate: points lost per day since last review
+# Decay rate: points lost per unit time since last review
+# Unit is seconds (default: 10 seconds = fast demo mode)
+# For realistic mode, set OVERDUE_DEWEY_DECAY_SECONDS to 86400 (1 day)
 DEWEY_DECAY_RATE = 3
+DEWEY_DECAY_SECONDS = 10  # how many seconds = one decay unit
 
 # ---------------------------------------------------------------------------
 # XP awards ("pages read")
