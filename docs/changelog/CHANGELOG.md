@@ -9,6 +9,17 @@ All notable changes to Overdue will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] - 2025-02-19
+
+### Added
+- XP system ("pages read") with awards for shelving and reviewing
+- Rank progression (Page -> Shelver -> Librarian -> Archivist -> Head Librarian)
+- 8 achievement badges with automatic tracking
+- Daily review streak tracking with bonus XP
+- Reading Room mood calculation based on aggregate Dewey Scores
+- Game API endpoints (GET /librarians/me/xp, /me/badges, /me/streak, /leaderboard)
+- Gameplay guide documentation
+
 ## [0.4.0] - 2025-02-12
 
 ### Added

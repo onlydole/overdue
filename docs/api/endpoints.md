@@ -36,6 +36,21 @@ Log in and receive a library card (JWT token).
 
 **Response:** Library card with `access_token`, `token_type`, and `expires_in`.
 
+### `GET /api/librarians/me/xp`
+Get the authenticated librarian's XP summary, rank, and recent awards. Requires library card.
+
+### `GET /api/librarians/me/badges`
+Get the authenticated librarian's earned badges. Requires library card.
+
+### `GET /api/librarians/me/streak`
+Get the authenticated librarian's review streak info. Requires library card.
+
+### `GET /api/librarians/leaderboard`
+Get the top librarians ranked by pages read.
+
+**Query parameters:**
+- `limit` (int, default: 10) -- Number of entries to return
+
 ## Volumes
 
 ### `POST /api/volumes/`
