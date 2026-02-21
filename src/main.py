@@ -59,6 +59,20 @@ async def lifespan(app: FastAPI):  # type: ignore[no-untyped-def]
             except Exception:
                 pass  # Column already exists
 
+    # Migrate volumes table: add new columns if missing
+    async with engine.begin() as conn:
+        for col_name, col_def in [
+            ("spine_seed", "INTEGER NOT NULL DEFAULT 0"),
+        ]:
+            try:
+                await conn.execute(
+                    text(
+                        f"ALTER TABLE volumes ADD COLUMN {col_name} {col_def}"
+                    )
+                )
+            except Exception:
+                pass  # Column already exists
+
     # Auto-seed if database is empty (for docker compose demo experience)
     from src.db.seed import is_db_empty, seed_demo_data
     async with async_session() as session:

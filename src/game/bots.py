@@ -296,6 +296,7 @@ async def create_bot(
                 updated_at=created_at,
                 last_reviewed_at=created_at,
                 archived=False,
+                spine_seed=random.randint(0, 9999),
             )
             session.add(volume)
             volumes_created.append(volume)

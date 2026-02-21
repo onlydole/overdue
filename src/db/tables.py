@@ -35,7 +35,7 @@ class VolumeRow(Base):
     __tablename__ = "volumes"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String(255), nullable=False)
+    title = Column(String(60), nullable=False)
     content = Column(Text, nullable=False)
     shelf_id = Column(Integer, ForeignKey("shelves.id"), nullable=False)
     author_id = Column(Integer, ForeignKey("librarians.id"), nullable=False)
@@ -43,6 +43,7 @@ class VolumeRow(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     last_reviewed_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     archived = Column(Boolean, default=False, nullable=False)
+    spine_seed = Column(Integer, nullable=False, default=0)
 
     shelf = relationship("ShelfRow", back_populates="volumes")
     author = relationship("LibrarianRow", back_populates="volumes")

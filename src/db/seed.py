@@ -1,6 +1,7 @@
 """Demo data seeder for the Overdue knowledge library."""
 
 import os
+import random
 import secrets
 import string
 from datetime import datetime, timedelta
@@ -128,6 +129,7 @@ async def seed_demo_data(session: AsyncSession) -> None:
             shelf_id=shelves[shelf_idx].id,
             author_id=librarians[author_idx].id,
             last_reviewed_at=now - timedelta(seconds=units_ago * decay_unit),
+            spine_seed=random.randint(0, 9999),
         )
         session.add(vol)
         volumes.append((vol, bmarks))

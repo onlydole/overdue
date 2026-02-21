@@ -1,5 +1,6 @@
 """Volume CRUD endpoints."""
 
+import random
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -68,6 +69,7 @@ async def create_volume(
         content=body.content,
         shelf_id=body.shelf_id,
         author_id=int(payload["sub"]),
+        spine_seed=random.randint(0, 9999),
     )
     session.add(volume)
     await session.flush()

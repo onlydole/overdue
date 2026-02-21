@@ -86,6 +86,7 @@ async def shelf_detail(
             "title": v.title,
             "dewey_score": round(score, 1),
             "last_reviewed_at": v.last_reviewed_at,
+            "spine_seed": v.spine_seed if v.spine_seed else sum(ord(c) for c in v.title),
         })
 
     return templates.TemplateResponse("shelf_detail.html", {
