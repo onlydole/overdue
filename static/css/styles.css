@@ -1,84 +1,295 @@
-/* Overdue -- Custom styles */
+/* Overdue -- Pixel Art Theme */
 
-/* Book spine vertical text */
-.writing-vertical {
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
+/* ============================================================
+   PIXEL ART FOUNDATIONS
+   ============================================================ */
+
+* { image-rendering: pixelated; }
+
+/* Nav links */
+.nav-link {
+    font-family: 'VT323', monospace;
+    font-size: 1.15rem;
+    color: #d4c4a8;
+    padding: 0.4rem 0.75rem;
+    border: 2px solid transparent;
+    transition: all 0.15s ease;
+}
+.nav-link:hover {
+    color: #f0c543;
+    border-color: #f0c543;
+    background: rgba(240, 197, 67, 0.08);
 }
 
-/* Bookmark ribbon progress bar */
-.bookmark-ribbon {
+/* Pixel-style card */
+.pixel-card {
+    background: #232342;
+    border: 3px solid #3d3d6b;
+    box-shadow: 4px 4px 0 #0f0e17;
+    padding: 1.25rem;
     position: relative;
 }
-.bookmark-ribbon::after {
-    content: '';
-    position: absolute;
-    right: -6px;
-    top: 0;
-    width: 0;
-    height: 0;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-top: 8px solid #2D5A3D;
+.pixel-card:hover {
+    border-color: #4a4a7a;
+    box-shadow: 6px 6px 0 #0f0e17;
+    transform: translate(-1px, -1px);
+    transition: all 0.15s ease;
 }
 
-/* Dewey gauge circular styling */
+/* Pixel-style button */
+.pixel-btn {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.6rem;
+    padding: 0.75rem 1.25rem;
+    border: 3px solid;
+    box-shadow: 4px 4px 0 #0f0e17;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.pixel-btn:active {
+    box-shadow: 1px 1px 0 #0f0e17;
+    transform: translate(3px, 3px);
+}
+.pixel-btn-gold {
+    background: #f0c543;
+    border-color: #c49b22;
+    color: #0f0e17;
+}
+.pixel-btn-gold:hover {
+    background: #ffe9a0;
+}
+.pixel-btn-green {
+    background: #5cdb5c;
+    border-color: #3d9e3d;
+    color: #0f0e17;
+}
+.pixel-btn-green:hover {
+    background: #7ae87a;
+}
+.pixel-btn-outline {
+    background: transparent;
+    border-color: #3d3d6b;
+    color: #f0e6d3;
+}
+.pixel-btn-outline:hover {
+    border-color: #f0c543;
+    color: #f0c543;
+}
+
+/* Section headings */
+.pixel-heading {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.85rem;
+    color: #f0c543;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+}
+.pixel-heading-lg {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.1rem;
+    color: #f0c543;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    line-height: 1.8;
+}
+
+/* Stat display */
+.pixel-stat {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+/* Label text */
+.pixel-label {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #8b8b9e;
+}
+
+/* ============================================================
+   DEWEY GAUGE
+   ============================================================ */
+
 .dewey-gauge {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    border: 3px solid #e5e7eb;
+    border: 3px solid #3d3d6b;
+    background: #1a1a2e;
 }
 
-/* Subtle dust animation for overdue volumes */
-@keyframes dust-float {
-    0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
-    50% { transform: translateY(-8px) rotate(180deg); opacity: 0.6; }
+/* ============================================================
+   BOOK SPINES
+   ============================================================ */
+
+.writing-vertical {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
 }
 
-.dust-particle {
-    animation: dust-float 4s ease-in-out infinite;
-}
-
-/* Page turn transition */
-@keyframes page-turn {
-    0% { transform: rotateY(0deg); }
-    100% { transform: rotateY(-180deg); }
-}
-
-.page-turn {
-    animation: page-turn 0.6s ease-in-out;
-    transform-origin: left center;
-}
-
-/* Warm glow for pristine scores */
-.glow-warm {
-    box-shadow: 0 0 15px rgba(212, 165, 116, 0.3);
-}
-
-/* Book spine hover effect */
 .book-spine {
-    transition: transform 0.2s ease;
+    transition: transform 0.15s ease;
+    border: 2px solid rgba(0,0,0,0.3);
+    cursor: pointer;
 }
 .book-spine:hover {
-    transform: translateY(-4px) scaleX(1.05);
+    transform: translateY(-6px);
+    z-index: 10;
 }
 
-/* HTMX loading indicator */
-.htmx-indicator {
-    display: none;
+/* ============================================================
+   XP & PROGRESS
+   ============================================================ */
+
+.xp-bar {
+    height: 16px;
+    border: 2px solid #3d3d6b;
+    background: #1a1a2e;
+    position: relative;
+    overflow: hidden;
 }
-.htmx-request .htmx-indicator {
+.xp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #5cdb5c, #f0c543);
+    position: relative;
+}
+.xp-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 50%;
+    background: rgba(255,255,255,0.15);
+}
+
+/* Badge tiers */
+.badge-common { border-color: #7eb5e3; }
+.badge-rare { border-color: #b76ef0; }
+.badge-legendary { border-color: #f0c543; }
+
+.badge-glow-rare {
+    box-shadow: 0 0 10px rgba(183, 110, 240, 0.3);
+}
+.badge-glow-legendary {
+    box-shadow: 0 0 10px rgba(240, 197, 67, 0.4);
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+/* Pixel idle bounce */
+@keyframes pixel-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+.pixel-bounce {
+    animation: pixel-bounce 2s ease-in-out infinite;
+}
+
+/* Streak fire flicker */
+@keyframes fire-flicker {
+    0%, 100% { transform: scaleY(1) scaleX(1); }
+    25% { transform: scaleY(1.1) scaleX(0.95); }
+    75% { transform: scaleY(0.95) scaleX(1.05); }
+}
+.fire-flicker {
+    animation: fire-flicker 0.6s ease-in-out infinite;
     display: inline-block;
 }
 
-/* Responsive adjustments */
+/* Dust particles for overdue items */
+@keyframes dust-float {
+    0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.2; }
+    50% { transform: translateY(-10px) rotate(180deg); opacity: 0.5; }
+}
+.dust-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #8b8b9e;
+    animation: dust-float 3s ease-in-out infinite;
+}
+
+/* XP award pop */
+@keyframes xp-pop {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-30px) scale(1.2); opacity: 0; }
+}
+.xp-pop {
+    animation: xp-pop 1s ease-out forwards;
+    font-family: 'Press Start 2P', cursive;
+    color: #f0c543;
+    pointer-events: none;
+}
+
+/* Gentle pulse for attention */
+@keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+.pulse-attention {
+    animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Shimmer for gold/reward elements */
+@keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+}
+.gold-shimmer {
+    background: linear-gradient(90deg, #f0c543, #ffe9a0, #f0c543);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s linear infinite;
+}
+
+/* HTMX loading indicator */
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator { display: inline-block; }
+
+/* ============================================================
+   MOOD-SPECIFIC THEMES
+   ============================================================ */
+
+.mood-soft_pages { border-color: #5cdb5c; background: rgba(92, 219, 92, 0.05); }
+.mood-gentle_hum { border-color: #a0d468; background: rgba(160, 212, 104, 0.05); }
+.mood-restless { border-color: #f6bb42; background: rgba(246, 187, 66, 0.05); }
+.mood-urgent { border-color: #e8563e; background: rgba(232, 86, 62, 0.05); }
+.mood-closed { border-color: #9e1b1b; background: rgba(158, 27, 27, 0.08); }
+
+/* Aliases for How to Play page */
+.mood-quiet { border-color: #5cdb5c; background: rgba(92, 219, 92, 0.05); }
+.mood-gentle { border-color: #a0d468; background: rgba(160, 212, 104, 0.05); }
+.mood-noisy { border-color: #f6bb42; background: rgba(246, 187, 66, 0.05); }
+.mood-order { border-color: #e8563e; background: rgba(232, 86, 62, 0.05); }
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0f0e17; }
+::-webkit-scrollbar-thumb { background: #3d3d6b; border: 1px solid #0f0e17; }
+::-webkit-scrollbar-thumb:hover { background: #4a4a7a; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
 @media (max-width: 640px) {
     .book-spine {
-        min-width: 30px;
-        padding: 0.5rem 0.25rem;
-        font-size: 0.65rem;
+        min-width: 28px;
+        padding: 0.5rem 0.15rem;
+        font-size: 0.6rem;
     }
+    .pixel-heading { font-size: 0.7rem; }
+    .pixel-stat { font-size: 1rem; }
 }
