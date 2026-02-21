@@ -1,14 +1,13 @@
 """How to Play route."""
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.web_session import get_current_librarian_optional
 from src.db.engine import get_session
+from src.web.templates import templates
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/how-to-play")

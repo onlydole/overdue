@@ -2,7 +2,6 @@
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,9 +13,9 @@ from src.db.tables import ShelfRow, VolumeRow
 from src.game.badges import get_earned_badges
 from src.game.streaks import get_streak
 from src.game.xp import get_next_rank, get_rank, get_recent_awards
+from src.web.templates import templates
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/my-library")

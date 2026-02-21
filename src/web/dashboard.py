@@ -1,7 +1,6 @@
 """Reading Room dashboard route."""
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,9 +10,9 @@ from src.config.defaults import DEWEY_GOOD_SHAPE, DEWEY_NEEDS_ATTENTION, DEWEY_O
 from src.db.engine import get_session
 from src.db.tables import LibrarianRow, ReviewRow, StreakRow, VolumeRow
 from src.game.mood import calculate_mood
+from src.web.templates import templates
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/")
