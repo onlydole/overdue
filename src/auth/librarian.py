@@ -1,5 +1,7 @@
 """Librarian registration, login, and profile."""
 
+import re
+
 from fastapi import APIRouter, Depends, HTTPException
 from passlib.context import CryptContext
 from sqlalchemy import func, select
@@ -17,6 +19,10 @@ from src.models.librarian import LibrarianCreate, LibrarianLogin, LibrarianRespo
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+PASSWORD_PATTERN = re.compile(
+    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+)
+
 
 @router.post("/register", response_model=LibrarianResponse, status_code=201)
 async def register(
@@ -24,6 +30,13 @@ async def register(
     session: AsyncSession = Depends(get_session),
 ) -> LibrarianResponse:
     """Register a new librarian."""
+    # Validate password complexity
+    if not PASSWORD_PATTERN.match(body.password):
+        raise HTTPException(
+            status_code=422,
+            detail="Password must be at least 8 characters with uppercase, lowercase, digit, and special character.",
+        )
+
     # Check for existing username
     existing = await session.execute(
         select(LibrarianRow).where(LibrarianRow.username == body.username)
@@ -65,6 +78,28 @@ async def login(
             status_code=401,
             detail="You'll need a library card to access the stacks.",
         )
+
+    token = create_library_card(
+        librarian_id=librarian.id,
+        username=librarian.username,
+        role=librarian.role,
+    )
+    return LibraryCard(
+        access_token=token,
+        expires_in=settings.token_expiry_minutes * 60,
+    )
+
+
+@router.post("/refresh", response_model=LibraryCard)
+async def refresh_token(
+    session: AsyncSession = Depends(get_session),
+    payload: dict = Depends(verify_library_card),
+) -> LibraryCard:
+    """Refresh a library card before it expires."""
+    librarian_id = int(payload["sub"])
+    librarian = await session.get(LibrarianRow, librarian_id)
+    if not librarian:
+        raise HTTPException(status_code=404, detail="Librarian not found.")
 
     token = create_library_card(
         librarian_id=librarian.id,
