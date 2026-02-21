@@ -1197,22 +1197,15 @@ _HAIR_BUILDERS: dict[str, callable] = {
 def _build_avatar_pixels(avatar_def: dict) -> list[tuple[int, int, str]]:
     """Build the full list of (x, y, color) pixels for a portrait avatar.
 
-    Golden Sun: The Lost Age style with 5-row expressive eyes, 5-tone skin
-    shading, and detailed outfit rendering.
+    Golden Sun: The Lost Age style with oval head contour, 5-row expressive
+    eyes, 5-tone skin shading with directional lighting, and detailed outfit
+    rendering.
 
     The portrait occupies the full 32x32 grid:
-      Rows 0-6:   Hair zone (skin base, overwritten by hair)
-      Row 7:      Forehead / hair-skin transition (skin_highlight)
-      Row 8:      Eyebrows (5px tapered, thinner)
-      Rows 9-13:  Eyes (5 rows tall -- the centerpiece)
-      Row 14:     Cheeks / blush
-      Row 15:     Nose (1 row, 2px subtle shadow dot)
-      Rows 16-17: Mouth (6px upper lip, 4px lower lip w/ center highlight)
-      Rows 18-19: Chin/jaw (contoured taper with 5-tone shading)
+      Rows 0-19:  Oval head (widest at eyes, tapered at forehead and chin)
       Rows 20-21: Neck
       Rows 22-23: Collar / neckline detail
       Rows 24-31: Shoulders + outfit (8 rows)
-    Face spans columns 6-25 (20px wide).
     """
     skin = avatar_def["skin_tone"]
     outfit = avatar_def["outfit_color"]
@@ -1227,6 +1220,9 @@ def _build_avatar_pixels(avatar_def: dict) -> list[tuple[int, int, str]]:
     skin_warm = sr["warm"]
     skin_shadow = sr["shadow"]
     skin_deep = sr["deep_shadow"]
+
+    # Face outline color (strong edge for oval contour)
+    face_outline = darken(skin, 0.30)
 
     ear_color = darken(skin, 0.15)
     ear_fold = darken(ear_color, 0.15)
@@ -1246,28 +1242,93 @@ def _build_avatar_pixels(avatar_def: dict) -> list[tuple[int, int, str]]:
     outfit_shadow = darken(outfit, 0.3)
     outfit_hi = lighten(outfit, 0.15)
 
+    # Directional lighting helper: left-lit blend
+    skin_left_lit = blend_colors(skin_base, skin_hi, 0.3)
+
     pixels: list[tuple[int, int, str]] = []
 
     # ------------------------------------------------------------------
-    # Head skin base (rows 0-19)
-    # Rows 0-6 will mostly be overwritten by hair.
+    # Face oval: row -> (left_col, right_col) inclusive
+    # Widest at eye level (rows 9-12), tapering at forehead and chin.
     # ------------------------------------------------------------------
+    _face_oval: dict[int, tuple[int, int]] = {
+        0: (10, 21),  # top skull (under hair)
+        1: (8, 23),
+        2: (7, 24),
+        3: (7, 24),
+        4: (6, 25),
+        5: (6, 25),
+        6: (6, 25),  # rows 0-6 mostly hidden by hair
+        7: (7, 24),  # forehead (18px)
+        8: (7, 24),  # eyebrows (18px)
+        9: (6, 25),  # eyes start - widest (20px)
+        10: (6, 25),
+        11: (6, 25),
+        12: (6, 25),  # eyes end
+        13: (7, 24),  # under-eye (18px)
+        14: (7, 24),  # cheeks (18px)
+        15: (8, 23),  # nose (16px) -- face narrowing
+        16: (8, 23),  # mouth (16px)
+        17: (9, 22),  # lower lip (14px)
+        18: (10, 21),  # chin (12px)
+        19: (11, 20),  # chin tip (10px)
+    }
 
-    # Rows 0-6: skin base under hair zone
-    for y in range(0, 7):
-        for x in range(6, 26):
-            pixels.append((x, y, skin_base))
+    # ------------------------------------------------------------------
+    # Draw oval head with 3D shading (rows 0-19)
+    # ------------------------------------------------------------------
+    for y in range(0, 20):
+        left, right = _face_oval[y]
+        for x in range(left, right + 1):
+            # Determine base skin tone for this region
+            if y <= 7:
+                # Forehead: highlighted (catches overhead light)
+                base_tone = skin_hi
+            elif y in (18, 19):
+                # Chin: shadowed
+                base_tone = skin_shadow
+            else:
+                base_tone = skin_base
 
-    # Row 7: forehead / hair-skin transition
-    for x in range(6, 26):
-        pixels.append((x, 7, skin_hi))
+            # --- Edge pixels: face outline ---
+            if x == left or x == right:
+                pixels.append((x, y, face_outline))
+                continue
 
-    # Row 8: eyebrow row -- skin base
-    for x in range(6, 26):
-        pixels.append((x, 8, skin_base))
+            # --- Next pixel inward: edge shadow for 3D roundness ---
+            if x == left + 1 or x == right - 1:
+                pixels.append((x, y, skin_shadow))
+                continue
 
-    # Eyebrows: 5px tapered
-    # Left brow: cols 8-12 (tapered: thin at outer edges)
+            # --- Directional lighting (upper-left light source) ---
+            # Left 2 cols of interior: slightly lighter
+            if x <= left + 3:
+                tone = skin_left_lit if y <= 14 else base_tone
+            # Right 2 cols of interior: slightly darker
+            elif x >= right - 3:
+                tone = skin_shadow if y <= 14 else base_tone
+            else:
+                tone = base_tone
+
+            # --- Per-region overrides ---
+            # Forehead shine (row 7, center cols)
+            if y == 7 and 13 <= x <= 18:
+                tone = lighten(skin, 0.25)
+            # Cheek blush (row 14, near edges)
+            elif y == 14 and (left + 2 <= x <= left + 5 or right - 5 <= x <= right - 2):
+                tone = skin_warm
+            # Chin deep shadow at edges (rows 18-19)
+            elif y == 18 and (x <= left + 3 or x >= right - 3):
+                tone = skin_deep
+            elif y == 19 and (x <= left + 3 or x >= right - 3):
+                tone = skin_deep
+
+            pixels.append((x, y, tone))
+
+    # ------------------------------------------------------------------
+    # Eyebrows (row 8): 5px tapered, within oval bounds
+    # ------------------------------------------------------------------
+    # Left brow: cols 8-12
     pixels.append((8, 8, darken(brow_color, 0.15)))
     for x in range(9, 13):
         pixels.append((x, 8, brow_color))
@@ -1279,12 +1340,8 @@ def _build_avatar_pixels(avatar_def: dict) -> list[tuple[int, int, str]]:
     # ------------------------------------------------------------------
     # Eyes (rows 9-13) -- 5 rows tall, 7px wide per eye
     # Left eye cols 7-13, Right eye cols 18-24
+    # The oval is widest here (cols 6-25) so eyes fit perfectly.
     # ------------------------------------------------------------------
-
-    # Skin base for eye rows
-    for y in range(9, 14):
-        for x in range(6, 26):
-            pixels.append((x, y, skin_base))
 
     # --- Row 9: thick dark upper lid (eyelash line) ---
     for x in range(7, 14):
@@ -1348,26 +1405,24 @@ def _build_avatar_pixels(avatar_def: dict) -> list[tuple[int, int, str]]:
 
     # --- Row 13: under-eye shadow ---
     # Left eye
-    pixels.append((7, 13, skin_base))
     pixels.append((8, 13, skin_shadow))
     pixels.append((9, 13, skin_shadow))
     pixels.append((10, 13, skin_shadow))
     pixels.append((11, 13, skin_shadow))
     pixels.append((12, 13, skin_shadow))
-    pixels.append((13, 13, skin_base))
     # Right eye
-    pixels.append((18, 13, skin_base))
     pixels.append((19, 13, skin_shadow))
     pixels.append((20, 13, skin_shadow))
     pixels.append((21, 13, skin_shadow))
     pixels.append((22, 13, skin_shadow))
     pixels.append((23, 13, skin_shadow))
-    pixels.append((24, 13, skin_base))
 
     # ------------------------------------------------------------------
-    # Ears (rows 9-13) -- shifted to match new eye zone
+    # Ears (rows 9-13) -- connect at oval face edge
+    # Left ear: cols 4-5, rows 9-13 (face edge at col 6)
+    # Right ear: cols 26-27, rows 9-13 (face edge at col 25)
     # ------------------------------------------------------------------
-    # Left ear: col 5 rows 9-13, col 4 rows 10-12
+    # Left ear
     pixels.append((5, 9, ear_color))
     pixels.append((5, 10, ear_color))
     pixels.append((5, 11, ear_color))
@@ -1380,7 +1435,7 @@ def _build_avatar_pixels(avatar_def: dict) -> list[tuple[int, int, str]]:
     pixels.append((5, 10, ear_fold))
     pixels.append((5, 11, ear_fold))
 
-    # Right ear: col 26 rows 9-13, col 27 rows 10-12
+    # Right ear
     pixels.append((26, 9, ear_color))
     pixels.append((26, 10, ear_color))
     pixels.append((26, 11, ear_color))
@@ -1394,63 +1449,24 @@ def _build_avatar_pixels(avatar_def: dict) -> list[tuple[int, int, str]]:
     pixels.append((26, 11, ear_fold))
 
     # ------------------------------------------------------------------
-    # Row 14: Cheeks / blush
+    # Nose (row 15): subtle 2px shadow dot, centered in narrower face
+    # Face is cols 8-23 at row 15.
     # ------------------------------------------------------------------
-    for x in range(6, 26):
-        pixels.append((x, 14, skin_base))
-    # Blush on cheeks
-    for x in range(7, 12):
-        pixels.append((x, 14, skin_warm))
-    for x in range(20, 25):
-        pixels.append((x, 14, skin_warm))
-
-    # ------------------------------------------------------------------
-    # Row 15: Nose (1 row only, 2px subtle shadow dot)
-    # ------------------------------------------------------------------
-    for x in range(6, 26):
-        pixels.append((x, 15, skin_base))
     pixels.append((15, 15, skin_shadow))
     pixels.append((16, 15, skin_shadow))
 
     # ------------------------------------------------------------------
-    # Mouth (rows 16-17)
+    # Mouth (rows 16-17): adjusted to narrower face (cols 8-23)
     # ------------------------------------------------------------------
-    for x in range(6, 26):
-        pixels.append((x, 16, skin_base))
-    for x in range(6, 26):
-        pixels.append((x, 17, skin_base))
-
-    # Upper lip (row 16): 6px wide
-    for x in range(13, 19):
+    # Upper lip (row 16): 6px wide, cols 12-17
+    for x in range(12, 18):
         pixels.append((x, 16, lip_color))
 
-    # Lower lip (row 17): 4px wide with center highlight
-    for x in range(14, 18):
+    # Lower lip (row 17): 4px wide with center highlight, cols 13-16
+    for x in range(13, 17):
         pixels.append((x, 17, lip_color))
+    pixels.append((14, 17, lip_hi))
     pixels.append((15, 17, lip_hi))
-    pixels.append((16, 17, lip_hi))
-
-    # ------------------------------------------------------------------
-    # Chin / jaw (rows 18-19) -- contoured taper with 5-tone shading
-    # ------------------------------------------------------------------
-    for x in range(7, 25):
-        pixels.append((x, 18, skin_base))
-    # Jaw contour: 5 tones from center to edges
-    pixels.append((7, 18, skin_deep))
-    pixels.append((8, 18, skin_shadow))
-    pixels.append((9, 18, skin_base))
-    pixels.append((23, 18, skin_base))
-    pixels.append((24, 18, skin_shadow))
-    # Row 19: narrower jaw
-    for x in range(8, 24):
-        pixels.append((x, 19, skin_base))
-    pixels.append((8, 19, skin_deep))
-    pixels.append((9, 19, skin_shadow))
-    pixels.append((22, 19, skin_shadow))
-    pixels.append((23, 19, skin_deep))
-    # Warm tones at chin center
-    pixels.append((15, 19, skin_warm))
-    pixels.append((16, 19, skin_warm))
 
     # ------------------------------------------------------------------
     # Neck (rows 20-21) -- 6px wide centered (cols 13-18)
@@ -1549,7 +1565,7 @@ def _build_avatar_pixels(avatar_def: dict) -> list[tuple[int, int, str]]:
     pixels.append((22, 31, outfit_shadow))
 
     # ------------------------------------------------------------------
-    # Glasses overlay (on eye rows 9-13, 5 rows matching new eye zone)
+    # Glasses overlay (on eye rows 9-13, 5 rows matching eye zone)
     # ------------------------------------------------------------------
     if has_glasses:
         # Left lens frame: cols 6-14, rows 9-13
@@ -1586,8 +1602,6 @@ def _build_avatar_pixels(avatar_def: dict) -> list[tuple[int, int, str]]:
         # Left lens interior: cols 7-13, rows 10-12
         for y in range(10, 13):
             for x in range(7, 14):
-                # Get what was already drawn at this coordinate
-                # We apply a lens tint by appending a blended pixel
                 pixels.append(
                     (x, y, blend_colors(_get_last_color(pixels, x, y), _GLASSES_LENS, 0.3))
                 )
