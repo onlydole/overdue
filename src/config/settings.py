@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     port: int = 8000
     webhook_secret: str = ""
     dewey_recalc_interval_minutes: int = 15
+    search_min_score: float = 0.3
 
 
 settings = Settings()
