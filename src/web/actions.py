@@ -1,6 +1,7 @@
 """Web POST routes for game actions (session-auth protected)."""
 
 import json
+import random
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Request
@@ -137,6 +138,8 @@ async def volume_create_submit(
     errors = []
     if not title:
         errors.append("Title is required.")
+    elif len(title) > 60:
+        errors.append("Title must be 60 characters or fewer.")
     if not content:
         errors.append("Content is required.")
     if not shelf_id:
@@ -173,6 +176,7 @@ async def volume_create_submit(
         content=content,
         shelf_id=int(shelf_id),
         author_id=user["id"],
+        spine_seed=random.randint(0, 9999),
     )
     session.add(volume)
     await session.flush()
@@ -225,6 +229,46 @@ async def review_volume_web(
         )
         reviews = reviews_result.scalars().all()
 
+        # Find next overdue volume to suggest
+        next_volume = None
+
+        # First: check siblings on the same shelf
+        siblings_result = await session.execute(
+            select(VolumeRow).where(
+                VolumeRow.shelf_id == volume.shelf_id,
+                VolumeRow.id != volume.id,
+                VolumeRow.archived == False,  # noqa: E712
+            )
+        )
+        siblings = siblings_result.scalars().all()
+        candidates = []
+        for v in siblings:
+            score = calculate_dewey_score(v.last_reviewed_at)
+            if score < 75:
+                candidates.append({"id": v.id, "title": v.title, "dewey_score": round(score, 1)})
+        candidates.sort(key=lambda c: c["dewey_score"])
+
+        if candidates:
+            next_volume = candidates[0]
+        else:
+            # Fallback: check all volumes authored by this user
+            all_result = await session.execute(
+                select(VolumeRow).where(
+                    VolumeRow.author_id == user["id"],
+                    VolumeRow.id != volume.id,
+                    VolumeRow.archived == False,  # noqa: E712
+                )
+            )
+            all_volumes = all_result.scalars().all()
+            candidates = []
+            for v in all_volumes:
+                score = calculate_dewey_score(v.last_reviewed_at)
+                if score < 75:
+                    candidates.append({"id": v.id, "title": v.title, "dewey_score": round(score, 1)})
+            candidates.sort(key=lambda c: c["dewey_score"])
+            if candidates:
+                next_volume = candidates[0]
+
         response = templates.TemplateResponse("partials/review_result.html", {
             "request": request,
             "current_user": user,
@@ -232,6 +276,7 @@ async def review_volume_web(
             "dewey_score": round(new_score, 1),
             "reviews": reviews,
             "game_result": game_result,
+            "next_volume": next_volume,
         })
         response.headers.update(_game_trigger_header(game_result))
         return response

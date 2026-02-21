@@ -6,6 +6,9 @@
 
 * { image-rendering: pixelated; }
 
+/* Pixel art icons */
+.pixel-icon { display: inline-block; vertical-align: middle; }
+
 /* Nav links -- minimum 44px touch target */
 .nav-link {
     font-family: 'VT323', monospace;
@@ -149,6 +152,10 @@
     transform: translateY(-6px);
     z-index: 10;
 }
+.book-spine-title {
+    overflow: hidden;
+    max-height: calc(100% - 8px);
+}
 
 /* ============================================================
    XP & PROGRESS
@@ -225,14 +232,14 @@
 
 /* XP award pop */
 @keyframes xp-pop {
-    0% { transform: translateY(0) scale(1); opacity: 1; }
-    100% { transform: translateY(-30px) scale(1.2); opacity: 0; }
+    0% { transform: translateY(0) scale(1); opacity: 0; }
+    30% { transform: translateY(-15px) scale(1.3); opacity: 1; }
+    100% { transform: translateY(-10px) scale(1.1); opacity: 1; }
 }
 .xp-pop {
-    animation: xp-pop 1s ease-out forwards;
+    animation: xp-pop 0.6s ease-out forwards;
     font-family: 'Press Start 2P', cursive;
     color: #f0c543;
-    pointer-events: none;
 }
 
 /* Gentle pulse for attention */
@@ -257,9 +264,38 @@
     animation: shimmer 3s linear infinite;
 }
 
+/* Review screen flash */
+@keyframes review-flash {
+    0% { opacity: 0; }
+    30% { opacity: 0.25; }
+    100% { opacity: 0; }
+}
+
+/* Star burst particle */
+@keyframes star-burst {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* Stamp-in for "Reviewed!" text */
+@keyframes stamp-in {
+    0% { transform: scale(3) rotate(-8deg); opacity: 0; }
+    60% { transform: scale(0.95) rotate(1deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.stamp-in {
+    animation: stamp-in 0.5s ease-out forwards;
+}
+
+/* Review button hover glow */
+.review-btn:hover {
+    box-shadow: 4px 4px 0 #0f0e17, 0 0 12px rgba(92, 219, 92, 0.3);
+}
+
 /* HTMX loading indicator */
 .htmx-indicator { display: none; }
 .htmx-request .htmx-indicator { display: inline-block; }
+.htmx-request .htmx-hide-on-request { display: none; }
 
 /* ============================================================
    MOOD-SPECIFIC THEMES
@@ -355,7 +391,9 @@ select {
     .dust-particle,
     .xp-pop,
     .pulse-attention,
-    .gold-shimmer {
+    .gold-shimmer,
+    .stamp-in,
+    .review-flash-overlay {
         animation: none !important;
     }
     .pixel-card,
@@ -371,7 +409,16 @@ select {
    ============================================================ */
 
 .pixel-label {
-    font-size: max(0.5rem, 10px);
+    font-size: max(0.65rem, 12px);
+}
+
+/* ============================================================
+   BOOK SPINE TITLES
+   ============================================================ */
+
+.book-spine-title {
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    line-height: 1.3;
 }
 
 /* ============================================================
@@ -380,11 +427,13 @@ select {
 
 @media (max-width: 768px) {
     .book-spine-container {
+        flex-wrap: nowrap;
         overflow-x: auto;
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
     }
     .book-spine-container > a {
         scroll-snap-align: start;
+        flex-shrink: 0;
     }
 }
