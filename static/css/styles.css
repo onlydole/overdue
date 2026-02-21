@@ -297,6 +297,24 @@
 .htmx-request .htmx-indicator { display: inline-block; }
 .htmx-request .htmx-hide-on-request { display: none; }
 
+/* Review section transitions */
+#review-section {
+    opacity: 1;
+    transition: opacity 0.3s ease-in;
+    min-height: 120px;
+}
+
+/* HTMX settling class: new element starts invisible, fades in */
+#review-section.htmx-settling {
+    opacity: 0;
+}
+
+/* Smooth page transition for hx-boost navigation */
+body.htmx-swapping > main {
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+}
+
 /* ============================================================
    MOOD-SPECIFIC THEMES
    ============================================================ */
@@ -400,6 +418,9 @@ select {
     .pixel-btn,
     .book-spine,
     .nav-link {
+        transition: none !important;
+    }
+    #review-section {
         transition: none !important;
     }
 }

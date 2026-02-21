@@ -38,7 +38,7 @@
                 {% if current_user %}
                 <button hx-post="/volumes/{{ volume.id }}/review"
                         hx-target="#review-section"
-                        hx-swap="outerHTML"
+                        hx-swap="outerHTML settle:300ms"
                         class="pixel-btn pixel-btn-green review-btn group">
                     <span class="htmx-hide-on-request">{{ render_icon('play', 12) }} Review This Volume</span>
                     <span class="htmx-indicator">{{ render_icon('hourglass', 12) }} Reviewing...</span>

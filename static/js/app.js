@@ -10,8 +10,8 @@
 var toastQueue = [];
 var toastProcessing = false;
 
-function queueToast(text, type) {
-    toastQueue.push({ text: text, type: type });
+function queueToast(text, type, iconId) {
+    toastQueue.push({ text: text, type: type, iconId: iconId });
     if (!toastProcessing) processToastQueue();
 }
 
@@ -22,11 +22,22 @@ function processToastQueue() {
     }
     toastProcessing = true;
     var item = toastQueue.shift();
-    showToast(item.text, item.type);
+    showToast(item.text, item.type, item.iconId);
     setTimeout(processToastQueue, 400);
 }
 
-function showToast(text, type) {
+/**
+ * Read pre-rendered pixel art icon SVG from hidden <template> elements.
+ * Returns a cloned DOM node (not a string), safe from XSS since the content
+ * originates from server-rendered templates, never from user input.
+ */
+function _iconNode(id) {
+    var tpl = document.getElementById('icon-' + id);
+    if (!tpl) return null;
+    return tpl.content.cloneNode(true);
+}
+
+function showToast(text, type, iconId) {
     var container = document.getElementById('toast-container');
     if (!container) return;
 
@@ -47,7 +58,14 @@ function showToast(text, type) {
     } else if (type === 'rank') {
         span.className += ' gold-shimmer';
     }
-    span.textContent = text;
+
+    /* Prepend pixel art icon if available, then add text safely */
+    var icon = iconId ? _iconNode(iconId) : null;
+    if (icon) {
+        span.appendChild(icon);
+        span.appendChild(document.createTextNode(' '));
+    }
+    span.appendChild(document.createTextNode(text));
     toast.appendChild(span);
 
     container.appendChild(toast);
@@ -75,10 +93,14 @@ function showReviewCelebration() {
     document.body.appendChild(flash);
     setTimeout(function() { if (flash.parentNode) flash.parentNode.removeChild(flash); }, 500);
 
-    // Pixel particle burst from review section
-    var target = document.getElementById('review-section');
-    if (!target) return;
-    var rect = target.getBoundingClientRect();
+    // Pixel particle burst from review section (use pre-swap position if available)
+    var rect = window.__reviewSectionRect;
+    if (!rect) {
+        var target = document.getElementById('review-section');
+        if (!target) return;
+        rect = target.getBoundingClientRect();
+    }
+    delete window.__reviewSectionRect;
     var cx = rect.left + rect.width / 2;
     var cy = rect.top + rect.height / 2;
     var colors = ['#f0c543', '#5cdb5c', '#b76ef0', '#e8563e', '#7eb5e3', '#ffe9a0', '#a0d468', '#f6bb42'];
@@ -116,103 +138,97 @@ document.body.addEventListener('gameEvent', function(evt) {
     showReviewCelebration();
 
     if (data.xp_awarded > 0) {
-        queueToast('\u2605 +' + data.xp_awarded + ' XP', 'xp');
+        queueToast('+' + data.xp_awarded + ' XP', 'xp', 'star');
     }
 
     if (data.streak_bonus_awarded) {
-        queueToast('\uD83D\uDD25 Streak Bonus!', 'streak');
+        queueToast('Streak Bonus!', 'streak', 'fire');
     }
 
     if (data.badges_earned && data.badges_earned.length > 0) {
         data.badges_earned.forEach(function(badge) {
-            queueToast('\uD83C\uDFC6 ' + badge + ' earned!', 'badge');
+            queueToast(badge + ' earned!', 'badge', 'trophy');
         });
     }
 
     if (data.rank_changed && data.new_rank) {
-        queueToast('\uD83D\uDC51 Ranked up to ' + data.new_rank + '!', 'rank');
+        queueToast('Ranked up to ' + data.new_rank + '!', 'rank', 'crown');
     }
 });
 
 /* ============================================================
-   GAUGE RE-INITIALIZATION
+   SKELETON LOADING PLACEHOLDER (prevents layout shift)
    ============================================================ */
 
-function initGauges() {
-    var gauges = document.querySelectorAll('.dewey-gauge');
-    gauges.forEach(function(gauge) {
-        // Skip already-rendered gauges
-        if (gauge.dataset.rendered) return;
+document.body.addEventListener('htmx:beforeRequest', function(evt) {
+    var target = evt.detail.target;
+    if (!target || target.id !== 'review-section') return;
 
-        var score = parseFloat(gauge.dataset.score) || 0;
-        var color, label;
-        if (score >= 75) { color = '#5cdb5c'; label = 'PRISTINE'; }
-        else if (score >= 50) { color = '#a0d468'; label = 'GOOD'; }
-        else if (score >= 25) { color = '#f6bb42'; label = 'DUSTY'; }
-        else { color = '#e8563e'; label = 'OVERDUE'; }
+    // Store position before swap for celebration particles
+    window.__reviewSectionRect = target.getBoundingClientRect();
 
-        var pct = Math.min(score / 100, 1);
+    // Capture old gauge score for animation
+    var gaugeEl = document.querySelector('#dewey-gauge-container .dewey-gauge');
+    var container = document.getElementById('dewey-gauge-container');
+    if (gaugeEl && container) {
+        container.dataset.previousScore = gaugeEl.dataset.score || '0';
+    }
 
-        if (gauge.classList.contains('dewey-gauge-bar')) {
-            var segments = 10;
-            var filledSegments = Math.round(pct * segments);
-            while (gauge.firstChild) { gauge.removeChild(gauge.firstChild); }
-            var bar = document.createElement('div');
-            bar.className = 'flex gap-[2px] w-full h-full items-end p-1';
-            for (var i = 0; i < segments; i++) {
-                var seg = document.createElement('div');
-                seg.className = 'flex-1';
-                seg.style.height = (20 + (i * 8)) + '%';
-                seg.style.background = i < filledSegments ? color : '#2e2e4a';
-                bar.appendChild(seg);
-            }
-            gauge.appendChild(bar);
-        } else {
-            gauge.style.borderColor = color;
-            gauge.style.background = 'conic-gradient(' + color + ' ' + (pct * 360) + 'deg, #2e2e4a ' + (pct * 360) + 'deg)';
-            gauge.style.borderRadius = '50%';
-            if (!gauge.children.length) {
-                var inner = document.createElement('div');
-                inner.className = 'flex flex-col items-center justify-center rounded-full';
-                inner.style.background = '#232342';
-                inner.style.width = '75%';
-                inner.style.height = '75%';
-                inner.style.position = 'absolute';
-                var num = document.createElement('span');
-                num.style.fontFamily = '"Press Start 2P", cursive';
-                num.style.fontSize = '0.55rem';
-                num.style.color = color;
-                num.textContent = Math.round(score);
-                inner.appendChild(num);
-                var lbl = document.createElement('span');
-                lbl.style.fontFamily = '"VT323", monospace';
-                lbl.style.fontSize = '0.6rem';
-                lbl.style.color = '#8b8b9e';
-                lbl.style.marginTop = '2px';
-                lbl.textContent = label;
-                inner.appendChild(lbl);
-                gauge.appendChild(inner);
-            }
-        }
-        gauge.dataset.rendered = 'true';
-    });
-}
+    // Reserve height to prevent layout shift
+    target.style.minHeight = '350px';
 
-// Re-init gauges after HTMX swaps
-document.body.addEventListener('htmx:afterSwap', function() {
-    initGauges();
-});
+    // Build skeleton using DOM methods
+    while (target.firstChild) target.removeChild(target.firstChild);
 
-// Debounced resize handler for gauge re-render
-var resizeTimer;
-window.addEventListener('resize', function() {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function() {
-        // Reset rendered state and re-init
-        document.querySelectorAll('.dewey-gauge').forEach(function(g) {
-            delete g.dataset.rendered;
-            while (g.firstChild) g.removeChild(g.firstChild);
-        });
-        initGauges();
-    }, 250);
+    var wrapper = document.createElement('div');
+    wrapper.className = 'mt-8 border-t-2 border-pixel-border pt-6 space-y-4';
+
+    // Celebration row placeholder
+    var celebRow = document.createElement('div');
+    celebRow.className = 'flex items-center gap-4 mb-4';
+    var skel1 = document.createElement('div');
+    skel1.className = 'h-4 w-28 bg-pixel-border/30 rounded';
+    skel1.style.animation = 'pulse-soft 2s ease-in-out infinite';
+    var skel2 = document.createElement('div');
+    skel2.className = 'h-4 w-16 bg-pixel-border/30 rounded';
+    skel2.style.animation = 'pulse-soft 2s ease-in-out infinite 0.15s';
+    celebRow.appendChild(skel1);
+    celebRow.appendChild(skel2);
+    wrapper.appendChild(celebRow);
+
+    // 3 button placeholders
+    var btnRow = document.createElement('div');
+    btnRow.className = 'flex flex-wrap gap-3 mt-4';
+    var widths = ['120px', '180px', '130px'];
+    for (var i = 0; i < 3; i++) {
+        var btn = document.createElement('div');
+        btn.className = 'h-11 bg-pixel-border/30 rounded';
+        btn.style.width = widths[i];
+        btn.style.animation = 'pulse-soft 2s ease-in-out infinite ' + (0.1 * (i + 2)) + 's';
+        btnRow.appendChild(btn);
+    }
+    wrapper.appendChild(btnRow);
+
+    // Review history header placeholder
+    var histHeader = document.createElement('div');
+    histHeader.className = 'h-4 w-36 bg-pixel-border/30 rounded mt-6';
+    histHeader.style.animation = 'pulse-soft 2s ease-in-out infinite 0.5s';
+    wrapper.appendChild(histHeader);
+
+    // 2 review row placeholders
+    for (var j = 0; j < 2; j++) {
+        var row = document.createElement('div');
+        row.className = 'flex items-center justify-between py-3 border-b-2 border-pixel-border/30';
+        var left = document.createElement('div');
+        left.className = 'h-3 w-48 bg-pixel-border/30 rounded';
+        left.style.animation = 'pulse-soft 2s ease-in-out infinite ' + (0.6 + j * 0.15) + 's';
+        var right = document.createElement('div');
+        right.className = 'h-3 w-16 bg-pixel-border/30 rounded';
+        right.style.animation = 'pulse-soft 2s ease-in-out infinite ' + (0.7 + j * 0.15) + 's';
+        row.appendChild(left);
+        row.appendChild(right);
+        wrapper.appendChild(row);
+    }
+
+    target.appendChild(wrapper);
 });
