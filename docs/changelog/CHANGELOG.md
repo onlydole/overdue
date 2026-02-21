@@ -9,6 +9,15 @@ All notable changes to Overdue will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - 2025-02-05
+
+### Added
+- 8 library-themed incident types (TS-001 through TS-008)
+- Structured error responses with incident codes
+- Rate limiting middleware (quiet hours) -- 60 requests/minute
+- Error reference documentation
+- Rate limiting documentation
+
 ## [0.2.0] - 2025-01-29
 
 ### Added
