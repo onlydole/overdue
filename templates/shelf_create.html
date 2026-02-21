@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}New Shelf{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto space-y-6">
+    <div class="flex items-center gap-4">
+        <a href="/shelves" class="pixel-btn pixel-btn-outline text-[8px]">&larr; Back</a>
+        <h1 class="pixel-heading-lg">New Shelf</h1>
+    </div>
+
+    <div class="pixel-card">
+        {% if error %}
+        <div class="bg-dewey-overdue/20 border-2 border-dewey-overdue text-parchment px-4 py-3 mb-6 text-sm">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="post" action="/shelves/create" class="space-y-5">
+            <div>
+                <label for="name" class="pixel-label block mb-2">Shelf Name</label>
+                <input type="text" id="name" name="name" required maxlength="255"
+                       value="{{ name|default('') }}"
+                       class="w-full bg-pixel-bg border-3 border-pixel-border text-parchment font-retro text-lg px-4 py-3 focus:border-gold focus:outline-none"
+                       placeholder="e.g. Cloud Architecture">
+            </div>
+            <div>
+                <label for="description" class="pixel-label block mb-2">Description (Optional)</label>
+                <textarea id="description" name="description" rows="3"
+                          class="w-full bg-pixel-bg border-3 border-pixel-border text-parchment font-retro text-lg px-4 py-3 focus:border-gold focus:outline-none resize-none"
+                          placeholder="What kind of knowledge goes here?">{{ description|default('') }}</textarea>
+            </div>
+            <button type="submit" class="pixel-btn pixel-btn-gold w-full">
+                Create Shelf
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

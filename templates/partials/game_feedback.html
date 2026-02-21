@@ -1,0 +1,16 @@
+<!-- Game feedback toast (inserted via HX-Trigger gameEvent) -->
+<div class="pixel-card bg-pixel-surface border-gold text-center py-3 px-4 min-w-[250px]"
+     style="pointer-events: auto; animation: xp-pop 2s ease-out forwards;">
+    {% if game_result.xp_awarded > 0 %}
+    <div class="font-pixel text-[10px] text-dewey-pristine mb-1">+{{ game_result.xp_awarded }} XP</div>
+    {% endif %}
+    {% if game_result.streak_bonus_awarded %}
+    <div class="font-pixel text-[9px] text-streak">&#128293; Streak Bonus!</div>
+    {% endif %}
+    {% for badge in game_result.badges_earned %}
+    <div class="font-pixel text-[9px] text-badge-common mt-1">&#127942; {{ badge }} earned!</div>
+    {% endfor %}
+    {% if game_result.rank_changed %}
+    <div class="font-pixel text-[10px] gold-shimmer mt-1">Ranked up to {{ game_result.new_rank }}!</div>
+    {% endif %}
+</div>

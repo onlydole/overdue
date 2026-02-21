@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f0e17">
     <title>{% block title %}Overdue{% endblock %} -- The Knowledge Library</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/static/js/htmx.min.js"></script>
+    <script src="/static/js/alpine.min.js" defer></script>
     <link rel="stylesheet" href="/static/css/styles.css">
     <script>
         tailwind.config = {
@@ -46,7 +48,7 @@
 </head>
 <body class="bg-pixel-bg text-parchment min-h-screen font-retro text-lg">
     <!-- Navigation -->
-    <nav class="bg-pixel-surface border-b-4 border-gold relative z-50">
+    <nav class="bg-pixel-surface border-b-4 border-gold sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center space-x-8">
@@ -56,15 +58,29 @@
                     <div class="hidden md:flex space-x-1">
                         <a href="/" class="nav-link">Reading Room</a>
                         <a href="/shelves" class="nav-link">Shelves</a>
+                        <a href="/search" class="nav-link">Search</a>
                         <a href="/leaderboard" class="nav-link">Leaderboard</a>
                         <a href="/how-to-play" class="nav-link">How to Play</a>
                     </div>
                 </div>
-                <div class="hidden md:block font-pixel text-ink-light text-[8px] tracking-wide">
-                    Don't let your knowledge expire.
+                <div class="hidden md:flex items-center gap-4">
+                    {% if current_user %}
+                    <a href="/my-library" class="nav-link">My Library</a>
+                    <a href="/profile/{{ current_user.id }}" class="font-pixel text-[8px] text-gold hover:text-gold-light">{{ current_user.username }}</a>
+                    <form method="post" action="/logout" class="inline">
+                        <button type="submit" class="nav-link text-ink-light hover:text-dewey-overdue">Logout</button>
+                    </form>
+                    {% else %}
+                    <a href="/login" class="nav-link">Login</a>
+                    <a href="/register" class="pixel-btn pixel-btn-gold text-[7px] py-1 px-3">Register</a>
+                    {% endif %}
                 </div>
                 <!-- Mobile menu button -->
-                <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="md:hidden text-parchment hover:text-gold p-2">
+                <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"
+                        class="md:hidden text-parchment hover:text-gold p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                        aria-label="Toggle menu"
+                        aria-expanded="false"
+                        aria-controls="mobile-menu">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
@@ -76,8 +92,19 @@
             <div class="px-4 py-3 space-y-2">
                 <a href="/" class="block nav-link">Reading Room</a>
                 <a href="/shelves" class="block nav-link">Shelves</a>
+                <a href="/search" class="block nav-link">Search</a>
                 <a href="/leaderboard" class="block nav-link">Leaderboard</a>
                 <a href="/how-to-play" class="block nav-link">How to Play</a>
+                {% if current_user %}
+                <a href="/my-library" class="block nav-link">My Library</a>
+                <a href="/profile/{{ current_user.id }}" class="block nav-link text-gold">{{ current_user.username }}</a>
+                <form method="post" action="/logout">
+                    <button type="submit" class="block nav-link text-ink-light hover:text-dewey-overdue w-full text-left">Logout</button>
+                </form>
+                {% else %}
+                <a href="/login" class="block nav-link">Login</a>
+                <a href="/register" class="block nav-link text-gold">Register</a>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -90,6 +117,9 @@
         <p class="font-pixel text-[8px] text-ink-light tracking-wider">OVERDUE &middot; A knowledge library game</p>
     </footer>
 
+    <div id="toast-container" class="fixed top-20 right-4 z-50 space-y-2" style="pointer-events: none;"></div>
+
     <script src="/static/js/gauges.js"></script>
+    <script src="/static/js/app.js"></script>
 </body>
 </html>

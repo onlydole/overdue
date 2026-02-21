@@ -1,0 +1,43 @@
+<!-- Replaces the review section after a successful review via HTMX -->
+<div id="review-section">
+    <div class="mt-8 border-t-2 border-pixel-border pt-6">
+        <div class="flex items-center gap-4 mb-4">
+            <span class="font-pixel text-[10px] text-dewey-pristine">&#9989; Reviewed!</span>
+            {% if game_result and game_result.xp_awarded > 0 %}
+            <span class="xp-pop font-pixel text-[10px]">+{{ game_result.xp_awarded }} XP</span>
+            {% endif %}
+            {% if game_result and game_result.streak > 0 %}
+            <span class="font-pixel text-[9px] text-streak">&#128293; {{ game_result.streak }}d streak</span>
+            {% endif %}
+        </div>
+        <button hx-post="/volumes/{{ volume.id }}/review"
+                hx-target="#review-section"
+                hx-swap="outerHTML"
+                class="pixel-btn pixel-btn-green">
+            &#9654; Review Again
+        </button>
+    </div>
+
+    {% if reviews %}
+    <div class="mt-6">
+        <h2 class="pixel-heading mb-4">Review History</h2>
+        <div class="space-y-0">
+            {% for review in reviews %}
+            <div class="flex items-center justify-between py-3 border-b-2 border-pixel-border/30 last:border-0">
+                <div class="flex items-center gap-3">
+                    <span class="text-dewey-pristine">&#9654;</span>
+                    <span class="text-parchment">{{ review.reviewed_at.strftime('%B %d, %Y at %H:%M') }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="pixel-label">Score before</span>
+                    <span class="font-pixel text-[10px]"
+                          style="color: {% if review.dewey_score_before >= 75 %}#5cdb5c{% elif review.dewey_score_before >= 50 %}#a0d468{% elif review.dewey_score_before >= 25 %}#f6bb42{% else %}#e8563e{% endif %}">
+                        {{ review.dewey_score_before|round(1) }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
