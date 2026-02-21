@@ -5,6 +5,7 @@ from datetime import datetime
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.config.defaults import DEWEY_OVERDUE
 from src.db.tables import BadgeRow, LibrarianRow, ReviewRow, StreakRow, VolumeRow
 
 BADGE_DEFINITIONS = {
@@ -154,7 +155,7 @@ async def check_badges_after_review(session: AsyncSession, librarian_id: int) ->
         await grant_badge(session, librarian_id, "Night Owl")
         awarded.append("Night Owl")
 
-    # Streak Master
+    # Streak Master (7-day streak)
     streak_result = await session.execute(
         select(StreakRow).where(StreakRow.librarian_id == librarian_id)
     )
@@ -163,7 +164,88 @@ async def check_badges_after_review(session: AsyncSession, librarian_id: int) ->
         await grant_badge(session, librarian_id, "Streak Master")
         awarded.append("Streak Master")
 
-    # Check completionist
+    # Marathon Reader (30-day streak)
+    if streak and streak.current_streak >= 30 and not await has_badge(session, librarian_id, "Marathon Reader"):
+        await grant_badge(session, librarian_id, "Marathon Reader")
+        awarded.append("Marathon Reader")
+
+    # Dust Buster -- 10 reviews where score was overdue (<=25)
+    if not await has_badge(session, librarian_id, "Dust Buster"):
+        dust_result = await session.execute(
+            select(func.count()).select_from(ReviewRow).where(
+                ReviewRow.librarian_id == librarian_id,
+                ReviewRow.dewey_score_before <= DEWEY_OVERDUE,
+            )
+        )
+        overdue_reviews = dust_result.scalar() or 0
+        if overdue_reviews >= 10:
+            await grant_badge(session, librarian_id, "Dust Buster")
+            awarded.append("Dust Buster")
+
+    # Centurion -- 100 total reviews
+    if not await has_badge(session, librarian_id, "Centurion"):
+        total_result = await session.execute(
+            select(func.count()).select_from(ReviewRow).where(
+                ReviewRow.librarian_id == librarian_id,
+            )
+        )
+        total_reviews = total_result.scalar() or 0
+        if total_reviews >= 100:
+            await grant_badge(session, librarian_id, "Centurion")
+            awarded.append("Centurion")
+
+    # Speed Reader -- 5 reviews in under 60 seconds
+    if not await has_badge(session, librarian_id, "Speed Reader"):
+        recent_result = await session.execute(
+            select(ReviewRow.reviewed_at)
+            .where(ReviewRow.librarian_id == librarian_id)
+            .order_by(ReviewRow.reviewed_at.desc())
+            .limit(5)
+        )
+        recent_times = [row[0] for row in recent_result]
+        if len(recent_times) >= 5:
+            span = (recent_times[0] - recent_times[-1]).total_seconds()
+            if span < 60:
+                await grant_badge(session, librarian_id, "Speed Reader")
+                awarded.append("Speed Reader")
+
+    # Pristine Stacks -- all user's volumes have Dewey >= 75
+    if not await has_badge(session, librarian_id, "Pristine Stacks"):
+        from src.api.volumes import calculate_dewey_score
+        from src.config.defaults import DEWEY_GOOD_SHAPE
+
+        user_volumes_result = await session.execute(
+            select(VolumeRow).where(
+                VolumeRow.author_id == librarian_id,
+                VolumeRow.archived == False,  # noqa: E712
+            )
+        )
+        user_volumes = user_volumes_result.scalars().all()
+        if user_volumes and all(
+            calculate_dewey_score(v.last_reviewed_at) >= DEWEY_GOOD_SHAPE
+            for v in user_volumes
+        ):
+            await grant_badge(session, librarian_id, "Pristine Stacks")
+            awarded.append("Pristine Stacks")
+
+    # Dewey Devotee -- all user's volumes average Dewey >= 90
+    if not await has_badge(session, librarian_id, "Dewey Devotee"):
+        from src.api.volumes import calculate_dewey_score
+
+        dv_result = await session.execute(
+            select(VolumeRow).where(
+                VolumeRow.author_id == librarian_id,
+                VolumeRow.archived == False,  # noqa: E712
+            )
+        )
+        dv_volumes = dv_result.scalars().all()
+        if dv_volumes:
+            avg = sum(calculate_dewey_score(v.last_reviewed_at) for v in dv_volumes) / len(dv_volumes)
+            if avg >= 90:
+                await grant_badge(session, librarian_id, "Dewey Devotee")
+                awarded.append("Dewey Devotee")
+
+    # Completionist -- has all other badges
     all_other = [b for b in BADGE_DEFINITIONS if b != "Completionist"]
     earned_result = await session.execute(
         select(func.count()).select_from(BadgeRow).where(

@@ -7,7 +7,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.library_card import verify_library_card
-from src.config.defaults import DEWEY_DECAY_RATE, DEWEY_LOST, DEWEY_PRISTINE
+from src.config.defaults import DEWEY_LOST, DEWEY_PRISTINE
 from src.config.settings import settings
 from src.db.engine import get_session
 from src.errors.incidents import VolumeTooLarge
@@ -18,9 +18,14 @@ router = APIRouter()
 
 
 def calculate_dewey_score(last_reviewed_at: datetime) -> float:
-    """Calculate the current Dewey Score based on time since last review."""
-    days_elapsed = (datetime.utcnow() - last_reviewed_at).total_seconds() / 86400
-    score = DEWEY_PRISTINE - (days_elapsed * DEWEY_DECAY_RATE)
+    """Calculate the current Dewey Score based on time since last review.
+
+    Decay is measured in configurable time units (default: 10 seconds for demo mode).
+    Set OVERDUE_DEWEY_DECAY_SECONDS=86400 for realistic daily decay.
+    """
+    seconds_elapsed = (datetime.utcnow() - last_reviewed_at).total_seconds()
+    decay_units = seconds_elapsed / settings.dewey_decay_seconds
+    score = DEWEY_PRISTINE - (decay_units * settings.dewey_decay_rate)
     return max(score, DEWEY_LOST)
 
 
@@ -73,6 +78,13 @@ async def create_volume(
 
     await session.commit()
     await session.refresh(volume)
+
+    # Trigger game mechanics
+    from src.game.engine import on_volume_shelved
+
+    game_result = await on_volume_shelved(session, int(payload["sub"]), volume.id)
+    await session.commit()
+
     return volume_to_response(volume, body.bookmarks)
 
 
@@ -200,7 +212,18 @@ async def review_volume(
             detail="That volume isn't on any of our shelves. Check the catalog and try again.",
         )
 
+    # Capture score before review for game mechanics
+    dewey_score_before = calculate_dewey_score(volume.last_reviewed_at)
+
     volume.last_reviewed_at = datetime.utcnow()
+
+    # Trigger game mechanics (creates ReviewRow, awards XP, updates streak, checks badges)
+    from src.game.engine import on_volume_reviewed
+
+    game_result = await on_volume_reviewed(
+        session, int(payload["sub"]), volume_id, dewey_score_before
+    )
+
     await session.commit()
     await session.refresh(volume)
 

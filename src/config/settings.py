@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     port: int = 8000
     webhook_secret: str = ""
     dewey_recalc_interval_minutes: int = 15
+    dewey_decay_rate: int = 3  # points lost per decay unit
+    dewey_decay_seconds: int = 10  # seconds per decay unit (10 = fast demo, 86400 = realistic daily)
+    streak_cooldown_seconds: int = 5  # seconds between reviews for streak (5 = fast demo, 86400 = daily)
     search_min_score: float = 0.3
     max_volume_size_kb: int = 512  # max content size in KB
 
