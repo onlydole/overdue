@@ -8,7 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.library_card import verify_library_card
 from src.config.defaults import DEWEY_DECAY_RATE, DEWEY_LOST, DEWEY_PRISTINE
+from src.config.settings import settings
 from src.db.engine import get_session
+from src.errors.incidents import VolumeTooLarge
 from src.db.tables import ShelfRow, VolumeRow, volume_bookmarks
 from src.models.volume import VolumeCreate, VolumeListResponse, VolumeResponse, VolumeUpdate
 
@@ -46,6 +48,11 @@ async def create_volume(
     payload: dict = Depends(verify_library_card),
 ) -> VolumeResponse:
     """Shelve a new volume in the library."""
+    # Check volume size
+    content_size_kb = len(body.content.encode("utf-8")) / 1024
+    if content_size_kb > settings.max_volume_size_kb:
+        raise VolumeTooLarge(max_size_kb=settings.max_volume_size_kb)
+
     # Verify shelf exists
     shelf = await session.get(ShelfRow, body.shelf_id)
     if not shelf:
