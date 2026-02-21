@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Pre-render all pixel art icons as static SVG files.
+"""Pre-render all pixel art icons and avatars as static SVG files.
 
 Writes bare SVGs (no width/height/class/style) to ``static/icons/`` so they
 can be served as ``<img>`` tags and visually inspected in any file browser.
 
-Also generates color-tinted variants:
+Also generates color-tinted variants for icons:
   - ``{name}--green.svg`` (#5cdb5c)
   - ``{name}--gold.svg``  (#f0c543)
 
@@ -21,6 +21,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from src.game.avatars import AVATAR_CATALOG, render_avatar_svg_bare  # noqa: E402
 from src.game.icons import get_icon_names, render_icon_svg_bare  # noqa: E402
 
 TINTS: dict[str, str] = {
@@ -51,6 +52,13 @@ def main() -> None:
             if tinted is not None:
                 (OUT_DIR / f"{name}--{label}.svg").write_text(tinted)
                 count += 1
+
+    # Avatars -- one static SVG per avatar ID
+    for avatar_id in AVATAR_CATALOG:
+        svg = render_avatar_svg_bare(avatar_id)
+        if svg is not None:
+            (OUT_DIR / f"{avatar_id}.svg").write_text(svg)
+            count += 1
 
     print(f"Wrote {count} SVG files to {OUT_DIR.relative_to(ROOT)}/")
 
