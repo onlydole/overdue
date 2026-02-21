@@ -7,8 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.tables import BadgeRow, LibrarianRow, ReviewRow, StreakRow, VolumeRow
 
-BADGE_TIERS = ("Common", "Rare")
-
 BADGE_DEFINITIONS = {
     "First Shelve": {
         "description": "Created your first volume",
