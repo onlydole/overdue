@@ -3,9 +3,14 @@
 
 {% block content %}
 <div class="space-y-8">
-    <div class="flex items-center gap-4">
-        <a href="/shelves" class="pixel-btn pixel-btn-outline text-[8px]">&larr; Back</a>
-        <h1 class="pixel-heading-lg">{{ shelf.name }}</h1>
+    <div class="flex items-center justify-between flex-wrap gap-4">
+        <div class="flex items-center gap-4">
+            <a href="/shelves" class="pixel-btn pixel-btn-outline text-[8px]">&larr; Back</a>
+            <h1 class="pixel-heading-lg">{{ shelf.name }}</h1>
+        </div>
+        {% if current_user %}
+        <a href="/volumes/create?shelf_id={{ shelf.id }}" class="pixel-btn pixel-btn-green text-[7px]">+ Add Volume</a>
+        {% endif %}
     </div>
     {% if shelf.description %}
     <p class="text-parchment-dark text-lg">{{ shelf.description }}</p>

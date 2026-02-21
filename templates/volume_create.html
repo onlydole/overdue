@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}New Volume{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+    <div class="flex items-center gap-4">
+        <a href="/shelves" class="pixel-btn pixel-btn-outline text-[8px]">&larr; Back</a>
+        <h1 class="pixel-heading-lg">Shelve a Volume</h1>
+    </div>
+
+    <div class="pixel-card">
+        {% if errors %}
+        <div class="bg-dewey-overdue/20 border-2 border-dewey-overdue text-parchment px-4 py-3 mb-6 text-sm space-y-1">
+            {% for err in errors %}
+            <div>{{ err }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" action="/volumes/create" class="space-y-5">
+            <div>
+                <label for="title" class="pixel-label block mb-2">Title</label>
+                <input type="text" id="title" name="title" required maxlength="255"
+                       value="{{ title|default('') }}"
+                       class="w-full bg-pixel-bg border-3 border-pixel-border text-parchment font-retro text-lg px-4 py-3 focus:border-gold focus:outline-none"
+                       placeholder="What are you documenting?">
+            </div>
+            <div>
+                <label for="shelf_id" class="pixel-label block mb-2">Shelf</label>
+                <select id="shelf_id" name="shelf_id" required
+                        class="w-full bg-pixel-bg border-3 border-pixel-border text-parchment font-retro text-lg px-4 py-3 focus:border-gold focus:outline-none">
+                    <option value="">Select a shelf...</option>
+                    {% for shelf in shelves %}
+                    <option value="{{ shelf.id }}" {% if selected_shelf_id == shelf.id %}selected{% endif %}>
+                        {{ shelf.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="content" class="pixel-label block mb-2">Content</label>
+                <textarea id="content" name="content" required rows="12"
+                          class="w-full bg-pixel-bg border-3 border-pixel-border text-parchment font-retro text-lg px-4 py-3 focus:border-gold focus:outline-none resize-y"
+                          placeholder="Write your knowledge here...">{{ content|default('') }}</textarea>
+            </div>
+            <div>
+                <label for="bookmarks" class="pixel-label block mb-2">Bookmarks (comma-separated)</label>
+                <input type="text" id="bookmarks" name="bookmarks"
+                       value="{{ bookmarks|default('') }}"
+                       class="w-full bg-pixel-bg border-3 border-pixel-border text-parchment font-retro text-lg px-4 py-3 focus:border-gold focus:outline-none"
+                       placeholder="e.g. terraform, aws, networking">
+            </div>
+            <button type="submit" class="pixel-btn pixel-btn-gold w-full">
+                Shelve This Volume
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}My Library{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <div class="pixel-card">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+                <h1 class="pixel-heading-lg mb-1">My Library</h1>
+                <span class="font-pixel text-[10px] text-streak uppercase tracking-widest">{{ rank }}</span>
+            </div>
+            <div class="flex gap-3">
+                <a href="/shelves/create" class="pixel-btn pixel-btn-gold text-[7px]">+ New Shelf</a>
+                <a href="/volumes/create" class="pixel-btn pixel-btn-green text-[7px]">+ New Volume</a>
+            </div>
+        </div>
+
+        <!-- XP Progress -->
+        <div class="mt-6">
+            <div class="flex items-center justify-between mb-2">
+                <span class="pixel-label">{{ current_user.total_xp }} pages read</span>
+                {% if next_rank %}
+                <span class="pixel-label">{{ xp_to_next }} to <span class="text-gold">{{ next_rank }}</span></span>
+                {% else %}
+                <span class="font-pixel text-[8px] gold-shimmer">MAX RANK</span>
+                {% endif %}
+            </div>
+            <div class="xp-bar">
+                <div class="xp-bar-fill" style="width: {{ progress }}%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="pixel-card text-center">
+            <div class="pixel-label mb-2">Volumes</div>
+            <div class="pixel-stat text-parchment">{{ total_volumes }}</div>
+        </div>
+        <div class="pixel-card text-center">
+            <div class="pixel-label mb-2">Streak</div>
+            <div class="pixel-stat text-streak">{{ streak.current_streak if streak else 0 }}</div>
+        </div>
+        <div class="pixel-card text-center">
+            <div class="pixel-label mb-2">Badges</div>
+            <div class="pixel-stat text-badge-common">{{ badges|length }}</div>
+        </div>
+        <div class="pixel-card text-center">
+            <div class="pixel-label mb-2">Overdue</div>
+            <div class="pixel-stat text-dewey-overdue">{{ overdue_volumes|length }}</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- My Shelves -->
+        <div class="pixel-card">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="pixel-heading mb-0">My Shelves</h2>
+                <a href="/shelves/create" class="text-gold hover:text-gold-light text-sm">+ New</a>
+            </div>
+            {% if my_shelves %}
+            <div class="space-y-3">
+                {% for shelf in my_shelves %}
+                <a href="/shelves/{{ shelf.id }}" class="flex items-center justify-between py-2 border-b-2 border-pixel-border/30 last:border-0 hover:text-gold transition-colors">
+                    <span class="text-parchment">{{ shelf.name }}</span>
+                    <div class="flex items-center gap-3">
+                        <span class="pixel-label">{{ shelf.volume_count }} vol</span>
+                        <span class="font-pixel text-[10px]"
+                              style="color: {% if shelf.average_dewey >= 75 %}#5cdb5c{% elif shelf.average_dewey >= 50 %}#a0d468{% elif shelf.average_dewey >= 25 %}#f6bb42{% else %}#e8563e{% endif %}">
+                            {{ shelf.average_dewey }}
+                        </span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-ink-light text-center py-4">No shelves yet. Create one to start!</p>
+            {% endif %}
+        </div>
+
+        <!-- Overdue Volumes -->
+        <div class="pixel-card">
+            <h2 class="pixel-heading mb-4">&#128293; Needs Review</h2>
+            {% if overdue_volumes %}
+            <div class="space-y-3">
+                {% for vol in overdue_volumes[:10] %}
+                <a href="/volumes/{{ vol.id }}" class="flex items-center justify-between py-2 border-b-2 border-pixel-border/30 last:border-0 hover:text-gold transition-colors">
+                    <span class="text-parchment">{{ vol.title }}</span>
+                    <span class="font-pixel text-[10px] text-dewey-overdue">{{ vol.dewey_score }}</span>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-ink-light text-center py-4">All caught up! Your stacks are pristine.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent XP -->
+    {% if recent_awards %}
+    <div class="pixel-card">
+        <h2 class="pixel-heading mb-4">Recent Pages Earned</h2>
+        <div class="space-y-2">
+            {% for award in recent_awards %}
+            <div class="flex items-center justify-between py-2 border-b-2 border-pixel-border/30 last:border-0">
+                <span class="text-parchment-dark text-base">{{ award.reason }}</span>
+                <span class="font-pixel text-[10px] text-dewey-pristine">+{{ award.amount }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
