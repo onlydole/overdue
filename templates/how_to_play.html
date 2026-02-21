@@ -3,44 +3,78 @@
 
 {% block content %}
 <div class="space-y-8">
-    <!-- Header -->
-    <div class="pixel-card text-center py-8">
-        <div class="pixel-bounce inline-block text-4xl mb-3">&#128218;</div>
-        <h1 class="pixel-heading-lg mb-2">How to Play</h1>
-        <p class="text-parchment-dark text-xl">Everything you need to know about managing the library.</p>
+    <!-- Hero -->
+    <div class="pixel-card text-center py-10">
+        <div class="pixel-bounce inline-block mb-3">{{ render_icon('scroll', 32) }}</div>
+        <h1 class="pixel-heading-lg mb-4">Your Knowledge Is Fading</h1>
+        <p class="text-parchment text-xl max-w-2xl mx-auto leading-relaxed">
+            Every day, what you've learned gathers dust -- facts blur, details slip away, connections break.
+            <span class="text-gold">Overdue</span> is a game about fighting back.
+        </p>
+    </div>
+
+    <!-- The Premise -->
+    <div class="pixel-card">
+        <h2 class="pixel-heading mb-4">{{ render_icon('books', 18, '#f0c543') }} The Library</h2>
+        <p class="text-parchment-dark text-lg leading-relaxed mb-4">
+            You are a librarian. Your <span class="text-gold">volumes</span> are your knowledge -- every fact, idea, and insight you want to keep.
+            Organize them on <span class="text-gold">shelves</span>. Each volume has a <span class="text-gold">Dewey Score</span> that measures how fresh it is.
+        </p>
+        <p class="text-parchment-dark text-lg leading-relaxed">
+            Left alone, knowledge decays. Dust settles. Scores drop. Your job: keep the stacks pristine.
+        </p>
     </div>
 
     <!-- The Game Loop -->
     <div class="pixel-card">
-        <h2 class="pixel-heading mb-4">&#127918; The Game Loop</h2>
+        <h2 class="pixel-heading mb-4">{{ render_icon('gamepad', 18, '#f0c543') }} The Game Loop</h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="bg-pixel-surface border-2 border-pixel-border p-4 text-center">
-                <div class="text-2xl mb-2">&#128214;</div>
+                <div class="mb-2">{{ render_icon('book-open', 24) }}</div>
                 <div class="font-pixel text-[9px] text-gold mb-2">1. Shelve</div>
-                <p class="text-ink-light text-sm">Create volumes of knowledge and organize them on shelves.</p>
+                <p class="text-ink-light text-sm">Capture what you know before it escapes. Create volumes and organize them on shelves.</p>
             </div>
             <div class="bg-pixel-surface border-2 border-pixel-border p-4 text-center">
-                <div class="text-2xl mb-2">&#9200;</div>
+                <div class="mb-2">{{ render_icon('clock', 24) }}</div>
                 <div class="font-pixel text-[9px] text-gold mb-2">2. Wait</div>
-                <p class="text-ink-light text-sm">Over time, volumes gather dust. Their Dewey Score decays.</p>
+                <p class="text-ink-light text-sm">Time is the enemy. Dust settles on every volume. Dewey Scores decay hour by hour.</p>
             </div>
             <div class="bg-pixel-surface border-2 border-pixel-border p-4 text-center">
-                <div class="text-2xl mb-2">&#128269;</div>
+                <div class="mb-2">{{ render_icon('search', 24) }}</div>
                 <div class="font-pixel text-[9px] text-gold mb-2">3. Review</div>
-                <p class="text-ink-light text-sm">Review volumes to reset their Dewey Score back to 100.</p>
+                <p class="text-ink-light text-sm">Brush off the dust. Review a volume to reset its Dewey Score back to 100.</p>
             </div>
             <div class="bg-pixel-surface border-2 border-pixel-border p-4 text-center">
-                <div class="text-2xl mb-2">&#11088;</div>
+                <div class="mb-2">{{ render_icon('star', 24) }}</div>
                 <div class="font-pixel text-[9px] text-gold mb-2">4. Level Up</div>
-                <p class="text-ink-light text-sm">Earn XP, unlock badges, and climb the leaderboard.</p>
+                <p class="text-ink-light text-sm">The more you maintain, the higher you climb. Earn XP, unlock badges, rise in rank.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Why Play? -->
+    <div class="pixel-card">
+        <h2 class="pixel-heading mb-4">{{ render_icon('fire', 18, '#f0c543') }} Why Play?</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-pixel-surface border-2 border-pixel-border p-4">
+                <p class="text-parchment text-lg"><span class="text-gold">Your brain forgets.</span> Overdue makes remembering a game.</p>
+            </div>
+            <div class="bg-pixel-surface border-2 border-pixel-border p-4">
+                <p class="text-parchment text-lg"><span class="text-gold">Build a habit</span> of revisiting what matters.</p>
+            </div>
+            <div class="bg-pixel-surface border-2 border-pixel-border p-4">
+                <p class="text-parchment text-lg"><span class="text-gold">Compete</span> with friends (or bots) on the leaderboard.</p>
+            </div>
+            <div class="bg-pixel-surface border-2 border-pixel-border p-4">
+                <p class="text-parchment text-lg"><span class="text-gold">Watch your library</span> thrive -- or fall into chaos.</p>
             </div>
         </div>
     </div>
 
     <!-- Dewey Score -->
     <div class="pixel-card">
-        <h2 class="pixel-heading mb-4">&#128202; The Dewey Score</h2>
-        <p class="text-parchment-dark mb-4">Every volume has a freshness score from 0 to 100. It starts at 100 when created or reviewed, then decays over time -- like books gathering dust.</p>
+        <h2 class="pixel-heading mb-4">{{ render_icon('chart', 18, '#f0c543') }} The Dewey Score</h2>
+        <p class="text-parchment-dark mb-4">Every volume has a freshness score from 0 to 100. It starts at 100 when created or reviewed, then decays over time -- like books gathering dust on a neglected shelf.</p>
         <div class="space-y-3">
             <div class="flex items-center gap-4 bg-pixel-surface border-2 border-pixel-border p-3">
                 <div class="w-16 text-center">
@@ -88,7 +122,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- XP System -->
         <div class="pixel-card">
-            <h2 class="pixel-heading mb-4">&#128214; Pages Read (XP)</h2>
+            <h2 class="pixel-heading mb-4">{{ render_icon('book-open', 18, '#f0c543') }} Pages Read (XP)</h2>
             <p class="text-parchment-dark mb-4">Earn "pages read" by keeping the library healthy.</p>
             <div class="space-y-3">
                 <div class="flex items-center justify-between py-2 border-b-2 border-pixel-border/30">
@@ -116,7 +150,7 @@
 
         <!-- Rank Progression -->
         <div class="pixel-card">
-            <h2 class="pixel-heading mb-4">&#128081; Rank Progression</h2>
+            <h2 class="pixel-heading mb-4">{{ render_icon('crown', 18, '#f0c543') }} Rank Progression</h2>
             <p class="text-parchment-dark mb-4">Climb the ranks as you accumulate pages read.</p>
             <div class="space-y-3">
                 <div class="flex items-center justify-between py-2 border-b-2 border-pixel-border/30">
@@ -160,63 +194,63 @@
 
     <!-- Badges -->
     <div class="pixel-card">
-        <h2 class="pixel-heading mb-4">&#127942; Badges</h2>
+        <h2 class="pixel-heading mb-4">{{ render_icon('trophy', 18, '#f0c543') }} Badges</h2>
         <p class="text-parchment-dark mb-4">Unlock achievements by reaching milestones. Badges come in three tiers.</p>
 
         <!-- Common Badges -->
         <h3 class="font-pixel text-[9px] text-badge-common uppercase tracking-wider mb-3 mt-6">Common Badges</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
             <div class="flex items-center gap-3 bg-pixel-surface border-2 border-badge-common/30 p-3">
-                <span class="text-xl">&#128214;</span>
+                {{ render_icon('book-open', 20) }}
                 <div>
                     <div class="font-pixel text-[8px] text-parchment uppercase">First Shelve</div>
                     <div class="text-ink-light text-sm">Created your first volume</div>
                 </div>
             </div>
             <div class="flex items-center gap-3 bg-pixel-surface border-2 border-badge-common/30 p-3">
-                <span class="text-xl">&#10024;</span>
+                {{ render_icon('sparkles', 20) }}
                 <div>
                     <div class="font-pixel text-[8px] text-parchment uppercase">Dust Buster</div>
                     <div class="text-ink-light text-sm">Reviewed 10 overdue volumes</div>
                 </div>
             </div>
             <div class="flex items-center gap-3 bg-pixel-surface border-2 border-badge-common/30 p-3">
-                <span class="text-xl">&#128293;</span>
+                {{ render_icon('fire', 20) }}
                 <div>
                     <div class="font-pixel text-[8px] text-parchment uppercase">Streak Master</div>
                     <div class="text-ink-light text-sm">7-day review streak</div>
                 </div>
             </div>
             <div class="flex items-center gap-3 bg-pixel-surface border-2 border-badge-common/30 p-3">
-                <span class="text-xl">&#11088;</span>
+                {{ render_icon('star', 20) }}
                 <div>
                     <div class="font-pixel text-[8px] text-parchment uppercase">Pristine Stacks</div>
                     <div class="text-ink-light text-sm">All volumes above Dewey 75 at once</div>
                 </div>
             </div>
             <div class="flex items-center gap-3 bg-pixel-surface border-2 border-badge-common/30 p-3">
-                <span class="text-xl">&#127979;</span>
+                {{ render_icon('library', 20) }}
                 <div>
                     <div class="font-pixel text-[8px] text-parchment uppercase">Encyclopedist</div>
                     <div class="text-ink-light text-sm">50 volumes authored</div>
                 </div>
             </div>
             <div class="flex items-center gap-3 bg-pixel-surface border-2 border-badge-common/30 p-3">
-                <span class="text-xl">&#127769;</span>
+                {{ render_icon('moon', 20) }}
                 <div>
                     <div class="font-pixel text-[8px] text-parchment uppercase">Night Owl</div>
                     <div class="text-ink-light text-sm">Reviewed a volume after midnight</div>
                 </div>
             </div>
             <div class="flex items-center gap-3 bg-pixel-surface border-2 border-badge-common/30 p-3">
-                <span class="text-xl">&#9889;</span>
+                {{ render_icon('zap', 20) }}
                 <div>
                     <div class="font-pixel text-[8px] text-parchment uppercase">Speed Reader</div>
                     <div class="text-ink-light text-sm">Reviewed 5 volumes in under a minute</div>
                 </div>
             </div>
             <div class="flex items-center gap-3 bg-pixel-surface border-2 border-badge-common/30 p-3">
-                <span class="text-xl">&#127942;</span>
+                {{ render_icon('trophy', 20) }}
                 <div>
                     <div class="font-pixel text-[8px] text-parchment uppercase">Completionist</div>
                     <div class="text-ink-light text-sm">Earned all other badges</div>
@@ -228,21 +262,21 @@
         <h3 class="font-pixel text-[9px] text-badge-rare uppercase tracking-wider mb-3">Rare Badges</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div class="flex items-center gap-3 bg-pixel-surface border-2 border-badge-rare/30 p-3 badge-glow-rare">
-                <span class="text-xl">&#128293;</span>
+                {{ render_icon('fire', 20) }}
                 <div>
                     <div class="font-pixel text-[8px] text-parchment uppercase">Marathon Reader</div>
                     <div class="text-ink-light text-sm">30-day review streak</div>
                 </div>
             </div>
             <div class="flex items-center gap-3 bg-pixel-surface border-2 border-badge-rare/30 p-3 badge-glow-rare">
-                <span class="text-xl">&#127941;</span>
+                {{ render_icon('award', 20) }}
                 <div>
                     <div class="font-pixel text-[8px] text-parchment uppercase">Dewey Devotee</div>
                     <div class="text-ink-light text-sm">Average Dewey above 90 for 7 days</div>
                 </div>
             </div>
             <div class="flex items-center gap-3 bg-pixel-surface border-2 border-badge-rare/30 p-3 badge-glow-rare">
-                <span class="text-xl">&#127942;</span>
+                {{ render_icon('trophy', 20) }}
                 <div>
                     <div class="font-pixel text-[8px] text-parchment uppercase">Centurion</div>
                     <div class="text-ink-light text-sm">Reviewed 100 volumes total</div>
@@ -253,7 +287,7 @@
 
     <!-- Streaks -->
     <div class="pixel-card">
-        <h2 class="pixel-heading mb-4"><span class="fire-flicker">&#128293;</span> Streaks</h2>
+        <h2 class="pixel-heading mb-4"><span class="fire-flicker">{{ render_icon('fire', 18) }}</span> Streaks</h2>
         <p class="text-parchment-dark mb-4">Review at least one volume every day to maintain your streak. Streaks earn bonus XP and appear on the leaderboard.</p>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-pixel-surface border-2 border-pixel-border p-4 text-center">
@@ -273,39 +307,39 @@
 
     <!-- Reading Room Mood -->
     <div class="pixel-card">
-        <h2 class="pixel-heading mb-4">&#127970; Reading Room Mood</h2>
+        <h2 class="pixel-heading mb-4">{{ render_icon('house', 18, '#f0c543') }} Reading Room Mood</h2>
         <p class="text-parchment-dark mb-4">The library's overall health is reflected in the Reading Room's mood. Keep your volumes fresh to maintain a calm atmosphere.</p>
         <div class="space-y-3">
             <div class="flex items-center gap-4 p-3 mood-quiet">
-                <span class="text-2xl">&#128214;</span>
+                {{ render_icon('book-open', 24) }}
                 <div class="flex-1">
                     <div class="font-pixel text-[9px] text-dewey-pristine uppercase">Quiet Study</div>
                     <div class="text-ink-light text-sm">Average Dewey 80-100. Warm golden light, everything is serene.</div>
                 </div>
             </div>
             <div class="flex items-center gap-4 p-3 mood-gentle">
-                <span class="text-2xl">&#128218;</span>
+                {{ render_icon('books', 24) }}
                 <div class="flex-1">
                     <div class="font-pixel text-[9px] text-dewey-good uppercase">Gentle Hum</div>
                     <div class="text-ink-light text-sm">Average Dewey 60-79. Normal lighting, a slight bustle in the air.</div>
                 </div>
             </div>
             <div class="flex items-center gap-4 p-3 mood-noisy">
-                <span class="text-2xl">&#128216;</span>
+                {{ render_icon('book-closed', 24) }}
                 <div class="flex-1">
                     <div class="font-pixel text-[9px] text-dewey-attention uppercase">Getting Noisy</div>
                     <div class="text-ink-light text-sm">Average Dewey 40-59. Flickering lights, books slightly askew.</div>
                 </div>
             </div>
             <div class="flex items-center gap-4 p-3 mood-order">
-                <span class="text-2xl">&#128293;</span>
+                {{ render_icon('fire', 24) }}
                 <div class="flex-1">
                     <div class="font-pixel text-[9px] text-dewey-overdue uppercase">Call for Order</div>
                     <div class="text-ink-light text-sm">Average Dewey 20-39. Red accents, warning indicators everywhere.</div>
                 </div>
             </div>
             <div class="flex items-center gap-4 p-3 mood-closed">
-                <span class="text-2xl">&#128679;</span>
+                {{ render_icon('construction', 24) }}
                 <div class="flex-1">
                     <div class="font-pixel text-[9px] text-dewey-lost uppercase">Closed for Renovation</div>
                     <div class="text-ink-light text-sm">Average Dewey 0-19. The library is in crisis. Review everything!</div>
@@ -314,12 +348,13 @@
         </div>
     </div>
 
-    <!-- Getting Started -->
+    <!-- CTA -->
     <div class="pixel-card text-center py-8">
-        <h2 class="pixel-heading mb-4">Ready to Start?</h2>
+        <h2 class="pixel-heading mb-4">Ready to Build Your Library?</h2>
         <p class="text-parchment-dark text-lg mb-6">Register as a librarian and shelve your first volume.</p>
         <div class="flex items-center justify-center gap-4 flex-wrap">
-            <a href="/shelves" class="pixel-btn pixel-btn-gold">Browse Shelves</a>
+            <a href="/register" class="pixel-btn pixel-btn-gold">Get a Library Card</a>
+            <a href="/shelves" class="pixel-btn pixel-btn-outline">Browse Shelves</a>
             <a href="/leaderboard" class="pixel-btn pixel-btn-outline">View Leaderboard</a>
         </div>
     </div>

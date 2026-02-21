@@ -80,7 +80,7 @@
 
         <!-- Overdue Volumes -->
         <div class="pixel-card">
-            <h2 class="pixel-heading mb-4">&#128293; Needs Review</h2>
+            <h2 class="pixel-heading mb-4">{{ render_icon('fire', 18) }} Needs Review</h2>
             {% if overdue_volumes %}
             <div class="space-y-3">
                 {% for vol in overdue_volumes[:10] %}
