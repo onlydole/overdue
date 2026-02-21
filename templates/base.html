@@ -53,7 +53,7 @@
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center space-x-8">
                     <a href="/" class="font-pixel text-gold text-sm tracking-wider hover:text-gold-light transition-colors flex items-center gap-3">
-                        <span class="text-2xl leading-none">&#128218;</span> OVERDUE
+                        {{ render_icon('books', 24) }} OVERDUE
                     </a>
                     <div class="hidden md:flex space-x-1">
                         <a href="/" class="nav-link">Reading Room</a>
@@ -66,6 +66,7 @@
                 <div class="hidden md:flex items-center gap-4">
                     {% if current_user %}
                     <a href="/my-library" class="nav-link">My Library</a>
+                    <a href="/settings" class="nav-link" title="Settings">{{ render_icon('gear', 18) }}</a>
                     <a href="/profile/{{ current_user.id }}" class="flex items-center gap-2 font-pixel text-[8px] text-gold hover:text-gold-light">
                         <span class="w-6 h-6 inline-flex items-center justify-center">{{ render_avatar(current_user.avatar_id|default('avatar_01'), 24) }}</span>
                         {{ current_user.username }}
@@ -100,6 +101,7 @@
                 <a href="/how-to-play" class="block nav-link">How to Play</a>
                 {% if current_user %}
                 <a href="/my-library" class="block nav-link">My Library</a>
+                <a href="/settings" class="block nav-link">Settings</a>
                 <a href="/profile/{{ current_user.id }}" class="flex items-center gap-2 nav-link text-gold">
                     <span class="w-6 h-6 inline-flex items-center justify-center">{{ render_avatar(current_user.avatar_id|default('avatar_01'), 24) }}</span>
                     {{ current_user.username }}
@@ -124,6 +126,12 @@
     </footer>
 
     <div id="toast-container" class="fixed top-20 right-4 z-50 space-y-2" style="pointer-events: none;"></div>
+
+    <!-- Pre-rendered pixel art icons for JS toast messages -->
+    <template id="icon-star">{{ render_icon('star', 12) }}</template>
+    <template id="icon-fire">{{ render_icon('fire', 12) }}</template>
+    <template id="icon-trophy">{{ render_icon('trophy', 12) }}</template>
+    <template id="icon-crown">{{ render_icon('crown', 12) }}</template>
 
     <script src="/static/js/gauges.js"></script>
     <script src="/static/js/app.js"></script>
