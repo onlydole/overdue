@@ -2,7 +2,8 @@
 
 from fastapi import Request
 from fastapi.responses import RedirectResponse
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import PyJWTError as JWTError
 from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
