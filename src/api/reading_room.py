@@ -5,7 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.volumes import calculate_dewey_score
-from src.config.defaults import DEWEY_OVERDUE, MOODS
+from src.config.defaults import DEWEY_OVERDUE, MOODS, DEWEY_NEEDS_ATTENTION
 from src.db.engine import get_session
 from src.db.tables import VolumeRow
 
@@ -67,4 +67,39 @@ async def health_check(
         "total_volumes": total_volumes,
         "overdue_volumes": overdue_count,
         "average_dewey_score": round(avg_score, 1),
+    }
+
+
+@router.get("/overdue")
+async def overdue_report(
+    session: AsyncSession = Depends(get_session),
+) -> dict:
+    """Get a report of all overdue volumes needing review."""
+    volumes_result = await session.execute(
+        select(VolumeRow).where(VolumeRow.archived == False)  # noqa: E712
+    )
+    volumes = volumes_result.scalars().all()
+
+    overdue_items = []
+    needs_attention = []
+
+    for v in volumes:
+        score = calculate_dewey_score(v.last_reviewed_at)
+        entry = {
+            "id": v.id,
+            "title": v.title,
+            "shelf_id": v.shelf_id,
+            "dewey_score": round(score, 1),
+            "last_reviewed_at": v.last_reviewed_at.isoformat(),
+        }
+        if score <= DEWEY_OVERDUE:
+            overdue_items.append(entry)
+        elif score <= DEWEY_NEEDS_ATTENTION:
+            needs_attention.append(entry)
+
+    return {
+        "overdue": overdue_items,
+        "needs_attention": needs_attention,
+        "total_overdue": len(overdue_items),
+        "total_needs_attention": len(needs_attention),
     }
