@@ -40,8 +40,9 @@ All user-facing text and code identifiers use library-themed names. Never use th
 All decorative visuals are custom-built pixel art SVGs. This is a hard rule:
 
 - **NO emoji** anywhere in templates, JS, or Python-rendered HTML. Every decorative element uses a pixel art icon or avatar.
-- **Icons** (8x8 pixel grid): Defined in `src/game/icons.py`. Rendered via the `render_icon(name, size)` Jinja2 global, which returns a `Markup()` object containing an inline SVG. Use `{{ render_icon("star", 16) }}` in templates.
-- **Avatars** (16x16 pixel grid): Defined in `src/game/avatars.py`. 12 custom librarian portraits with unique hair styles, skin tones, outfits, and optional glasses. Rendered via the `render_avatar(avatar_id, size)` Jinja2 global. Use `{{ render_avatar("avatar_01", 32) }}` in templates.
+- **Icons** (16x16 pixel grid, GBA-era fidelity): Defined in the `src/game/icons/` package (split by category: `_books.py`, `_nature.py`, `_achievements.py`, `_objects.py`, `_characters.py`). Shared palette and shading helpers in `_palette.py`. Rendered via the `render_icon(name, size)` Jinja2 global, which returns a `Markup()` object containing an inline SVG. Use `{{ render_icon("star", 16) }}` in templates.
+- **Avatars** (32x32 pixel grid, GBA-era fidelity): Defined in `src/game/avatars.py`. 12 custom librarian portraits with detailed facial features, strand-level hair, skin shading, and outfit detail. Rendered via the `render_avatar(avatar_id, size)` Jinja2 global. Use `{{ render_avatar("avatar_01", 32) }}` in templates.
+- **Shared palette**: `src/game/icons/_palette.py` provides 4-step shading ramps (highlight, base, shadow, deep_shadow) for GOLD, FLAME, GREEN, BLUE, PURPLE, PARCHMENT, INK. Also provides `darken()`, `lighten()`, and `blend_colors()` helpers used by both icons and avatars.
 - **Rendering pipeline**: Pixel coordinates -> list of `(x, y, color)` tuples -> SVG `<rect>` elements -> joined into `<svg>` string -> wrapped in `Markup()` -> registered as Jinja2 global -> called in templates.
 
 ### Typography
@@ -86,8 +87,16 @@ overdue/
       streaks.py            # Daily review streak tracking
       mood.py               # Volume mood / Dewey Score decay
       engine.py             # Game action processor (review -> XP + badges + streak)
-      avatars.py            # 12 pixel art librarian avatars (16x16 SVG)
-      icons.py              # Pixel art icon system (8x8 SVG)
+      avatars.py            # 12 pixel art librarian avatars (32x32 SVG)
+      icons/                # Pixel art icon system (16x16 SVG, GBA-era)
+        __init__.py          # Re-exports render_icon_svg, get_icon_names
+        _palette.py          # Shared color ramps + blend/darken/lighten helpers
+        _renderer.py         # render_icon_svg() with viewBox="0 0 16 16"
+        _books.py            # books, book-open, book-closed, scroll, bookmark, clipboard
+        _nature.py           # fire, moon, star, sparkles, zap
+        _achievements.py     # trophy, crown, award, chart
+        _objects.py          # clock, search, key, hourglass, gear, house, library, construction
+        _characters.py       # person, robot, gamepad, play, checkmark
       bots.py               # AI bot player engine (create, simulate, remove)
     models/                 # Pydantic & SQLAlchemy models
       volume.py             # Volume request/response schemas
@@ -161,16 +170,19 @@ When a librarian performs an action (e.g., reviewing a volume), the flow is:
 
 ### Adding a New Pixel Art Icon
 
-1. Define the pixel map in `src/game/icons.py` as a list of `(x, y, color)` tuples on an 8x8 grid
-2. Add it to the `ICON_CATALOG` dict with a descriptive name
-3. Use it in templates: `{{ render_icon("your_icon_name", 16) }}`
+1. Choose the appropriate category file in `src/game/icons/` (e.g., `_books.py`, `_nature.py`)
+2. Define the pixel map as a list of `(x, y, color)` tuples on a **16x16 grid** (coordinates 0-15)
+3. Use colors from `_palette.py` — apply 4-step shading ramps (highlight, base, shadow, deep_shadow)
+4. Add a `register("your_icon_name", [...])` call inside the category's `register_icons()` function
+5. Use it in templates: `{{ render_icon("your_icon_name", 16) }}`
 
 ### Adding a New Avatar
 
 1. Add the avatar definition to `AVATAR_CATALOG` in `src/game/avatars.py`
 2. Define skin tone, hair style, hair color, glasses, and outfit color
-3. Pick or create a hair builder function from `_HAIR_BUILDERS`
-4. Use in templates: `{{ render_avatar("avatar_XX", 32) }}`
+3. Pick or create a hair builder function from `_HAIR_BUILDERS` (coordinates on **32x32 grid**, 0-31)
+4. Use shading helpers from `src.game.icons._palette`: `darken()`, `lighten()`, `blend_colors()`
+5. Use in templates: `{{ render_avatar("avatar_XX", 32) }}`
 
 ## Testing
 
