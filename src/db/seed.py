@@ -55,6 +55,7 @@ async def seed_demo_data(session: AsyncSession) -> None:
             hashed_password=hashed,
             role="Archivist",
             total_xp=2500,
+            avatar_id="avatar_01",
         ),
         LibrarianRow(
             username="paige",
@@ -62,6 +63,7 @@ async def seed_demo_data(session: AsyncSession) -> None:
             hashed_password=hashed,
             role="Librarian",
             total_xp=750,
+            avatar_id="avatar_07",
         ),
         LibrarianRow(
             username="dewey",
@@ -69,6 +71,7 @@ async def seed_demo_data(session: AsyncSession) -> None:
             hashed_password=hashed,
             role="Page",
             total_xp=45,
+            avatar_id="avatar_05",
         ),
     ]
     for lib in librarians:
@@ -207,4 +210,11 @@ async def seed_demo_data(session: AsyncSession) -> None:
         )
         session.add(badge)
 
+    await session.commit()
+
+    # --- Seed Bots for an active leaderboard out-of-box ---
+    from src.game.bots import create_bot
+
+    await create_bot(session, "casual", name="bookworm42")
+    await create_bot(session, "diligent", name="scholar_jane")
     await session.commit()

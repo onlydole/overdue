@@ -31,6 +31,7 @@ def serve(
 from src.cli.commands.auth import app as auth_app
 from src.cli.commands.shelves import app as shelves_app
 from src.cli.commands.volumes import app as volumes_app
+from src.cli.commands.bots import app as bots_app
 from src.cli.commands.seed import app as seed_app
 from src.cli.commands.stats import app as stats_app
 
@@ -39,3 +40,4 @@ app.add_typer(shelves_app, name="shelves")
 app.add_typer(volumes_app, name="volumes")
 app.add_typer(stats_app, name="stats")
 app.add_typer(seed_app, name="seed")
+app.add_typer(bots_app, name="bots")
