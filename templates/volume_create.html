@@ -4,7 +4,7 @@
 {% block content %}
 <div class="max-w-2xl mx-auto space-y-6">
     <div class="flex items-center gap-4">
-        <a href="/shelves" class="pixel-btn pixel-btn-outline text-[8px]">&larr; Back</a>
+        <a href="/shelves" class="pixel-btn pixel-btn-outline text-[10px]">&larr; Back</a>
         <h1 class="pixel-heading-lg">Shelve a Volume</h1>
     </div>
 
@@ -20,7 +20,7 @@
         <form method="post" action="/volumes/create" class="space-y-5">
             <div>
                 <label for="title" class="pixel-label block mb-2">Title</label>
-                <input type="text" id="title" name="title" required maxlength="255"
+                <input type="text" id="title" name="title" required maxlength="60"
                        value="{{ title|default('') }}"
                        class="w-full bg-pixel-bg border-3 border-pixel-border text-parchment font-retro text-lg px-4 py-3 focus:border-gold focus:outline-none"
                        placeholder="What are you documenting?">
