@@ -5,6 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.volumes import calculate_dewey_score
+from src.auth.library_card import verify_library_card
 from src.db.engine import get_session
 from src.db.tables import ShelfRow, VolumeRow
 from src.models.shelf import ShelfCreate, ShelfListResponse, ShelfResponse, ShelfUpdate
@@ -48,6 +49,7 @@ async def shelf_to_response(row: ShelfRow, session: AsyncSession) -> ShelfRespon
 async def create_shelf(
     body: ShelfCreate,
     session: AsyncSession = Depends(get_session),
+    payload: dict = Depends(verify_library_card),
 ) -> ShelfResponse:
     """Create a new shelf in the library."""
     # Check for duplicate name
@@ -61,7 +63,7 @@ async def create_shelf(
     shelf = ShelfRow(
         name=body.name,
         description=body.description,
-        created_by=1,  # TODO: use authenticated librarian
+        created_by=int(payload["sub"]),
     )
     session.add(shelf)
     await session.commit()
@@ -123,6 +125,7 @@ async def update_shelf(
 async def delete_shelf(
     shelf_id: int,
     session: AsyncSession = Depends(get_session),
+    payload: dict = Depends(verify_library_card),
 ) -> None:
     """Remove a shelf and all its volumes."""
     shelf = await session.get(ShelfRow, shelf_id)

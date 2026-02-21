@@ -9,6 +9,18 @@ All notable changes to Overdue will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2025-01-29
+
+### Added
+- Librarian registration and login endpoints
+- JWT "library card" authentication (24-hour expiry)
+- Role-based access control (circulation desk)
+- Protected endpoints require valid library card
+- Authentication documentation
+
+### Changed
+- Volume and shelf write endpoints now require authentication
+
 ## [0.1.0] - 2025-01-22
 
 ### Added
