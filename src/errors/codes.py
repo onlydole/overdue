@@ -12,4 +12,6 @@ INCIDENT_CODES = {
     "TS-008": "Validation error",
     "TS-009": "Bulletin not found",
     "TS-010": "Webhook delivery failed",
+    "TS-011": "Volume too large",
+    "TS-012": "Deprecated feature used",
 }
