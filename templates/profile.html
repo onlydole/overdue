@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}{{ librarian.username }}'s Profile{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-md p-8">
+        <div class="flex items-center space-x-6">
+            <div class="w-20 h-20 bg-bark rounded-full flex items-center justify-center text-cream text-2xl font-bold">
+                {{ librarian.username[0]|upper }}
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold">{{ librarian.username }}</h1>
+                <p class="text-bark-light text-lg">{{ rank }}</p>
+            </div>
+        </div>
+
+        <!-- XP Progress Bar -->
+        <div class="mt-6">
+            <div class="flex items-center justify-between text-sm mb-2">
+                <span class="font-medium">{{ librarian.total_xp }} pages read</span>
+                {% if next_rank %}
+                <span class="text-bark-light">{{ xp_to_next }} to {{ next_rank }}</span>
+                {% else %}
+                <span class="text-amber-dark font-medium">Max rank achieved!</span>
+                {% endif %}
+            </div>
+            <div class="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-amber to-forest rounded-full transition-all bookmark-ribbon"
+                     style="width: {{ progress }}%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Streak -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold mb-4">Review Streak</h2>
+            <div class="flex items-center space-x-8">
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-rust">{{ streak.current_streak }}</div>
+                    <div class="text-xs text-bark-light mt-1">Current</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-amber-dark">{{ streak.longest_streak }}</div>
+                    <div class="text-xs text-bark-light mt-1">Longest</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent XP -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold mb-4">Recent Pages</h2>
+            {% if recent_awards %}
+            <ul class="space-y-2">
+                {% for award in recent_awards %}
+                <li class="flex items-center justify-between text-sm">
+                    <span>{{ award.reason }}</span>
+                    <span class="font-bold text-forest">+{{ award.amount }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-bark-light">No recent activity.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Badges -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-bold mb-4">Badges</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {% for badge in badges %}
+            <div class="text-center p-4 bg-cream rounded-lg">
+                <img src="/static/img/badges/{{ badge.icon }}.svg" alt="{{ badge.name }}" class="w-12 h-12 mx-auto">
+                <div class="font-medium text-sm mt-2">{{ badge.name }}</div>
+                <div class="text-xs text-bark-light">{{ badge.description }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
