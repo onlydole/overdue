@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from src.api.volumes import calculate_dewey_score
 from src.auth.web_session import get_current_librarian_optional
@@ -21,7 +22,12 @@ async def volume_detail(
 ):
     """Render a volume detail page."""
     current_user = await get_current_librarian_optional(request, session)
-    volume = await session.get(VolumeRow, volume_id)
+    result = await session.execute(
+        select(VolumeRow)
+        .where(VolumeRow.id == volume_id)
+        .options(selectinload(VolumeRow.author))
+    )
+    volume = result.scalar_one_or_none()
     if not volume:
         return templates.TemplateResponse("dashboard.html", {
             "request": request,

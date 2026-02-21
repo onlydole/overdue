@@ -9,6 +9,12 @@
         <div class="flex flex-col md:flex-row items-start gap-6">
             <div class="flex-1">
                 <h1 class="pixel-heading-lg mb-3">{{ volume.title }}</h1>
+                {% if volume.author %}
+                <a href="/profile/{{ volume.author.id }}" class="inline-flex items-center gap-2 mb-3 group">
+                    {{ render_avatar(volume.author.avatar_id, 24) }}
+                    <span class="font-retro text-sm text-ink-light group-hover:text-gold transition-colors">by {{ volume.author.username }}</span>
+                </a>
+                {% endif %}
                 {% if bookmarks %}
                 <div class="flex flex-wrap gap-2 mb-4">
                     {% for tag in bookmarks %}
