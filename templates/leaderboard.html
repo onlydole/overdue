@@ -4,7 +4,7 @@
 {% block content %}
 <div class="space-y-8">
     <div class="pixel-card text-center py-6">
-        <div class="text-3xl mb-3">&#127942;</div>
+        <div class="mb-3">{{ render_icon('trophy', 32) }}</div>
         <h1 class="pixel-heading-lg mb-2">Leaderboard</h1>
         <p class="text-parchment-dark text-lg">Top librarians ranked by pages read.</p>
     </div>
@@ -36,7 +36,7 @@
                     <div class="flex items-center gap-2">
                         <div class="w-7 h-7 flex items-center justify-center">{{ entry.avatar_svg|safe }}</div>
                         <a href="/profile/{{ entry.librarian_id }}" class="text-parchment text-lg {% if entry.position <= 3 %}font-bold{% endif %} hover:text-gold transition-colors">{{ entry.username }}</a>
-                        {% if entry.is_bot %}<span title="Bot player" class="text-sm">&#129302;</span>{% endif %}
+                        {% if entry.is_bot %}<span title="Bot player">{{ render_icon('robot', 16) }}</span>{% endif %}
                     </div>
                 </div>
                 <span class="font-pixel text-[10px] text-dewey-pristine">{{ entry.total_xp }} XP</span>
@@ -93,7 +93,7 @@
                         <div class="flex items-center gap-2">
                             <div class="w-7 h-7 flex items-center justify-center">{{ entry.avatar_svg|safe }}</div>
                             <a href="/profile/{{ entry.librarian_id }}" class="text-parchment text-lg {% if entry.position <= 3 %}font-bold{% endif %} hover:text-gold transition-colors">{{ entry.username }}</a>
-                            {% if entry.is_bot %}<span title="Bot player" class="text-sm">&#129302;</span>{% endif %}
+                            {% if entry.is_bot %}<span title="Bot player">{{ render_icon('robot', 16) }}</span>{% endif %}
                         </div>
                     </td>
                     <td class="px-4 py-4">
@@ -109,7 +109,7 @@
                     </td>
                     <td class="px-4 py-4 text-right">
                         {% if entry.current_streak > 0 %}
-                        <span class="font-pixel text-[10px] text-streak">{{ entry.current_streak }}d &#128293;</span>
+                        <span class="font-pixel text-[10px] text-streak">{{ entry.current_streak }}d {{ render_icon('fire', 12) }}</span>
                         {% else %}
                         <span class="text-ink-light">--</span>
                         {% endif %}
@@ -121,7 +121,7 @@
     </div>
     {% else %}
     <div class="pixel-card text-center py-12">
-        <div class="text-4xl mb-4">&#128100;</div>
+        <div class="mb-4">{{ render_icon('person', 32) }}</div>
         <p class="text-parchment text-lg mb-2">No librarians yet.</p>
         <p class="text-ink-light">Register to be the first on the leaderboard!</p>
     </div>
