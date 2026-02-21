@@ -5,7 +5,9 @@
     <li class="flex items-center gap-3 text-base">
         <span class="text-dewey-pristine">{{ render_icon('play', 14, '#5cdb5c') }}</span>
         <span class="text-ink-light">{{ review.reviewed_at.strftime('%b %d, %H:%M') }}</span>
-        <span class="text-parchment">Volume #{{ review.volume_id }} reviewed</span>
+        <span class="text-parchment">{{ review.librarian.username }}</span>
+        <span class="text-ink-light">reviewed</span>
+        <a href="/volumes/{{ review.volume_id }}" class="text-gold hover:underline">{{ review.volume.title }}</a>
     </li>
     {% endfor %}
 </ul>
