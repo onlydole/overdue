@@ -1,5 +1,5 @@
 <!-- OOB swap: update the Dewey gauge in place -->
-<div id="dewey-gauge-container" hx-swap-oob="true" class="flex flex-col items-center gap-3">
+<div id="dewey-gauge-container" hx-swap-oob="innerHTML" class="flex flex-col items-center gap-3">
     <div class="dewey-gauge w-24 h-24 flex items-center justify-center" data-score="{{ dewey_score }}"></div>
     <span class="pixel-label">Dewey Score</span>
 </div>
@@ -21,7 +21,7 @@
         <div class="flex flex-wrap gap-3 mt-4">
             <button hx-post="/volumes/{{ volume.id }}/review"
                     hx-target="#review-section"
-                    hx-swap="outerHTML"
+                    hx-swap="outerHTML settle:300ms"
                     class="pixel-btn pixel-btn-green review-btn group">
                 <span class="htmx-hide-on-request">{{ render_icon('play', 12) }} Review Again</span>
                 <span class="htmx-indicator">{{ render_icon('hourglass', 12) }} Reviewing...</span>
@@ -29,6 +29,7 @@
 
             {% if next_volume %}
             <a href="/volumes/{{ next_volume.id }}"
+               hx-boost="true"
                class="pixel-btn pixel-btn-gold">
                 {{ render_icon('play', 12) }} Review Next: {{ next_volume.title[:20] }}{% if next_volume.title|length > 20 %}...{% endif %} ({{ next_volume.dewey_score }})
             </a>
