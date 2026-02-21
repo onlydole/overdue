@@ -1,21 +1,49 @@
+<!-- OOB swap: update the Dewey gauge in place -->
+<div id="dewey-gauge-container" hx-swap-oob="true" class="flex flex-col items-center gap-3">
+    <div class="dewey-gauge w-24 h-24 flex items-center justify-center" data-score="{{ dewey_score }}"></div>
+    <span class="pixel-label">Dewey Score</span>
+</div>
+
 <!-- Replaces the review section after a successful review via HTMX -->
 <div id="review-section">
     <div class="mt-8 border-t-2 border-pixel-border pt-6">
         <div class="flex items-center gap-4 mb-4">
-            <span class="font-pixel text-[10px] text-dewey-pristine">&#9989; Reviewed!</span>
+            <span class="stamp-in font-pixel text-sm text-dewey-pristine">{{ render_icon('checkmark', 14, '#5cdb5c') }} Reviewed!</span>
             {% if game_result and game_result.xp_awarded > 0 %}
-            <span class="xp-pop font-pixel text-[10px]">+{{ game_result.xp_awarded }} XP</span>
+            <span class="xp-pop font-pixel text-sm">+{{ game_result.xp_awarded }} XP</span>
             {% endif %}
             {% if game_result and game_result.streak > 0 %}
-            <span class="font-pixel text-[9px] text-streak">&#128293; {{ game_result.streak }}d streak</span>
+            <span class="font-pixel text-xs text-streak"><span class="fire-flicker">{{ render_icon('fire', 12) }}</span> {{ game_result.streak }}d streak</span>
             {% endif %}
         </div>
-        <button hx-post="/volumes/{{ volume.id }}/review"
-                hx-target="#review-section"
-                hx-swap="outerHTML"
-                class="pixel-btn pixel-btn-green">
-            &#9654; Review Again
-        </button>
+
+        <!-- Action buttons -->
+        <div class="flex flex-wrap gap-3 mt-4">
+            <button hx-post="/volumes/{{ volume.id }}/review"
+                    hx-target="#review-section"
+                    hx-swap="outerHTML"
+                    class="pixel-btn pixel-btn-green review-btn group">
+                <span class="htmx-hide-on-request">{{ render_icon('play', 12) }} Review Again</span>
+                <span class="htmx-indicator">{{ render_icon('hourglass', 12) }} Reviewing...</span>
+            </button>
+
+            {% if next_volume %}
+            <a href="/volumes/{{ next_volume.id }}"
+               class="pixel-btn pixel-btn-gold">
+                {{ render_icon('play', 12) }} Review Next: {{ next_volume.title[:20] }}{% if next_volume.title|length > 20 %}...{% endif %} ({{ next_volume.dewey_score }})
+            </a>
+            {% endif %}
+
+            <a href="/shelves/{{ volume.shelf_id }}" class="pixel-btn pixel-btn-outline">
+                &larr; Back to Shelf
+            </a>
+
+            {% if not next_volume %}
+            <a href="/my-library" class="pixel-btn pixel-btn-gold">
+                {{ render_icon('checkmark', 12) }} All caught up! Back to Library
+            </a>
+            {% endif %}
+        </div>
     </div>
 
     {% if reviews %}
@@ -25,12 +53,12 @@
             {% for review in reviews %}
             <div class="flex items-center justify-between py-3 border-b-2 border-pixel-border/30 last:border-0">
                 <div class="flex items-center gap-3">
-                    <span class="text-dewey-pristine">&#9654;</span>
+                    <span class="text-dewey-pristine">{{ render_icon('play', 14, '#5cdb5c') }}</span>
                     <span class="text-parchment">{{ review.reviewed_at.strftime('%B %d, %Y at %H:%M') }}</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="pixel-label">Score before</span>
-                    <span class="font-pixel text-[10px]"
+                    <span class="font-pixel text-sm"
                           style="color: {% if review.dewey_score_before >= 75 %}#5cdb5c{% elif review.dewey_score_before >= 50 %}#a0d468{% elif review.dewey_score_before >= 25 %}#f6bb42{% else %}#e8563e{% endif %}">
                         {{ review.dewey_score_before|round(1) }}
                     </span>

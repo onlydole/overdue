@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="space-y-8">
-    <a href="/shelves/{{ volume.shelf_id }}" class="pixel-btn pixel-btn-outline text-[8px]">&larr; Back to shelf</a>
+    <a href="/shelves/{{ volume.shelf_id }}" class="pixel-btn pixel-btn-outline text-[10px]">&larr; Back to shelf</a>
 
     <div class="pixel-card">
         <div class="flex flex-col md:flex-row items-start gap-6">
@@ -12,7 +12,7 @@
                 {% if bookmarks %}
                 <div class="flex flex-wrap gap-2 mb-4">
                     {% for tag in bookmarks %}
-                    <span class="font-pixel text-[8px] text-gold bg-pixel-highlight/30 border-2 border-gold/30 px-3 py-1 uppercase">{{ tag }}</span>
+                    <span class="font-pixel text-xs text-gold bg-pixel-highlight/30 border-2 border-gold/30 px-3 py-1 uppercase">{{ tag }}</span>
                     {% endfor %}
                 </div>
                 {% endif %}
@@ -27,7 +27,7 @@
             </div>
 
             <!-- Dewey Score Gauge -->
-            <div class="flex flex-col items-center gap-3">
+            <div id="dewey-gauge-container" class="flex flex-col items-center gap-3">
                 <div class="dewey-gauge w-24 h-24 flex items-center justify-center" data-score="{{ dewey_score }}"></div>
                 <span class="pixel-label">Dewey Score</span>
             </div>
@@ -39,8 +39,9 @@
                 <button hx-post="/volumes/{{ volume.id }}/review"
                         hx-target="#review-section"
                         hx-swap="outerHTML"
-                        class="pixel-btn pixel-btn-green">
-                    &#9654; Review This Volume
+                        class="pixel-btn pixel-btn-green review-btn group">
+                    <span class="htmx-hide-on-request">{{ render_icon('play', 12) }} Review This Volume</span>
+                    <span class="htmx-indicator">{{ render_icon('hourglass', 12) }} Reviewing...</span>
                 </button>
                 {% else %}
                 <a href="/login" class="pixel-btn pixel-btn-outline">
@@ -56,12 +57,12 @@
                     {% for review in reviews %}
                     <div class="flex items-center justify-between py-3 border-b-2 border-pixel-border/30 last:border-0">
                         <div class="flex items-center gap-3">
-                            <span class="text-dewey-pristine">&#9654;</span>
+                            <span class="text-dewey-pristine">{{ render_icon('play', 14, '#5cdb5c') }}</span>
                             <span class="text-parchment">{{ review.reviewed_at.strftime('%B %d, %Y at %H:%M') }}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="pixel-label">Score before</span>
-                            <span class="font-pixel text-[10px]"
+                            <span class="font-pixel text-sm"
                                   style="color: {% if review.dewey_score_before >= 75 %}#5cdb5c{% elif review.dewey_score_before >= 50 %}#a0d468{% elif review.dewey_score_before >= 25 %}#f6bb42{% else %}#e8563e{% endif %}">
                                 {{ review.dewey_score_before|round(1) }}
                             </span>
