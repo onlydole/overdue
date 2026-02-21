@@ -110,11 +110,111 @@ _VOLUME_TITLES = [
     "Event-Driven Architecture Notes",
 ]
 
-_VOLUME_CONTENT = (
-    "This is a bot-generated knowledge volume used to seed the library "
-    "with realistic activity.  It covers essential concepts and serves as "
-    "a starting point for further exploration."
-)
+_VOLUME_CONTENT_MAP: dict[str, str] = {
+    "Quick Notes on Sorting Algorithms": (
+        "Merge sort guarantees O(n log n) but needs extra memory for the merge step. "
+        "Quicksort is faster in practice thanks to cache locality, though worst-case is O(n²) "
+        "if you pick bad pivots. For small arrays insertion sort wins due to low overhead."
+    ),
+    "My Thoughts on REST APIs": (
+        "Keep endpoints noun-based and let HTTP verbs do the work — POST to create, "
+        "PUT to replace, PATCH to update fields. Consistent error shapes save hours of "
+        "client-side debugging. Always version your API from day one."
+    ),
+    "Introduction to Graph Theory": (
+        "A graph is just vertices and edges, but the problems you can model are endless. "
+        "BFS finds shortest paths in unweighted graphs; Dijkstra handles weights. "
+        "Watch out for cycles when doing DFS — track visited nodes or you'll loop forever."
+    ),
+    "Basics of SQL Joins": (
+        "INNER JOIN returns only matching rows from both tables. LEFT JOIN keeps all rows "
+        "from the left table, filling NULLs where nothing matches on the right. "
+        "Self-joins are surprisingly useful for hierarchical data like org charts."
+    ),
+    "Understanding HTTP Status Codes": (
+        "2xx means success, 3xx means redirect, 4xx means the client messed up, 5xx means "
+        "the server did. The most misused is 403 vs 401 — 401 means not authenticated, "
+        "403 means authenticated but not authorized. 204 is great for successful deletes."
+    ),
+    "A Short Guide to Regex": (
+        "Start simple: \\d for digits, \\w for word characters, . for anything. "
+        "Quantifiers like + and * are greedy by default — append ? to make them lazy. "
+        "Named capture groups (?P<name>...) make extraction code much more readable."
+    ),
+    "Exploring Data Structures": (
+        "Hash maps give O(1) average lookup but degrade to O(n) with bad hash functions. "
+        "Linked lists shine for frequent insertions at arbitrary positions. "
+        "A heap is the go-to when you need fast access to the min or max element."
+    ),
+    "Tips for Code Reviews": (
+        "Focus on correctness and clarity first, style nits last. Ask questions instead of "
+        "making demands — 'What happens if this is null?' lands better than 'Fix this.' "
+        "Small PRs get better reviews; aim for under 400 lines of diff."
+    ),
+    "Concurrency Patterns Cheat Sheet": (
+        "Mutexes protect shared state but can deadlock if you lock in inconsistent order. "
+        "Channels (Go-style) or async queues (Python) decouple producers from consumers. "
+        "The actor model avoids shared state entirely — each actor owns its data."
+    ),
+    "Functional Programming Primer": (
+        "Pure functions always return the same output for the same input and have no side "
+        "effects. Map, filter, and reduce replace most imperative loops. Immutable data "
+        "structures prevent whole categories of bugs but can need careful memory management."
+    ),
+    "How DNS Works": (
+        "Your browser asks a recursive resolver, which walks the hierarchy: root servers → "
+        "TLD servers → authoritative nameservers. Results get cached at each layer based on "
+        "TTL values. Low TTLs enable fast failover but increase lookup traffic."
+    ),
+    "Container Orchestration 101": (
+        "Containers package an app with its dependencies; orchestrators decide where and "
+        "how many to run. Kubernetes uses pods as the scheduling unit — a pod can hold "
+        "tightly coupled containers that share networking. Start with Deployments and Services."
+    ),
+    "Git Branching Strategies": (
+        "Trunk-based development keeps branches short-lived and merges frequently. "
+        "Feature branches isolate work but diverge fast if left open too long. "
+        "Rebase before merge for a linear history; squash if the intermediate commits are noise."
+    ),
+    "Memory Management Fundamentals": (
+        "Stack allocation is fast but limited to known sizes and scopes. Heap allocation "
+        "is flexible but slower and needs explicit or GC-managed cleanup. Reference counting "
+        "handles most cases but can't collect cycles without a tracing GC pass."
+    ),
+    "Event-Driven Architecture Notes": (
+        "Events decouple producers from consumers — the order service publishes "
+        "'order.placed' without knowing who listens. Use an event broker like Kafka or "
+        "RabbitMQ for durability. Idempotent handlers are essential since events can arrive twice."
+    ),
+}
+
+_GENERIC_CONTENT_POOL: list[str] = [
+    (
+        "Spent an hour digging into this topic and the key insight is that the abstractions "
+        "we use shape how we think about the problem. Understanding the fundamentals pays "
+        "off every time you hit an edge case the framework doesn't cover."
+    ),
+    (
+        "The official documentation is solid but skips some practical gotchas. Bookmarking "
+        "this for the next time I need a refresher. The examples in chapter three were "
+        "particularly useful for building intuition."
+    ),
+    (
+        "Tried to summarize the core concepts in a way that would make sense to someone "
+        "seeing this for the first time. The mental model that helped me most was thinking "
+        "of each layer as a contract between components."
+    ),
+    (
+        "These notes are from a deep-dive study session. The tricky part is knowing when "
+        "to apply each technique — context matters more than any single rule. Revisiting "
+        "this periodically keeps the patterns fresh."
+    ),
+    (
+        "Collected the most important points from several sources and distilled them here. "
+        "The common thread is that simplicity beats cleverness. When in doubt, write the "
+        "straightforward version first and optimize only if measurements demand it."
+    ),
+]
 
 
 # =========================================================================
@@ -278,18 +378,16 @@ async def create_bot(
         random.shuffle(available_titles)
 
         for i in range(num_volumes):
-            title = (
-                available_titles[i % len(available_titles)]
-                + f" (by {name})"
-            )
+            title = available_titles[i % len(available_titles)]
             shelf = random.choice(shelves)
             created_at = now - timedelta(
                 days=random.randint(1, 45),
                 hours=random.randint(0, 23),
             )
+            content = _VOLUME_CONTENT_MAP.get(title, random.choice(_GENERIC_CONTENT_POOL))
             volume = VolumeRow(
                 title=title,
-                content=_VOLUME_CONTENT,
+                content=content,
                 shelf_id=shelf.id,
                 author_id=bot.id,
                 created_at=created_at,
