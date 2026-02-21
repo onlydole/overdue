@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from src.config.defaults import QUIET_HOURS_REQUESTS_PER_MINUTE
 from src.config.settings import settings
@@ -26,7 +27,7 @@ async def lifespan(app: FastAPI):  # type: ignore[no-untyped-def]
 app = FastAPI(
     title=settings.app_name,
     description="Don't let your knowledge expire.",
-    version="0.3.0",
+    version="0.6.0",
     lifespan=lifespan,
 )
 
@@ -67,7 +68,12 @@ async def quiet_hours_middleware(request: Request, call_next):  # type: ignore[n
     return response
 
 
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Import and include routers after app creation to avoid circular imports
 from src.api.router import api_router  # noqa: E402
+from src.web.router import web_router  # noqa: E402
 
 app.include_router(api_router, prefix="/api")
+app.include_router(web_router)

@@ -9,6 +9,20 @@ All notable changes to Overdue will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] - 2025-02-26
+
+### Added
+- Web dashboard served by FastAPI with Jinja2 templates
+- Reading Room dashboard page with mood indicator and Dewey Score distribution
+- Shelf browsing page with visual bookshelf grid and color-coded progress bars
+- Shelf detail page with book spine visualization
+- Volume detail page with Dewey Score gauge and review history
+- Librarian profile page with rank, XP progress bar, badge grid, and streak counter
+- Leaderboard page with rankings table
+- HTMX partials for interactive updates
+- Static assets (Tailwind CSS, custom styles, HTMX, Alpine.js, Dewey gauge JS)
+- Badge SVG icons (book-open, sparkles, fire, star, library, moon, zap, trophy)
+
 ## [0.5.0] - 2025-02-19
 
 ### Added
