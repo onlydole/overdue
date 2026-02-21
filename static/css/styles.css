@@ -6,12 +6,15 @@
 
 * { image-rendering: pixelated; }
 
-/* Nav links */
+/* Nav links -- minimum 44px touch target */
 .nav-link {
     font-family: 'VT323', monospace;
     font-size: 1.15rem;
     color: #d4c4a8;
-    padding: 0.4rem 0.75rem;
+    padding: 0.6rem 0.75rem;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
     border: 2px solid transparent;
     transition: all 0.15s ease;
 }
@@ -29,18 +32,21 @@
     padding: 1.25rem;
     position: relative;
 }
-.pixel-card:hover {
-    border-color: #4a4a7a;
-    box-shadow: 6px 6px 0 #0f0e17;
-    transform: translate(-1px, -1px);
-    transition: all 0.15s ease;
+@media (hover: hover) {
+    .pixel-card:hover {
+        border-color: #4a4a7a;
+        box-shadow: 6px 6px 0 #0f0e17;
+        transform: translate(-1px, -1px);
+        transition: all 0.15s ease;
+    }
 }
 
-/* Pixel-style button */
+/* Pixel-style button -- minimum 44px touch target */
 .pixel-btn {
     font-family: 'Press Start 2P', cursive;
     font-size: 0.6rem;
     padding: 0.75rem 1.25rem;
+    min-height: 44px;
     border: 3px solid;
     box-shadow: 4px 4px 0 #0f0e17;
     cursor: pointer;
@@ -292,4 +298,93 @@
     }
     .pixel-heading { font-size: 0.7rem; }
     .pixel-stat { font-size: 1rem; }
+    .pixel-heading-lg { font-size: 0.85rem; }
+}
+
+/* ============================================================
+   FORM INPUTS
+   ============================================================ */
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+    font-family: 'VT323', monospace;
+    min-height: 44px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+button:focus-visible,
+a:focus-visible {
+    outline: 2px solid #f0c543;
+    outline-offset: 2px;
+}
+
+select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238b8b9e' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+/* ============================================================
+   TOAST ANIMATIONS
+   ============================================================ */
+
+@keyframes toast-slide-in {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes toast-fade-out {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-20px); }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    .pixel-bounce,
+    .fire-flicker,
+    .dust-particle,
+    .xp-pop,
+    .pulse-attention,
+    .gold-shimmer {
+        animation: none !important;
+    }
+    .pixel-card,
+    .pixel-btn,
+    .book-spine,
+    .nav-link {
+        transition: none !important;
+    }
+}
+
+/* ============================================================
+   MINIMUM FONT SIZES
+   ============================================================ */
+
+.pixel-label {
+    font-size: max(0.5rem, 10px);
+}
+
+/* ============================================================
+   BOOK SPINE HORIZONTAL SCROLL (MOBILE)
+   ============================================================ */
+
+@media (max-width: 768px) {
+    .book-spine-container {
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+    }
+    .book-spine-container > a {
+        scroll-snap-align: start;
+    }
 }

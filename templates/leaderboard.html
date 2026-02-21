@@ -10,7 +10,48 @@
     </div>
 
     {% if entries %}
-    <div class="pixel-card overflow-x-auto">
+    <!-- Mobile card layout -->
+    <div class="md:hidden space-y-3">
+        {% for entry in entries %}
+        <div class="pixel-card">
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-3">
+                    {% if entry.position == 1 %}
+                    <span class="w-8 h-8 inline-flex items-center justify-center bg-gold/20 border-2 border-gold">
+                        <span class="font-pixel text-[10px] text-gold">1</span>
+                    </span>
+                    {% elif entry.position == 2 %}
+                    <span class="w-8 h-8 inline-flex items-center justify-center bg-ink-light/20 border-2 border-ink-light">
+                        <span class="font-pixel text-[10px] text-ink-light">2</span>
+                    </span>
+                    {% elif entry.position == 3 %}
+                    <span class="w-8 h-8 inline-flex items-center justify-center bg-streak/20 border-2 border-streak">
+                        <span class="font-pixel text-[10px] text-streak">3</span>
+                    </span>
+                    {% else %}
+                    <span class="w-8 h-8 inline-flex items-center justify-center border-2 border-pixel-border">
+                        <span class="font-pixel text-[10px] text-ink-light">{{ entry.position }}</span>
+                    </span>
+                    {% endif %}
+                    <span class="text-parchment text-lg {% if entry.position <= 3 %}font-bold{% endif %}">{{ entry.username }}</span>
+                </div>
+                <span class="font-pixel text-[10px] text-dewey-pristine">{{ entry.total_xp }} XP</span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+                <span class="pixel-label" style="color: {% if entry.rank == 'Head Librarian' %}#f0c543{% elif entry.rank == 'Archivist' %}#b76ef0{% else %}#8b8b9e{% endif %}">{{ entry.rank }}</span>
+                <div class="flex items-center gap-3">
+                    <span class="font-pixel text-[10px] text-badge-common">{{ entry.badge_count }} badges</span>
+                    {% if entry.current_streak > 0 %}
+                    <span class="font-pixel text-[10px] text-streak">{{ entry.current_streak }}d</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Desktop table layout -->
+    <div class="pixel-card overflow-x-auto hidden md:block">
         <table class="w-full">
             <thead>
                 <tr class="border-b-3 border-gold">

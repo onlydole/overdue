@@ -2,10 +2,14 @@
  * Dewey Score gauge rendering -- pixel art style.
  * Draws segmented progress bars for Dewey Scores.
  */
-document.addEventListener('DOMContentLoaded', function() {
+
+function initGauges() {
     var gauges = document.querySelectorAll('.dewey-gauge');
 
     gauges.forEach(function(gauge) {
+        // Skip already-rendered gauges unless forced
+        if (gauge.dataset.rendered) return;
+
         var score = parseFloat(gauge.dataset.score) || 0;
 
         // Determine color based on score thresholds
@@ -67,5 +71,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 gauge.appendChild(inner);
             }
         }
+
+        gauge.dataset.rendered = 'true';
     });
-});
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', initGauges);
+
+// Re-initialize after HTMX content swaps
+document.body.addEventListener('htmx:afterSwap', initGauges);
