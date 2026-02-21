@@ -176,3 +176,14 @@ Get the library's overall health status.
 Get a report of volumes needing review.
 
 **Response:** Lists of overdue volumes and volumes needing attention with their Dewey Scores.
+
+## Bulletins
+
+### `POST /api/bulletins/`
+Subscribe to webhook notifications for library events.
+
+### `GET /api/bulletins/`
+List your webhook subscriptions.
+
+### `DELETE /api/bulletins/{bulletin_id}`
+Remove a webhook subscription.
