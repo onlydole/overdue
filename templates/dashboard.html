@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Reading Room{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Mood Banner -->
+    <div class="rounded-xl p-8 text-center" style="background-color: {{ mood.color }}20; border: 2px solid {{ mood.color }}">
+        <h1 class="text-3xl font-bold mb-2">{{ mood.mood }}</h1>
+        <p class="text-lg opacity-80">{{ mood.description }}</p>
+        <div class="mt-4 inline-flex items-center space-x-2 bg-white/50 rounded-full px-4 py-2">
+            <span class="text-sm font-medium">Library Dewey Score</span>
+            <span class="text-2xl font-bold" style="color: {{ mood.color }}">{{ mood.average_dewey_score }}</span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Stats Cards -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="text-sm text-bark-light uppercase tracking-wide">Total Volumes</div>
+            <div class="text-4xl font-bold mt-2">{{ total_volumes }}</div>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="text-sm text-bark-light uppercase tracking-wide">Overdue</div>
+            <div class="text-4xl font-bold mt-2 text-rust">{{ overdue_count }}</div>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="text-sm text-bark-light uppercase tracking-wide">Mood</div>
+            <div class="text-2xl font-bold mt-2" style="color: {{ mood.color }}">{{ mood.mood }}</div>
+        </div>
+    </div>
+
+    <!-- Dewey Score Distribution -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-bold mb-4">Dewey Score Distribution</h2>
+        <div class="flex h-8 rounded-full overflow-hidden">
+            {% if total_volumes > 0 %}
+            <div class="bg-forest" style="width: {{ (distribution.pristine / total_volumes * 100)|round }}%" title="Pristine: {{ distribution.pristine }}"></div>
+            <div class="bg-forest-light" style="width: {{ (distribution.good / total_volumes * 100)|round }}%" title="Good: {{ distribution.good }}"></div>
+            <div class="bg-amber" style="width: {{ (distribution.attention / total_volumes * 100)|round }}%" title="Needs attention: {{ distribution.attention }}"></div>
+            <div class="bg-rust" style="width: {{ (distribution.overdue / total_volumes * 100)|round }}%" title="Overdue: {{ distribution.overdue }}"></div>
+            {% else %}
+            <div class="bg-gray-200 w-full flex items-center justify-center text-sm text-gray-500">No volumes yet</div>
+            {% endif %}
+        </div>
+        <div class="flex justify-between mt-2 text-xs text-bark-light">
+            <span>Pristine ({{ distribution.pristine }})</span>
+            <span>Good ({{ distribution.good }})</span>
+            <span>Needs attention ({{ distribution.attention }})</span>
+            <span>Overdue ({{ distribution.overdue }})</span>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="bg-white rounded-lg shadow-md p-6"
+         hx-get="/partials/activity-feed"
+         hx-trigger="every 30s"
+         hx-swap="innerHTML">
+        <h2 class="text-xl font-bold mb-4">Recent Activity</h2>
+        {% if recent_reviews %}
+        <ul class="space-y-3">
+            {% for review in recent_reviews %}
+            <li class="flex items-center space-x-3 text-sm">
+                <span class="w-2 h-2 bg-forest rounded-full"></span>
+                <span class="text-bark-light">{{ review.reviewed_at.strftime('%b %d, %H:%M') }}</span>
+                <span>Volume #{{ review.volume_id }} reviewed</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-bark-light">No recent activity. Time to review some volumes!</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Overdue{% endblock %} -- The Knowledge Library</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/static/js/htmx.min.js"></script>
+    <script src="/static/js/alpine.min.js" defer></script>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: '#FDF6E3',
+                        amber: { light: '#F5E6C8', DEFAULT: '#D4A574', dark: '#8B6914' },
+                        bark: { light: '#8B7355', DEFAULT: '#5C4033', dark: '#3E2723' },
+                        forest: { light: '#4A7C59', DEFAULT: '#2D5A3D', dark: '#1B3A26' },
+                        rust: '#C45D3E',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-cream text-bark-dark min-h-screen">
+    <nav class="bg-bark text-cream shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-8">
+                    <a href="/" class="text-xl font-bold tracking-wide">
+                        <span class="text-amber">Overdue</span>
+                    </a>
+                    <div class="hidden md:flex space-x-4">
+                        <a href="/" class="hover:text-amber transition-colors px-3 py-2">Reading Room</a>
+                        <a href="/shelves" class="hover:text-amber transition-colors px-3 py-2">Shelves</a>
+                        <a href="/leaderboard" class="hover:text-amber transition-colors px-3 py-2">Leaderboard</a>
+                    </div>
+                </div>
+                <div class="text-sm opacity-75">Don't let your knowledge expire.</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-bark-dark text-cream/60 text-center py-6 mt-12">
+        <p class="text-sm">Overdue &middot; A knowledge library game</p>
+    </footer>
+
+    <script src="/static/js/gauges.js"></script>
+</body>
+</html>

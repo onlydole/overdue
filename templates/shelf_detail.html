@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ shelf.name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center space-x-4">
+        <a href="/shelves" class="text-bark-light hover:text-bark transition-colors">&larr; Back to shelves</a>
+    </div>
+
+    <h1 class="text-3xl font-bold">{{ shelf.name }}</h1>
+    {% if shelf.description %}
+    <p class="text-bark-light">{{ shelf.description }}</p>
+    {% endif %}
+
+    <!-- Volume Spines -->
+    {% if volumes %}
+    <div class="bg-bark-dark rounded-lg p-6">
+        <div class="flex flex-wrap gap-2">
+            {% for vol in volumes %}
+            <a href="/volumes/{{ vol.id }}"
+               class="book-spine block rounded px-3 py-8 text-cream text-xs font-medium writing-vertical hover:opacity-80 transition-opacity min-w-[40px] text-center"
+               style="background-color: {% if vol.dewey_score >= 75 %}#2D5A3D{% elif vol.dewey_score >= 50 %}#D4A574{% elif vol.dewey_score >= 25 %}#C45D3E{% else %}#8B2500{% endif %}"
+               title="{{ vol.title }} (Dewey: {{ vol.dewey_score }})">
+                <span class="block truncate" style="max-width: 120px; writing-mode: vertical-rl; text-orientation: mixed;">
+                    {{ vol.title[:30] }}
+                </span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for vol in volumes %}
+        <a href="/volumes/{{ vol.id }}" class="bg-white rounded-lg shadow p-4 hover:shadow-md transition-shadow">
+            <h3 class="font-bold text-sm">{{ vol.title }}</h3>
+            <div class="mt-2 flex items-center justify-between">
+                <div class="dewey-gauge w-16 h-16" data-score="{{ vol.dewey_score }}"></div>
+                <span class="text-xs text-bark-light">Reviewed {{ vol.last_reviewed_at.strftime('%b %d') }}</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12 text-bark-light">
+        <p>This shelf is empty. Shelve some volumes to fill it!</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
