@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Shelves{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <h1 class="text-3xl font-bold">The Stacks</h1>
+    <p class="text-bark-light">Browse the library's shelves and their volumes.</p>
+
+    {% if shelves %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for shelf in shelves %}
+        <a href="/shelves/{{ shelf.id }}" class="block bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border-l-4"
+           style="border-left-color: {% if shelf.average_dewey >= 75 %}#2D5A3D{% elif shelf.average_dewey >= 50 %}#D4A574{% elif shelf.average_dewey >= 25 %}#C45D3E{% else %}#8B2500{% endif %}">
+            <h3 class="text-lg font-bold">{{ shelf.name }}</h3>
+            {% if shelf.description %}
+            <p class="text-sm text-bark-light mt-1">{{ shelf.description }}</p>
+            {% endif %}
+            <div class="mt-4 flex items-center justify-between">
+                <span class="text-sm text-bark-light">{{ shelf.volume_count }} volume{{ 's' if shelf.volume_count != 1 }}</span>
+                <div class="flex items-center space-x-2">
+                    <div class="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full transition-all"
+                             style="width: {{ shelf.average_dewey }}%; background-color: {% if shelf.average_dewey >= 75 %}#2D5A3D{% elif shelf.average_dewey >= 50 %}#D4A574{% elif shelf.average_dewey >= 25 %}#C45D3E{% else %}#8B2500{% endif %}"></div>
+                    </div>
+                    <span class="text-xs font-mono">{{ shelf.average_dewey }}</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-12 text-bark-light">
+        <p class="text-lg">The stacks are empty.</p>
+        <p class="mt-2">Create a shelf to start organizing knowledge.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
