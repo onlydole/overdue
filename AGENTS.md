@@ -45,7 +45,7 @@ All decorative visuals are custom-built pixel art SVGs. This is a hard rule:
 - **NO emoji** anywhere in templates, JS, or Python-rendered HTML. Every decorative element uses a pixel art icon or avatar.
 - **Icons** (16x16 pixel grid, GBA-era fidelity): Defined in `src/game/icons/` (split by category: `_books.py`, `_nature.py`, `_achievements.py`, `_objects.py`, `_characters.py`). Shared palette and shading helpers in `_palette.py`. Rendered as static `<img>` tags pointing to pre-rendered SVGs in `static/icons/`. For uncommon tint colors, falls back to inline SVG. Use `{{ render_icon("star", 16) }}` in templates.
 - **Avatars** (32x32 pixel grid, GBA-era fidelity): Defined in `src/game/avatars.py`. 12 monster librarian portraits with species-specific rigs, strand-level hair, skin shading, and outfit detail. Rendered as inline SVG via the `render_avatar(avatar_id, size)` Jinja2 global. Use `{{ render_avatar("avatar_01", 32) }}` in templates.
-- **Shared palette**: `src/game/icons/_palette.py` provides 4-step shading ramps (highlight, base, shadow, deep_shadow) for GOLD, FLAME, GREEN, BLUE, PURPLE, PARCHMENT, INK. Also provides `darken()`, `lighten()`, and `blend_colors()` helpers used by both icons and avatars.
+- **Shared palette**: The system uses a consistent set of colors (GOLD, FLAME, GREEN, BLUE, PURPLE, PARCHMENT, INK) defined directly in `src/game/avatars.py` and `src/game/icons/_catalog.py`.
 - **Static asset build**: `scripts/build_icons.py` pre-renders all icons and avatars to `static/icons/` as bare SVGs. Generates base icons plus tinted variants (`--green`, `--gold`) and prunes stale tints. Run after any icon or avatar changes.
 - **Rendering pipeline**: Pixel coordinates -> list of `(x, y, color)` tuples -> SVG `<rect>` elements -> joined into `<svg>` string -> wrapped in `Markup()` -> registered as Jinja2 global -> called in templates. Icons use static `<img>` tags by default; avatars always render inline.
 - **Tinted icon variants**: Only specific icon/color combinations get static tinted SVGs:
@@ -261,7 +261,7 @@ The settings page (`/settings`) renders a pixel art library card UI:
 1. Add the avatar definition to `AVATAR_CATALOG` in `src/game/avatars.py`
 2. Define skin tone, hair style, hair color, glasses, and outfit color
 3. Pick or create a hair builder function from `_HAIR_BUILDERS` (coordinates on **32x32 grid**, 0-31)
-4. Use shading helpers from `src.game.icons._palette`: `darken()`, `lighten()`, `blend_colors()`
+4. Use colors consistent with `src/game/icons/_catalog.py`.
 5. Run `python scripts/build_icons.py` to update static SVGs
 6. Use in templates: `{{ render_avatar("avatar_XX", 32) }}`
 

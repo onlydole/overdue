@@ -21,7 +21,7 @@ COPY static/ static/
 # Create a non-root user and writable data directory
 RUN useradd --create-home librarian && \
     mkdir -p /app/data && \
-    chown -R librarian:librarian /app/data
+    chown -R librarian:librarian /app/data /app/src /app/templates /app/static
 
 USER librarian
 

@@ -1,6 +1,24 @@
 services:
   overdue:
     build: .
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./src
+          target: /app/src
+          ignore:
+            - __pycache__/
+            - "**/*.pyc"
+        - action: sync+restart
+          path: ./templates
+          target: /app/templates
+        - action: sync+restart
+          path: ./static
+          target: /app/static
+        - action: rebuild
+          path: ./pyproject.toml
+        - action: rebuild
+          path: ./Dockerfile
     ports:
       - "${OVERDUE_PORT:-8000}:8000"
     environment:
