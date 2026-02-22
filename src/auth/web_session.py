@@ -24,7 +24,7 @@ async def get_current_librarian_optional(
     if not token:
         return None
     try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.signing_secret_key, algorithms=[ALGORITHM])
         librarian_id = payload.get("sub")
         if not librarian_id:
             return None

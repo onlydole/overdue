@@ -23,7 +23,7 @@ def create_library_card(librarian_id: int, username: str, role: str) -> str:
         "exp": expire,
         "iat": datetime.utcnow(),
     }
-    return jwt.encode(payload, settings.secret_key, algorithm=ALGORITHM)
+    return jwt.encode(payload, settings.signing_secret_key, algorithm=ALGORITHM)
 
 
 def verify_library_card(
@@ -33,7 +33,7 @@ def verify_library_card(
     try:
         payload = jwt.decode(
             credentials.credentials,
-            settings.secret_key,
+            settings.signing_secret_key,
             algorithms=[ALGORITHM],
         )
         if payload.get("sub") is None:
