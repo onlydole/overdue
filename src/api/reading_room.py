@@ -5,7 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.volumes import calculate_dewey_score
-from src.config.defaults import DEWEY_OVERDUE, MOODS, DEWEY_NEEDS_ATTENTION
+from src.config.defaults import DEWEY_NEEDS_ATTENTION, DEWEY_OVERDUE, MOODS
 from src.config.settings import settings
 from src.db.engine import get_session
 from src.db.tables import VolumeRow
@@ -18,11 +18,17 @@ def get_mood(average_score: float) -> tuple[str, str]:
     for mood_name, threshold in MOODS:
         if average_score >= threshold:
             descriptions = {
-                "Quiet study": "Warm golden light fills the reading room. Knowledge is well-tended.",
-                "Gentle hum": "A pleasant bustle of activity. Most volumes are in good shape.",
-                "Getting noisy": "The stacks are getting restless. Several volumes need attention.",
-                "Call for order": "Warning! Many volumes are gathering dust. Review needed urgently.",
-                "Closed for renovation": "The library needs serious attention. Knowledge is at risk.",
+                "Quiet study": (
+                    "Warm golden light fills the reading room. Knowledge is well-tended."
+                ),
+                "Gentle hum": ("A pleasant bustle of activity. Most volumes are in good shape."),
+                "Getting noisy": ("The stacks are getting unruly. Several volumes need attention."),
+                "Call for order": (
+                    "Warning! Many volumes are gathering dust. Review needed urgently."
+                ),
+                "Closed for renovation": (
+                    "The library needs serious attention. Knowledge is at risk."
+                ),
             }
             return mood_name, descriptions.get(mood_name, "")
     return "Closed for renovation", "The library needs serious attention."
@@ -34,9 +40,7 @@ async def health_check(
 ) -> dict:
     """Get the overall health of the library."""
     count_result = await session.execute(
-        select(func.count())
-        .select_from(VolumeRow)
-        .where(VolumeRow.archived == False)  # noqa: E712
+        select(func.count()).select_from(VolumeRow).where(VolumeRow.archived.is_(False))
     )
     total_volumes = count_result.scalar() or 0
 
@@ -51,9 +55,7 @@ async def health_check(
         }
 
     # Calculate scores
-    volumes_result = await session.execute(
-        select(VolumeRow).where(VolumeRow.archived == False)  # noqa: E712
-    )
+    volumes_result = await session.execute(select(VolumeRow).where(VolumeRow.archived.is_(False)))
     volumes = volumes_result.scalars().all()
     scores = [calculate_dewey_score(v.last_reviewed_at) for v in volumes]
 
@@ -76,9 +78,7 @@ async def overdue_report(
     session: AsyncSession = Depends(get_session),
 ) -> dict:
     """Get a report of all overdue volumes needing review."""
-    volumes_result = await session.execute(
-        select(VolumeRow).where(VolumeRow.archived == False)  # noqa: E712
-    )
+    volumes_result = await session.execute(select(VolumeRow).where(VolumeRow.archived.is_(False)))
     volumes = volumes_result.scalars().all()
 
     overdue_items = []
@@ -110,6 +110,7 @@ async def overdue_report(
 async def last_recalc() -> dict:
     """Get the timestamp of the last Dewey Score recalculation."""
     from src.main import _last_dewey_recalc
+
     return {
         "last_recalc": _last_dewey_recalc.isoformat() if _last_dewey_recalc else None,
         "interval_minutes": settings.dewey_recalc_interval_minutes,
