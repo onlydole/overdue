@@ -2,44 +2,126 @@
 {% block title %}Settings{% endblock %}
 
 {% block content %}
-<div class="max-w-lg mx-auto space-y-6">
+<form method="post"
+      action="/settings/card"
+      class="max-w-4xl mx-auto space-y-6"
+      x-data="{
+          avatarIds: [{% for avatar in avatar_choices %}'{{ avatar.id }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+          selectedAvatar: '{{ card_form.avatar_id }}',
+          prevAvatar() {
+              const idx = this.avatarIds.indexOf(this.selectedAvatar);
+              this.selectedAvatar = this.avatarIds[(idx - 1 + this.avatarIds.length) % this.avatarIds.length];
+          },
+          nextAvatar() {
+              const idx = this.avatarIds.indexOf(this.selectedAvatar);
+              this.selectedAvatar = this.avatarIds[(idx + 1) % this.avatarIds.length];
+          }
+      }">
+    <input type="hidden" name="avatar_id" :value="selectedAvatar">
+
     <div class="pixel-card text-center py-6">
-        <div class="mb-3">{{ render_icon('gear', 32) }}</div>
-        <h1 class="pixel-heading-lg mb-2">Settings</h1>
-        <p class="text-parchment-dark text-lg">Customize your library card.</p>
+        <div class="mb-3">{{ render_icon('key', 32) }}</div>
+        <h1 class="pixel-heading-lg mb-2">Library Card</h1>
+        <p class="text-parchment-dark text-lg">Edit your card details.</p>
     </div>
 
-    <div class="pixel-card">
-        <h2 class="pixel-heading mb-4">Avatar</h2>
+    {% if saved %}
+    <div class="pixel-card border-dewey-pristine text-dewey-pristine py-3">
+        <p class="font-pixel text-[7px] uppercase tracking-wide text-center">Library card updated.</p>
+    </div>
+    {% endif %}
 
-        <div class="flex justify-center mb-6">
-            <div class="w-20 h-20 bg-pixel-highlight border-3 border-gold flex items-center justify-center">
-                {{ render_avatar(current_user.avatar_id|default('avatar_01'), 64) }}
+    {% if form_errors %}
+    <div class="pixel-card border-dewey-overdue text-dewey-overdue py-3">
+        <ul class="space-y-1 text-center list-none">
+            {% for err in form_errors %}
+            <li>{{ err }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <div class="pixel-card p-0 overflow-hidden">
+        <div class="library-card-frame">
+            <div class="library-card-surface p-5 sm:p-6">
+                <div class="library-card-top">
+                    <div>
+                        <p class="library-card-org">Overdue Public Library</p>
+                        <p class="library-card-id">{{ card_meta.card_number }}</p>
+                    </div>
+                    <div class="library-card-seal" aria-hidden="true">PL</div>
+                </div>
+
+                <div class="library-card-grid mt-5">
+                    <div class="library-id-stack">
+                        <p class="library-field-label">ID Portrait</p>
+                        <div class="library-portrait-controls">
+                            <button type="button" class="library-arrow-btn" @click="prevAvatar()" aria-label="Previous avatar">&#9664;</button>
+                            <div class="library-avatar-port w-[124px] h-[124px] flex items-center justify-center">
+                                {% for avatar in avatar_choices %}
+                                <div x-cloak x-show="selectedAvatar === '{{ avatar.id }}'" class="w-full h-full flex items-center justify-center">
+                                    {{ render_avatar(avatar.id, 98) }}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button type="button" class="library-arrow-btn" @click="nextAvatar()" aria-label="Next avatar">&#9654;</button>
+                        </div>
+                        <div class="library-portrait-name">
+                            {% for avatar in avatar_choices %}
+                            <p x-cloak x-show="selectedAvatar === '{{ avatar.id }}'" class="font-pixel text-[6px] text-[#2d3550] uppercase tracking-wide">{{ avatar.name }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="library-fields">
+                        <label for="username" class="library-field-label">Cardholder Name</label>
+                        <input type="text"
+                               id="username"
+                               name="username"
+                               required
+                               minlength="3"
+                               maxlength="100"
+                               value="{{ card_form.username }}"
+                               class="library-input">
+
+                        <label for="role" class="library-field-label mt-3">Library Title</label>
+                        <input type="text"
+                               id="role"
+                               name="role"
+                               required
+                               maxlength="50"
+                               value="{{ card_form.role }}"
+                               class="library-input">
+
+                        <label for="email" class="library-field-label mt-3">Contact Email</label>
+                        <input type="email"
+                               id="email"
+                               name="email"
+                               required
+                               value="{{ card_form.email }}"
+                               class="library-input">
+
+                        <div class="library-signature-strip mt-3">
+                            <p class="library-signature-label">Authorized Signature</p>
+                            <p class="library-signature-value">{{ card_form.username }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="library-card-bottom mt-5">
+                    <div class="library-barcode" aria-hidden="true"></div>
+                    <div class="library-meta-row">
+                        <span>Member Since {{ card_meta.member_since }}</span>
+                        <span>Expires {{ card_meta.expires_on }}</span>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <form method="post" action="/settings/avatar" class="space-y-5" x-data="{ selectedAvatar: '{{ current_user.avatar_id|default('avatar_01') }}' }">
-            <input type="hidden" name="avatar_id" :value="selectedAvatar">
-            <div class="grid grid-cols-4 sm:grid-cols-6 gap-3">
-                {% for avatar in avatar_choices %}
-                <button type="button"
-                        @click="selectedAvatar = '{{ avatar.id }}'"
-                        :class="selectedAvatar === '{{ avatar.id }}'
-                            ? 'border-gold bg-gold/20 scale-110'
-                            : 'border-pixel-border hover:border-ink-light'"
-                        class="p-2 border-3 transition-all duration-150 flex flex-col items-center gap-1 cursor-pointer">
-                    <div class="w-10 h-10 flex items-center justify-center">
-                        {{ render_avatar(avatar.id, 40) }}
-                    </div>
-                    <span class="font-pixel text-[6px] text-parchment-dark truncate w-full text-center">{{ avatar.name }}</span>
-                </button>
-                {% endfor %}
-            </div>
-
-            <button type="submit" class="pixel-btn pixel-btn-gold w-full">
-                Save Avatar
-            </button>
-        </form>
     </div>
-</div>
+
+    <div class="pixel-card flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+        <p class="text-ink-light">Your card number and barcode are assigned by the library.</p>
+        <button type="submit" class="pixel-btn pixel-btn-gold sm:min-w-[220px]">Save Library Card</button>
+    </div>
+</form>
 {% endblock %}

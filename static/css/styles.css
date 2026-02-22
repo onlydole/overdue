@@ -4,6 +4,8 @@
    PIXEL ART FOUNDATIONS
    ============================================================ */
 
+[x-cloak] { display: none !important; }
+
 * { image-rendering: pixelated; }
 
 /* Pixel art icons */
@@ -47,6 +49,237 @@
         box-shadow: 6px 6px 0 #0f0e17;
         transform: translate(-1px, -1px);
         transition: all 0.15s ease;
+    }
+}
+
+/* Settings card UI */
+.library-card-frame {
+    background: #1a1d2f;
+    border: 3px solid #2c314d;
+    padding: 0.9rem;
+}
+
+.library-card-surface {
+    position: relative;
+    background: linear-gradient(156deg, #f8efd9 0%, #ecdbb3 54%, #dac18f 100%);
+    border: 3px solid #c49b22;
+    box-shadow: inset 0 0 0 2px rgba(28, 30, 46, 0.20);
+    overflow: hidden;
+}
+
+.library-card-surface::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            rgba(16, 22, 35, 0.04) 0 2px,
+            transparent 2px 8px
+        );
+    pointer-events: none;
+}
+
+@media (min-width: 900px) {
+    .library-card-surface {
+        aspect-ratio: 86 / 54;
+    }
+}
+
+.library-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.library-card-org {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.5rem;
+    color: #1f2430;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.library-card-id {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.45rem;
+    color: #4a5270;
+    margin-top: 0.4rem;
+    letter-spacing: 0.08em;
+}
+
+.library-card-seal {
+    width: 34px;
+    height: 34px;
+    border: 2px solid #8f7740;
+    border-radius: 9999px;
+    background: radial-gradient(circle at 35% 30%, #f5dfa4 0%, #cead62 70%, #a58339 100%);
+    color: #20263a;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.38rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.08em;
+}
+
+.library-avatar-port {
+    background: rgba(22, 28, 44, 0.08);
+    border: 3px solid #b69658;
+    box-shadow: inset 0 0 0 2px rgba(251, 241, 205, 0.45);
+}
+
+.library-card-grid {
+    display: grid;
+    grid-template-columns: 172px minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.library-id-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.library-portrait-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.library-portrait-name {
+    min-height: 1.2rem;
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+.library-fields {
+    min-width: 0;
+}
+
+.library-field-label {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.46rem;
+    color: #4a5270;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    display: block;
+    margin-bottom: 0.35rem;
+}
+
+.library-input {
+    width: 100%;
+    background: #f9f2de;
+    border: 3px solid #b69658;
+    color: #1f2430;
+    font-family: 'VT323', monospace;
+    font-size: 1.3rem;
+    padding: 0.4rem 0.6rem;
+    line-height: 1.1;
+}
+
+.library-input:focus {
+    outline: none;
+    border-color: #7b6431;
+}
+
+.library-signature-strip {
+    background: #f0e3bf;
+    border: 2px solid #b69658;
+    padding: 0.45rem 0.55rem;
+}
+
+.library-signature-label {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.42rem;
+    color: #5b627f;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.library-signature-value {
+    margin-top: 0.35rem;
+    font-family: 'VT323', monospace;
+    font-size: 1.2rem;
+    color: #2a3248;
+}
+
+.library-arrow-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border: 3px solid #9c8139;
+    background: #f7eed5;
+    color: #232342;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.7rem;
+    line-height: 1;
+    box-shadow: 3px 3px 0 rgba(35, 35, 66, 0.35);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.1s ease;
+}
+
+.library-arrow-btn:hover {
+    border-color: #c49b22;
+    transform: translate(-1px, -1px);
+}
+
+.library-arrow-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 rgba(35, 35, 66, 0.35);
+}
+
+.library-card-bottom {
+    border-top: 2px solid #b6a77f;
+    padding-top: 0.7rem;
+}
+
+.library-barcode {
+    height: 40px;
+    border: 2px solid #7f6a38;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            #171b2c 0 2px,
+            #f3e7c5 2px 3px,
+            #171b2c 3px 6px,
+            #f3e7c5 6px 8px,
+            #171b2c 8px 9px,
+            #f3e7c5 9px 11px
+        );
+}
+
+.library-meta-row {
+    margin-top: 0.45rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.42rem;
+    color: #535b77;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+@media (max-width: 640px) {
+    .library-card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .library-id-stack {
+        margin: 0 auto;
+    }
+
+    .library-meta-row {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
 
