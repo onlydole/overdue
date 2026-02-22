@@ -1,13 +1,11 @@
 """Librarian profile route."""
 
 from fastapi import APIRouter, Depends, Request
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.web_session import get_current_librarian_optional
 from src.db.engine import get_session
 from src.db.tables import LibrarianRow
-from src.game.avatars import render_avatar_svg
 from src.game.badges import get_earned_badges
 from src.game.streaks import get_streak
 from src.game.xp import get_next_rank, get_rank, get_recent_awards
@@ -53,7 +51,12 @@ async def librarian_profile(
         earned = librarian.total_xp - current_threshold
         progress = int((earned / total_needed) * 100) if total_needed > 0 else 100
 
-    avatar_svg = render_avatar_svg(librarian.avatar_id or "avatar_01", size=80)
+    _aid = librarian.avatar_id or "avatar_01"
+    avatar_svg = (
+        f'<img src="/static/icons/{_aid}.svg" '
+        f'width="80" height="80" class="pixel-icon" role="img" '
+        f'aria-hidden="true" style="image-rendering: pixelated;" alt="">'
+    )
 
     return templates.TemplateResponse("profile.html", {
         "request": request,

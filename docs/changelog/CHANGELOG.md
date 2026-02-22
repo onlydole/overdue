@@ -9,6 +9,61 @@ All notable changes to Overdue will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- Reworked avatars into 48x48 monster librarian portraits with species-focused metadata and rendering logic.
+- Updated registration and settings avatar pickers to highlight monster-librarian descriptions and species labels.
+- Updated profile and leaderboard rendering to use static avatar SVG assets, matching the static icon pipeline.
+- Aligned gameplay and bot guides with monster librarian terminology and updated avatar test coverage.
+
+## [0.8.0] - 2026-02-21
+
+### Added
+- AI bot players with CLI lifecycle commands, seeded activity simulation, and unique bot-generated volume content.
+- Avatar selection wired through registration, profile, navigation, and a dedicated settings page.
+- Pixel art icon package split into categorized modules with a shared palette utility system.
+- Persisted visual book spine styles for shelf and volume presentation variety.
+- Volume detail byline with librarian avatar and author metadata.
+- Dependabot configuration for weekly dependency updates.
+
+### Changed
+- Replaced remaining emoji across the interface with pixel art icons.
+- Upgraded avatar artwork to refined GBA-era portraits and then served them from pre-rendered static SVG assets.
+- Enhanced review UX with celebratory toasts, loading skeletons, smoother transitions, and improved Dewey gauge animation.
+- Polished shelf cards, typography, animations, and activity feed presentation in the Reading Room.
+- Refreshed project docs for the pixel-art system, bot behavior, and current app architecture.
+- Reused the shared Jinja2 templates instance in error handlers to keep rendering behavior consistent.
+
+### Fixed
+- Replaced `python-jose` with `PyJWT` to resolve a security vulnerability in token handling dependencies.
+- Restored review animations by removing a conflicting animation delay.
+
+## [0.7.0] - 2026-02-20
+
+### Added
+- Cookie-based web authentication (login/register flows) for the dashboard experience.
+- Web forms for shelves, volumes, reviews, and catalog search.
+- Responsive mobile-first styling and lightweight client-side interaction enhancements.
+- Bulletin webhook subscriptions, persistence, and related incident codes (`TS-009`, `TS-010`).
+- Security hardening with 1-hour access tokens, refresh endpoint support, and password complexity validation.
+- Background Dewey Score recalculation task for periodic freshness updates.
+- Catalog search v2 with fuzzy matching and excerpted result snippets.
+- Game progression updates including Rare badges, overdue review XP multiplier, timeframe leaderboard filters, and streak ranking widgets.
+- Docker and Docker Compose setup for local and containerized development.
+- CLI power-user commands for serving, seeding, auth, library stats, and bot operations.
+- Demo data seeding, startup auto-seed behavior, and custom web error pages.
+- Python 3.12 baseline plus `max_volume_size_kb` config and new incident codes (`TS-011`, `TS-012`).
+- Pixel art visual overhaul and the `/how-to-play` experience.
+
+### Changed
+- Wired game mechanics responses into API and web flows.
+- Updated contributor docs and licensing materials for the expanded dev workflow.
+
+### Fixed
+- Resolved Docker build/runtime issues in containerized runs.
+- Added `itsdangerous` and pinned `bcrypt` for web-session and passlib compatibility.
+
 ## [0.6.0] - 2025-02-26
 
 ### Added

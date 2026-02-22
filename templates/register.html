@@ -45,13 +45,15 @@
                        class="w-full bg-pixel-bg border-3 border-pixel-border text-parchment font-retro text-lg px-4 py-3 focus:border-gold focus:outline-none">
             </div>
 
-            <!-- Avatar Picker -->
+            <!-- Monster librarian picker -->
             <div>
-                <label class="pixel-label block mb-3">Choose Your Avatar</label>
+                <label class="pixel-label block mb-1">Choose Your Monster Librarian</label>
+                <p class="text-ink-light text-sm mb-3">Pick the creature who patrols your shelves.</p>
                 <input type="hidden" name="avatar_id" :value="selectedAvatar">
                 <div class="grid grid-cols-4 sm:grid-cols-6 gap-3">
                     {% for avatar in avatar_choices %}
                     <button type="button"
+                            title="{{ avatar.role_title }} | {{ avatar.specialty }} | {{ avatar.description }}"
                             @click="selectedAvatar = '{{ avatar.id }}'"
                             :class="selectedAvatar === '{{ avatar.id }}'
                                 ? 'border-gold bg-gold/20 scale-110'
@@ -61,6 +63,8 @@
                             {{ render_avatar(avatar.id, 40) }}
                         </div>
                         <span class="font-pixel text-[6px] text-parchment-dark truncate w-full text-center">{{ avatar.name }}</span>
+                        <span class="font-pixel text-[5px] text-ink-light uppercase tracking-wide truncate w-full text-center">{{ avatar.species|replace('_', ' ') }}</span>
+                        <span class="font-pixel text-[5px] text-gold truncate w-full text-center">{{ avatar.role_title }}</span>
                     </button>
                     {% endfor %}
                 </div>
