@@ -131,21 +131,6 @@ Delete a shelf and all its volumes.
 
 ## Catalog
 
-### `POST /api/catalog/search`
-Search the card catalog for volumes.
-
-**Request body:**
-```json
-{
-  "query": "kubernetes",
-  "shelf_id": 1,
-  "bookmarks": ["containers"],
-  "include_archived": false
-}
-```
-
-**Response:** List of matching volumes with relevance scores.
-
 ### `GET /api/catalog/suggest`
 Get autocomplete suggestions from volume titles.
 

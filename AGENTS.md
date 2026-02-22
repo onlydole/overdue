@@ -43,11 +43,11 @@ All user-facing text and code identifiers use library-themed names. Never use th
 All decorative visuals are custom-built pixel art SVGs. This is a hard rule:
 
 - **NO emoji** anywhere in templates, JS, or Python-rendered HTML. Every decorative element uses a pixel art icon or avatar.
-- **Icons** (16x16 pixel grid, GBA-era fidelity): Defined in `src/game/icons/` (split by category: `_books.py`, `_nature.py`, `_achievements.py`, `_objects.py`, `_characters.py`). Shared palette and shading helpers in `_palette.py`. Rendered as static `<img>` tags pointing to pre-rendered SVGs in `static/icons/`. For uncommon tint colors, falls back to inline SVG. Use `{{ render_icon("star", 16) }}` in templates.
-- **Avatars** (32x32 pixel grid, GBA-era fidelity): Defined in `src/game/avatars.py`. 12 monster librarian portraits with species-specific rigs, strand-level hair, skin shading, and outfit detail. Rendered as inline SVG via the `render_avatar(avatar_id, size)` Jinja2 global. Use `{{ render_avatar("avatar_01", 32) }}` in templates.
-- **Shared palette**: `src/game/icons/_palette.py` provides 4-step shading ramps (highlight, base, shadow, deep_shadow) for GOLD, FLAME, GREEN, BLUE, PURPLE, PARCHMENT, INK. Also provides `darken()`, `lighten()`, and `blend_colors()` helpers used by both icons and avatars.
-- **Static asset build**: `scripts/build_icons.py` pre-renders all icons and avatars to `static/icons/` as bare SVGs. Generates base icons plus tinted variants (`--green`, `--gold`) and prunes stale tints. Run after any icon or avatar changes.
-- **Rendering pipeline**: Pixel coordinates -> list of `(x, y, color)` tuples -> SVG `<rect>` elements -> joined into `<svg>` string -> wrapped in `Markup()` -> registered as Jinja2 global -> called in templates. Icons use static `<img>` tags by default; avatars always render inline.
+- **Icons** (24x24 viewBox): 28 icons defined as SVG path strings in `src/game/icons/_catalog.py`. Supports `currentColor` CSS tinting for flexible theming. Rendered as static `<img>` tags pointing to pre-rendered SVGs in `static/icons/`. For uncommon tint colors, falls back to inline SVG. Use `{{ render_icon("star", 24) }}` in templates.
+- **Avatars** (32x32 grid): 8 heroic librarian silhouettes defined as hand-crafted SVG path strings in `src/game/avatars.py`. Each avatar has a unique character design. Rendered via the `render_avatar(avatar_id, size)` Jinja2 global. Use `{{ render_avatar("avatar_01", 32) }}` in templates.
+- **Shared palette**: The system uses a consistent set of colors (GOLD, FLAME, GREEN, BLUE, PURPLE, PARCHMENT, INK) defined directly in `src/game/avatars.py` and `src/game/icons/_catalog.py`.
+- **Static asset build**: `scripts/build_icons.py` pre-renders all icons and avatars to `static/icons/` as bare SVGs. Bare exports default to parchment (#f0e6d3) for visibility in `<img>` tags. Generates base icons plus tinted variants (`--green`, `--gold`) and prunes stale tints. Run after any icon or avatar changes.
+- **Rendering pipeline**: SVG path strings (from catalog) -> wrapped in `<svg>` element with viewBox and styling -> wrapped in `Markup()` -> registered as Jinja2 global -> called in templates. Icons use static `<img>` tags by default; avatars always render inline.
 - **Tinted icon variants**: Only specific icon/color combinations get static tinted SVGs:
   - Green (`#5cdb5c`): `checkmark`, `play`
   - Gold (`#f0c543`): `book-open`, `books`, `chart`, `crown`, `fire`, `gamepad`, `house`, `trophy`
@@ -111,16 +111,11 @@ overdue/
       streaks.py            # Daily review streak tracking
       mood.py               # Volume mood / Dewey Score decay
       engine.py             # Game action processor (review -> XP + badges + streak)
-      avatars.py            # 12 monster librarian avatars (32x32 pixel art SVG)
-      icons/                # Pixel art icon system (16x16 SVG, GBA-era)
+      avatars.py            # 8 heroic librarian silhouettes (32x32 SVG paths)
+      icons/                # Pixel art icon system (24x24 SVG paths)
         __init__.py          # Re-exports render_icon_svg, get_icon_names
-        _palette.py          # Shared color ramps + blend/darken/lighten helpers
-        _renderer.py         # render_icon_svg() with viewBox="0 0 16 16"
-        _books.py            # books, book-open, book-closed, scroll, bookmark, clipboard
-        _nature.py           # fire, moon, star, sparkles, zap
-        _achievements.py     # trophy, crown, award, chart
-        _objects.py          # clock, search, key, hourglass, gear, house, library, construction
-        _characters.py       # person, robot, gamepad, play, checkmark
+        _catalog.py          # 28 icons as SVG path strings with currentColor support
+        _renderer.py         # render_icon_svg() with viewBox="0 0 24 24"
       bots.py               # AI bot player engine (create, simulate, remove)
     models/                 # Pydantic & SQLAlchemy models
       volume.py             # Volume request/response schemas
@@ -163,7 +158,6 @@ overdue/
     leaderboard.html        # Leaderboard page
     how_to_play.html        # How to play guide
     my_library.html         # Personal library view
-    search.html             # Catalog search page
     404.html                # Not found error page
     500.html                # Server error page
     partials/               # Reusable template fragments
@@ -172,7 +166,6 @@ overdue/
       dewey_gauge.html      # Dewey Score gauge
       game_feedback.html    # XP/badge feedback after actions
       review_result.html    # Review action result
-      search_results.html   # Catalog search results
       streak_counter.html   # Streak display
       volume_card.html      # Volume card component
   static/
@@ -248,22 +241,23 @@ The settings page (`/settings`) renders a pixel art library card UI:
 
 ### Adding a New Pixel Art Icon
 
-1. Choose the appropriate category file in `src/game/icons/` (e.g., `_books.py`, `_nature.py`)
-2. Define the pixel map as a list of `(x, y, color)` tuples on a **16x16 grid** (coordinates 0-15)
-3. Use colors from `_palette.py` -- apply 4-step shading ramps (highlight, base, shadow, deep_shadow)
-4. Add a `register("your_icon_name", [...])` call inside the category's `register_icons()` function
+1. Open `src/game/icons/_catalog.py`
+2. Create an SVG path string on a **24x24 viewBox** (coordinates 0-23)
+3. Use `currentColor` for fills to support CSS color tinting
+4. Add your icon to the `ICON_CATALOG` dictionary: `"your_icon_name": _path("M...")`
 5. Run `python scripts/build_icons.py` to generate the static SVG
 6. If the icon needs a tinted variant, add it to `TINTED_ICON_NAMES` in `scripts/build_icons.py` and the corresponding set in `src/web/templates.py`
-7. Use it in templates: `{{ render_icon("your_icon_name", 16) }}`
+7. Use it in templates: `{{ render_icon("your_icon_name", 24) }}`
 
 ### Adding a New Avatar
 
-1. Add the avatar definition to `AVATAR_CATALOG` in `src/game/avatars.py`
-2. Define skin tone, hair style, hair color, glasses, and outfit color
-3. Pick or create a hair builder function from `_HAIR_BUILDERS` (coordinates on **32x32 grid**, 0-31)
-4. Use shading helpers from `src.game.icons._palette`: `darken()`, `lighten()`, `blend_colors()`
-5. Run `python scripts/build_icons.py` to update static SVGs
-6. Use in templates: `{{ render_avatar("avatar_XX", 32) }}`
+1. Add a new entry to `AVATAR_CATALOG` in `src/game/avatars.py`
+2. Define metadata: `name`, `role_title`, `description`, `material`
+3. Create hand-crafted SVG path strings on a **32x32 grid** (coordinates 0-31)
+4. Provide `path` (main silhouette) and `accents` (details like scarves, armor)
+5. Define `primary`, `secondary`, and `outline` color values
+6. Run `python scripts/build_icons.py` to update static SVGs
+7. Use in templates: `{{ render_avatar("avatar_XX", 32) }}`
 
 ## Database Schema
 

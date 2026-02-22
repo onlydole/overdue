@@ -1,8 +1,6 @@
-"""SVG renderer for 16x16 pixel art icons."""
+"""SVG renderer for pixel art icons (supporting paths and rects)."""
 
 from __future__ import annotations
-
-from src.game.icons._palette import INK_BASE
 
 
 def _build_rects(
@@ -21,51 +19,54 @@ def _build_rects(
 
 def render_icon_svg(
     name: str,
-    size: int = 16,
+    size: int = 24,
     color: str | None = None,
     *,
-    _catalog: dict[str, list[tuple[int, int, str]]] | None = None,
+    _catalog: dict[str, str | list[tuple[int, int, str]]] | None = None,
 ) -> str:
     """Return an inline SVG string for the given icon.
 
-    The SVG uses a 16x16 ``viewBox`` and renders at the specified *size*
-    in device pixels.  The ``image-rendering: pixelated`` style keeps the
-    pixel art crisp when scaled.
-
-    If *color* is provided, all pixels are rendered in that color (monochrome
-    tinting).  Otherwise, the icon's original palette is used.
-
-    The *_catalog* parameter is injected by ``__init__.py`` to avoid circular
-    imports.
+    Supports both legacy pixel-lists (rendered as rects) and modern SVG paths.
+    Default viewBox is 24x24 for high-fidelity icons.
     """
     if _catalog is None:
         _catalog = {}
 
-    pixels = _catalog.get(name)
+    data = _catalog.get(name)
 
-    if pixels is None:
-        # Fallback: question mark placeholder at 16x16
+    if data is None:
+        # Fallback: question mark
+        return (
+            f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"'
+            f' width="{size}" height="{size}" fill="none" stroke="currentColor" stroke-width="2">'
+            f'<path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />'
+            f"</svg>"
+        )
+
+    # Handle legacy pixel lists (16x16)
+    if isinstance(data, list):
+        rect_block = _build_rects(data, color)
         return (
             f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"'
             f' width="{size}" height="{size}"'
             f' class="pixel-icon" role="img" aria-hidden="true"'
             f' style="image-rendering: pixelated;">'
-            f'<rect x="5" y="2" width="6" height="1" fill="{INK_BASE}"/>'
-            f'<rect x="9" y="3" width="3" height="2" fill="{INK_BASE}"/>'
-            f'<rect x="7" y="5" width="3" height="2" fill="{INK_BASE}"/>'
-            f'<rect x="7" y="7" width="2" height="1" fill="{INK_BASE}"/>'
-            f'<rect x="7" y="10" width="2" height="2" fill="{INK_BASE}"/>'
+            f"{rect_block}"
             f"</svg>"
         )
 
-    rect_block = _build_rects(pixels, color)
-
+    # Handle new path data (assumed 24x24 viewBox)
+    # If color is provided, we use it for fill/stroke. 
+    # The data string should contain the inner SVG elements (paths, etc).
+    # We can inject the fill color into the parent SVG or the paths if they use "currentColor".
+    style = f'style="color: {color};"' if color else ""
+    
     return (
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"'
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"'
         f' width="{size}" height="{size}"'
         f' class="pixel-icon" role="img" aria-hidden="true"'
-        f' style="image-rendering: pixelated;">'
-        f"{rect_block}"
+        f' {style}>'
+        f"{data}"
         f"</svg>"
     )
 
@@ -74,23 +75,22 @@ def render_icon_svg_bare(
     name: str,
     color: str | None = None,
     *,
-    _catalog: dict[str, list[tuple[int, int, str]]] | None = None,
+    _catalog: dict[str, str | list[tuple[int, int, str]]] | None = None,
 ) -> str | None:
-    """Return a bare SVG string (no width/height/class/style) for static files.
-
-    Returns ``None`` if *name* is not in the catalog.
-    """
+    """Return a bare SVG string for static files."""
     if _catalog is None:
         _catalog = {}
 
-    pixels = _catalog.get(name)
-    if pixels is None:
+    data = _catalog.get(name)
+    if data is None:
         return None
 
-    rect_block = _build_rects(pixels, color)
+    # Default to parchment if no color specified, so <img> tags show up on dark bg
+    final_color = color if color else "#f0e6d3"
 
-    return (
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">'
-        f"{rect_block}"
-        f"</svg>"
-    )
+    if isinstance(data, list):
+        rect_block = _build_rects(data, final_color)
+        return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">{rect_block}</svg>'
+
+    style = f'style="color: {final_color};"'
+    return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {style}>{data}</svg>'

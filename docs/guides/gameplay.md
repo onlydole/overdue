@@ -73,7 +73,7 @@ The library's mood reflects the overall health of your knowledge collection:
 
 ## Avatars
 
-When you register, you choose from 12 unique pixel art monster librarian avatars. Your avatar appears on your profile, the leaderboard, and in the navigation bar. Each option is a different creature archetype with distinct silhouette, palette, accessories, and lore flavor.
+When you register, you choose from 8 unique pixel art heroic librarian avatars. Your avatar appears on your profile, the leaderboard, and in the navigation bar. Each option is a heroic librarian character with distinct silhouette, palette, accessories, and lore flavor.
 
 ## AI Bot players
 

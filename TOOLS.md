@@ -170,7 +170,6 @@ All API routes are mounted under `/api/`. Authentication uses JWT bearer tokens 
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET` | `/api/catalog/search` | Bearer | Full-text search across volumes |
 | `GET` | `/api/catalog/autocomplete` | Bearer | Quick autocomplete suggestions |
 
 ### Reading Room (`/api/reading-room`)
@@ -210,7 +209,6 @@ Web routes serve HTML pages via Jinja2 templates. Authentication uses session co
 | `/settings/avatar` | POST | Legacy avatar update route (redirects to /settings/card) |
 | `/leaderboard` | GET | Leaderboard page |
 | `/how-to-play` | GET | How to play guide |
-| `/search` | GET | Catalog search page |
 
 ## Docker
 

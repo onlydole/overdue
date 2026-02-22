@@ -16,6 +16,7 @@ from src.db.engine import get_session
 from src.db.tables import ReviewRow, ShelfRow, VolumeRow, volume_bookmarks
 from src.errors.incidents import VolumeTooLarge
 from src.game.engine import on_volume_reviewed, on_volume_shelved
+from src.models.game import GameResult
 from src.web.templates import templates
 
 router = APIRouter()
@@ -212,11 +213,27 @@ async def review_volume_web(
         return RedirectResponse(url="/", status_code=302)
 
     dewey_score_before = calculate_dewey_score(volume.last_reviewed_at)
-    volume.last_reviewed_at = datetime.utcnow()
 
-    game_result = await on_volume_reviewed(session, user["id"], volume_id, dewey_score_before)
-    await session.commit()
-    await session.refresh(volume)
+    if dewey_score_before >= 99.9:
+        # Volume is already pristine; no action taken
+        from src.game.xp import get_rank
+        current_rank = get_rank(user["total_xp"])
+        game_result = GameResult(
+            xp_awarded=0,
+            total_xp=user["total_xp"],
+            rank=current_rank,
+            rank_changed=False,
+            new_rank=None,
+            badges_earned=[],
+            streak=0,
+            streak_bonus_awarded=False
+        )
+    else:
+        volume.last_reviewed_at = datetime.utcnow()
+
+        game_result = await on_volume_reviewed(session, user["id"], volume_id, dewey_score_before)
+        await session.commit()
+        await session.refresh(volume)
 
     # Check if this is an HTMX request
     if request.headers.get("HX-Request"):
@@ -282,51 +299,3 @@ async def review_volume_web(
         return response
 
     return RedirectResponse(url=f"/volumes/{volume_id}", status_code=302)
-
-
-@router.get("/search")
-async def search_page(
-    request: Request,
-    q: str = "",
-    session: AsyncSession = Depends(get_session),
-):
-    """Render search page with results."""
-    current_user = await get_current_librarian_optional(request, session)
-    results = []
-
-    if q:
-        from difflib import SequenceMatcher
-        query_result = await session.execute(
-            select(VolumeRow).where(VolumeRow.archived == False)  # noqa: E712
-        )
-        volumes = query_result.scalars().all()
-        for v in volumes:
-            title_score = SequenceMatcher(None, q.lower(), v.title.lower()).ratio()
-            content_score = SequenceMatcher(None, q.lower(), v.content[:200].lower()).ratio() * 0.5
-            score = max(title_score, content_score)
-            if score >= 0.3 or q.lower() in v.title.lower() or q.lower() in v.content.lower():
-                dewey = calculate_dewey_score(v.last_reviewed_at)
-                excerpt = v.content[:150] + "..." if len(v.content) > 150 else v.content
-                results.append({
-                    "id": v.id,
-                    "title": v.title,
-                    "excerpt": excerpt,
-                    "dewey_score": round(dewey, 1),
-                    "relevance": round(max(score, 1.0 if q.lower() in v.title.lower() else score), 2),
-                })
-        results.sort(key=lambda x: x["relevance"], reverse=True)
-
-    # If HTMX request, return just the results partial
-    if request.headers.get("HX-Request"):
-        return templates.TemplateResponse("partials/search_results.html", {
-            "request": request,
-            "results": results,
-            "query": q,
-        })
-
-    return templates.TemplateResponse("search.html", {
-        "request": request,
-        "current_user": current_user,
-        "results": results,
-        "query": q,
-    })

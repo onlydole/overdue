@@ -141,6 +141,10 @@ _request_counts: dict[str, list[float]] = defaultdict(list)
 @app.middleware("http")
 async def quiet_hours_middleware(request: Request, call_next):  # type: ignore[no-untyped-def]
     """Enforce quiet hours (rate limiting)."""
+    # Exclude static files from rate limiting to prevent asset loading from blocking the app
+    if request.url.path.startswith("/static") or request.url.path.startswith("/favicon.ico"):
+        return await call_next(request)
+
     client_ip = request.client.host if request.client else "unknown"
     now = time.time()
     window = 60.0  # 1 minute window
@@ -153,7 +157,39 @@ async def quiet_hours_middleware(request: Request, call_next):  # type: ignore[n
     if len(_request_counts[client_ip]) >= QUIET_HOURS_REQUESTS_PER_MINUTE:
         oldest = _request_counts[client_ip][0]
         retry_after = int(window - (now - oldest)) + 1
-        raise QuietHoursExceeded(retry_after=retry_after)
+        
+        if request.url.path.startswith("/api"):
+            return JSONResponse(
+                status_code=429,
+                content={"detail": f"Quiet hours, please. Try again in {retry_after}s."},
+                headers={"Retry-After": str(retry_after)}
+            )
+        
+        return HTMLResponse(
+            status_code=429,
+            content=f"""
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <title>Quiet Hours</title>
+                <style>
+                    body {{ background-color: #0f0e17; color: #f0e6d3; font-family: monospace; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }}
+                    .card {{ border: 4px solid #3d3d6b; background: #232342; padding: 2rem; text-align: center; box-shadow: 4px 4px 0 #0f0e17; }}
+                    h1 {{ color: #f0c543; text-transform: uppercase; margin-bottom: 1rem; font-size: 1.5rem; }}
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <h1>Quiet Hours</h1>
+                    <p>Shhh! The librarian is watching.</p>
+                    <p>Try again in {retry_after} seconds.</p>
+                </div>
+            </body>
+            </html>
+            """,
+            headers={"Retry-After": str(retry_after)}
+        )
 
     _request_counts[client_ip].append(now)
     response = await call_next(request)

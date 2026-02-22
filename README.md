@@ -66,7 +66,6 @@ overdue serve --reload
 | `GET /api/librarians/leaderboard` | Leaderboard data |
 | `POST /api/volumes/` | Create volume |
 | `POST /api/volumes/{volume_id}/review` | Review volume |
-| `POST /api/catalog/search` | Catalog search |
 | `GET /api/catalog/autocomplete` | Catalog autocomplete |
 | `GET /api/reading-room/health` | Reading-room health snapshot |
 | `GET /api/reading-room/overdue` | Overdue report |
