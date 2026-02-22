@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-    <g class="avatar-root" transform="translate(8, 8)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+    <g class="avatar-root">
         <!-- Outline/Shadow -->
         <path d="M12 3h10v2h4v4h2v16h-2v4h-14v-4h-2v-16h2z" fill="#11131a" opacity="0.4"/>
         <!-- Main Body Silhouette -->
