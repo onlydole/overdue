@@ -4,44 +4,77 @@
     <span class="pixel-label">Dewey Score</span>
 </div>
 
+<!-- OOB swap: update mobile actions -->
+<div id="mobile-actions" hx-swap-oob="innerHTML" class="md:hidden fixed bottom-0 left-0 right-0 bg-pixel-surface border-t-4 border-gold p-4 z-50 flex justify-center safe-area-pb gap-2">
+    {% if next_volume %}
+    <a href="/volumes/{{ next_volume.id }}" class="pixel-btn pixel-btn-gold w-full shadow-lg text-center next-vol-link flex items-center justify-center gap-2 px-4">
+        <span>Next:</span>
+        <span class="truncate">{{ next_volume.title }}</span>
+    </a>
+    {% else %}
+    <button onclick="document.querySelector('.review-btn').click()" class="pixel-btn pixel-btn-green w-full shadow-lg">
+        Review Again
+    </button>
+    {% endif %}
+</div>
+
 <!-- Replaces the review section after a successful review via HTMX -->
 <div id="review-section">
     <div class="mt-8 border-t-2 border-pixel-border pt-6">
         <div class="flex items-center gap-4 mb-4">
-            <span class="stamp-in font-pixel text-sm text-dewey-pristine">{{ render_icon('checkmark', 14, '#5cdb5c') }} Reviewed!</span>
+            <span class="stamp-in font-pixel text-sm text-dewey-pristine inline-flex items-center gap-2">{{ render_icon('checkmark', 14, '#5cdb5c') }} Reviewed!</span>
             {% if game_result and game_result.xp_awarded > 0 %}
             <span class="xp-pop font-pixel text-sm">+{{ game_result.xp_awarded }} XP</span>
             {% endif %}
             {% if game_result and game_result.streak > 0 %}
-            <span class="font-pixel text-xs text-streak"><span class="fire-flicker">{{ render_icon('fire', 12) }}</span> {{ game_result.streak }}d streak</span>
+            <span class="font-pixel text-xs text-streak inline-flex items-center gap-1"><span class="fire-flicker">{{ render_icon('fire', 12) }}</span> {{ game_result.streak }}d streak</span>
             {% endif %}
         </div>
 
         <!-- Action buttons -->
-        <div class="flex flex-wrap gap-3 mt-4">
+        <div class="flex flex-col md:flex-row gap-3 mt-4">
+            {% if dewey_score < 99.9 %}
             <button hx-post="/volumes/{{ volume.id }}/review"
                     hx-target="#review-section"
-                    hx-swap="outerHTML settle:300ms"
-                    class="pixel-btn pixel-btn-green review-btn group">
-                <span class="htmx-hide-on-request">{{ render_icon('play', 12) }} Review Again</span>
+                    hx-swap="outerHTML"
+                    class="pixel-btn pixel-btn-green review-btn group w-full md:w-auto inline-flex items-center gap-4 px-4">
+                <span class="htmx-hide-on-request inline-flex items-center gap-2">
+                    {{ render_icon('play', 12) }}
+                    <span>Review Again</span>
+                </span>
+                <span class="htmx-hide-on-request opacity-60 text-[10px] hidden md:inline border-l border-black/20 pl-3">Enter ↵</span>
                 <span class="htmx-indicator">{{ render_icon('hourglass', 12) }} Reviewing...</span>
             </button>
+            {% else %}
+            <button disabled class="pixel-btn pixel-btn-outline w-full md:w-auto opacity-50 cursor-not-allowed">
+                {{ render_icon('checkmark', 12) }} Pristine
+            </button>
+            {% endif %}
 
             {% if next_volume %}
             <a href="/volumes/{{ next_volume.id }}"
                hx-boost="true"
-               class="pixel-btn pixel-btn-gold">
-                {{ render_icon('play', 12) }} Review Next: {{ next_volume.title[:20] }}{% if next_volume.title|length > 20 %}...{% endif %} ({{ next_volume.dewey_score }})
+               class="pixel-btn pixel-btn-gold next-vol-link w-full md:w-auto max-w-md text-center inline-flex items-center gap-4 px-4">
+                <div class="flex items-center gap-2 overflow-hidden flex-1 justify-center">
+                    {{ render_icon('play', 12) }}
+                    <span class="whitespace-nowrap">Review Next:</span>
+                    <span class="truncate font-bold">{{ next_volume.title }}</span>
+                </div>
+                <span class="opacity-60 text-[10px] hidden md:inline border-l border-black/20 pl-3 flex-shrink-0">Enter ↵</span>
             </a>
             {% endif %}
 
-            <a href="/shelves/{{ volume.shelf_id }}" class="pixel-btn pixel-btn-outline">
-                &larr; Back to Shelf
+            <a href="/shelves/{{ volume.shelf_id }}" class="pixel-btn pixel-btn-outline w-full md:w-auto text-center back-shelf-link">
+                Back to Shelf
             </a>
 
             {% if not next_volume %}
-            <a href="/my-library" class="pixel-btn pixel-btn-gold">
-                {{ render_icon('checkmark', 12) }} All caught up! Back to Library
+            <a href="/shelves" class="pixel-btn pixel-btn-gold w-full md:w-auto text-center done-btn inline-flex items-center gap-4 px-4">
+                <span class="inline-flex items-center gap-2">
+                    {{ render_icon('checkmark', 12) }}
+                    <span>Back to Shelves</span>
+                </span>
+                <span class="opacity-60 text-[10px] hidden md:inline border-l border-black/20 pl-3">Enter ↵</span>
             </a>
             {% endif %}
         </div>

@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}The Stacks{% endblock %}
+{% block title %}The Shelves{% endblock %}
 
 {% block content %}
 <div class="space-y-8">
     <div class="pixel-card text-center py-6">
         <div class="mb-3">{{ render_icon('books', 32) }}</div>
-        <h1 class="pixel-heading-lg mb-2">The Stacks</h1>
+        <h1 class="pixel-heading-lg mb-2">The Shelves</h1>
         <p class="text-parchment-dark text-lg mb-4">Browse the library's shelves and their volumes.</p>
         {% if current_user %}
         <a href="/shelves/create" class="pixel-btn pixel-btn-gold text-[10px]">+ New Shelf</a>
@@ -39,7 +39,7 @@
     {% else %}
     <div class="pixel-card text-center py-12">
         <div class="mb-4">{{ render_icon('book-open', 32) }}</div>
-        <p class="text-parchment text-lg mb-2">The stacks are empty.</p>
+        <p class="text-parchment text-lg mb-2">The shelves are empty.</p>
         <p class="text-ink-light">Create a shelf to start organizing knowledge.</p>
     </div>
     {% endif %}
