@@ -27,7 +27,7 @@
       @keydown.right.window="nextAvatar()"
       @submit="isSaving = true">
     <input type="hidden" name="avatar_id" :value="selectedAvatar">
-    <input type="hidden" name="role" value="{{ card_form.role }}">
+    <!-- role is submitted via the visible field below -->
 
     <div class="pixel-card flex items-center gap-4 py-4 px-6">
         {{ render_icon('key', 32) }}
@@ -126,6 +126,17 @@
                                        name="email"
                                        required
                                        value="{{ card_form.email }}"
+                                       class="library-input">
+                            </div>
+
+                            <div>
+                                <label for="role" class="library-field-label">Library Title</label>
+                                <input type="text"
+                                       id="role"
+                                       name="role"
+                                       required
+                                       maxlength="50"
+                                       value="{{ card_form.role }}"
                                        class="library-input">
                             </div>
 

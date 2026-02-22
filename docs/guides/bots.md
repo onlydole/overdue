@@ -104,4 +104,4 @@ This means every server restart shuffles the leaderboard slightly, creating a li
 
 ## Bot avatars
 
-Each bot is assigned a random monster librarian avatar from the 12 available designs. These appear on the leaderboard and profile pages alongside the robot indicator.
+Each bot is assigned a random heroic librarian avatar from the 8 available designs. These appear on the leaderboard and profile pages alongside the robot indicator.

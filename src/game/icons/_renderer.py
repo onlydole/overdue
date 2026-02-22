@@ -85,9 +85,12 @@ def render_icon_svg_bare(
     if data is None:
         return None
 
+    # Default to parchment if no color specified, so <img> tags show up on dark bg
+    final_color = color if color else "#f0e6d3"
+
     if isinstance(data, list):
-        rect_block = _build_rects(data, color)
+        rect_block = _build_rects(data, final_color)
         return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">{rect_block}</svg>'
 
-    style = f'style="color: {color};"' if color else ""
+    style = f'style="color: {final_color};"'
     return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {style}>{data}</svg>'
