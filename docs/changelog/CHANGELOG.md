@@ -11,11 +11,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+- Docker Compose watch support for hot-reload during development.
+- Tab-style navigation with active states and `hx-boost` page transitions.
+- Interactive library card UI on settings page with material variants (stone, gelatin, chitin, spectral).
+- Keyboard-accessible avatar picker with arrow button navigation.
+- Global HTMX loading overlay with animated book icon.
+- Mobile sticky action bars for volume review.
+
 ### Changed
-- Reworked avatars into 48x48 monster librarian portraits with species-focused metadata and rendering logic.
-- Updated registration and settings avatar pickers to highlight monster-librarian descriptions and species labels.
-- Updated profile and leaderboard rendering to use static avatar SVG assets, matching the static icon pipeline.
-- Aligned gameplay and bot guides with monster librarian terminology and updated avatar test coverage.
+- Replaced 5 icon modules (~4,000 lines of 16x16 pixel-coordinate tuples) with single `_catalog.py` file defining 28 icons as SVG path strings on 24x24 viewBox.
+- Replaced 12 procedurally-generated 48x48 monster librarian avatars (~1,200 lines) with 8 hand-crafted 32x32 heroic librarian silhouettes (~150 lines) using SVG paths.
+- Icons now scale cleanly and support CSS `currentColor` tinting. Bare exports default to parchment for `<img>` tag visibility.
+- Upgraded frontend with material-changing library card effects, stamp animations, and barcode scan animations.
+- Enhanced volume review UX with pristine volume detection and disabled states.
+- Improved rate limiting to exclude static files and return styled 429 pages for web requests and JSON for API requests.
+
+### Removed
+- Catalog search feature: removed `POST /api/catalog/search` endpoint and `/search` web route. Autocomplete retained via `GET /api/catalog/autocomplete`.
 
 ## [0.8.0] - 2026-02-21
 
