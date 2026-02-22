@@ -23,7 +23,7 @@ def calculate_mood(average_dewey_score: float) -> dict:
             "ambiance": "gentle_hum",
         },
         "Getting noisy": {
-            "description": "The stacks are getting restless. Several volumes need attention.",
+            "description": "The shelves are getting restless. Several volumes need attention.",
             "color": "#f6bb42",
             "ambiance": "restless",
         },

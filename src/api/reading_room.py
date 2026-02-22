@@ -22,7 +22,7 @@ def get_mood(average_score: float) -> tuple[str, str]:
                     "Warm golden light fills the reading room. Knowledge is well-tended."
                 ),
                 "Gentle hum": ("A pleasant bustle of activity. Most volumes are in good shape."),
-                "Getting noisy": ("The stacks are getting unruly. Several volumes need attention."),
+                "Getting noisy": ("The shelves are getting unruly. Several volumes need attention."),
                 "Call for order": (
                     "Warning! Many volumes are gathering dust. Review needed urgently."
                 ),
