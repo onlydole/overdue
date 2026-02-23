@@ -63,12 +63,10 @@ async def shelf_detail(
     current_user = await get_current_librarian_optional(request, session)
     shelf = await session.get(ShelfRow, shelf_id)
     if not shelf:
-        return templates.TemplateResponse("shelves.html", {
+        return templates.TemplateResponse("404.html", {
             "request": request,
             "current_user": current_user,
-            "shelves": [],
-            "error": "Shelf not found",
-        })
+        }, status_code=404)
 
     vol_result = await session.execute(
         select(VolumeRow).where(

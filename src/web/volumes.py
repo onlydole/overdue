@@ -29,11 +29,10 @@ async def volume_detail(
     )
     volume = result.scalar_one_or_none()
     if not volume:
-        return templates.TemplateResponse("dashboard.html", {
+        return templates.TemplateResponse("404.html", {
             "request": request,
             "current_user": current_user,
-            "error": "Volume not found",
-        })
+        }, status_code=404)
 
     score = calculate_dewey_score(volume.last_reviewed_at)
 

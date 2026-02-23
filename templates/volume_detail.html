@@ -51,9 +51,9 @@
                     {{ volume.content }}
                 </div>
                 <div class="flex items-center gap-4 mt-6 text-ink-light text-sm">
-                    <span>Created {{ volume.created_at.strftime('%B %d, %Y') }}</span>
+                    <span>Created {% if volume.created_at %}{{ volume.created_at.strftime('%B %d, %Y') }}{% else %}Unknown{% endif %}</span>
                     <span class="text-pixel-border">&middot;</span>
-                    <span>Reviewed {{ volume.last_reviewed_at.strftime('%B %d, %Y at %H:%M') }}</span>
+                    <span>Reviewed {% if volume.last_reviewed_at %}{{ volume.last_reviewed_at.strftime('%B %d, %Y at %H:%M') }}{% else %}Never{% endif %}</span>
                 </div>
             </div>
 
@@ -85,9 +85,9 @@
                 {% endif %}
             </div>
 
-            {% if reviews %}
             <div class="mt-6">
                 <h2 class="pixel-heading mb-4">Review History</h2>
+                {% if reviews %}
                 <div class="space-y-0">
                     {% for review in reviews %}
                     <div class="flex items-center justify-between py-3 border-b-2 border-pixel-border/30 last:border-0">
@@ -105,8 +105,10 @@
                     </div>
                     {% endfor %}
                 </div>
+                {% else %}
+                <p class="text-parchment-dark text-sm text-center py-4">No reviews recorded yet.</p>
+                {% endif %}
             </div>
-            {% endif %}
         </div>
 </div>
 

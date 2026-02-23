@@ -147,6 +147,10 @@ async def volume_create_submit(
         errors.append("Please select a shelf.")
 
     if errors:
+        try:
+            selected_shelf = int(shelf_id) if shelf_id else None
+        except (ValueError, TypeError):
+            selected_shelf = None
         return templates.TemplateResponse("volume_create.html", {
             "request": request,
             "current_user": user,
@@ -154,7 +158,7 @@ async def volume_create_submit(
             "errors": errors,
             "title": title,
             "content": content,
-            "selected_shelf_id": int(shelf_id) if shelf_id else None,
+            "selected_shelf_id": selected_shelf,
             "bookmarks": bookmarks_str,
         })
 

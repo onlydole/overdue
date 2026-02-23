@@ -45,6 +45,7 @@
         {% set spine_font_sizes = ['1.2rem', '0.6rem', '1.25rem', '1.1rem'] %}
         {% set char_heights = [13, 9, 14, 12] %}
         <div class="flex flex-wrap gap-1 items-end min-h-[200px] p-3 border-b-4 border-pixel-border book-spine-container">
+            {% if volumes %}
             {% for vol in volumes %}
             {% set seed = vol.spine_seed if vol.spine_seed else vol.title|title_hash %}
             {% set ci = seed % spine_colors|length %}
@@ -66,6 +67,12 @@
                 <span class="book-spine-title">{{ vol.title }}</span>
             </a>
             {% endfor %}
+            {% else %}
+            <div class="w-full flex flex-col items-center justify-center py-8 text-center">
+                <div class="mb-3">{{ render_icon('book-open', 32) }}</div>
+                <p class="text-parchment-dark text-sm">This shelf is empty. Add some volumes!</p>
+            </div>
+            {% endif %}
         </div>
     </div>
 
@@ -81,7 +88,7 @@
                           style="color: {% if vol.dewey_score >= 75 %}#5cdb5c{% elif vol.dewey_score >= 50 %}#a0d468{% elif vol.dewey_score >= 25 %}#f6bb42{% else %}#e8563e{% endif %}">
                         {{ vol.dewey_score }}
                     </span>
-                    <div class="pixel-label mt-1">{{ vol.last_reviewed_at.strftime('%b %d') }}</div>
+                    <div class="pixel-label mt-1">{{ vol.last_reviewed_at.strftime('%b %d') if vol.last_reviewed_at else 'Never' }}</div>
                 </div>
             </div>
         </a>
