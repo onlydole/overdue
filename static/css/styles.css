@@ -67,6 +67,7 @@
 .htmx-settling > main {
     opacity: 0;
     transform: translateX(20px) rotateY(-10deg);
+    transition: all 0.25s ease-out;
 }
 
 main {
@@ -230,7 +231,7 @@ main {
 }
 
 /* Stamp Animation */
-.approved-stamp {
+.renewed-stamp {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -238,13 +239,13 @@ main {
     opacity: 0;
     pointer-events: none;
     z-index: 50;
-    color: #b91c1c;
+    color: #166534;
     font-family: 'Press Start 2P', cursive;
     font-size: 1.8rem;
-    border: 6px double #b91c1c;
+    border: 6px double #166534;
     padding: 0.75rem 1.5rem;
     text-transform: uppercase;
-    background: rgba(185, 28, 28, 0.05);
+    background: rgba(34, 197, 94, 0.08);
     text-shadow: 2px 2px 0 rgba(255,255,255,0.4);
 }
 
@@ -269,13 +270,13 @@ main {
     width: 40px;
     height: 40px;
     min-width: 40px;
-    border: 3px solid #78350f;
-    background: #fef3c7;
-    color: #451a03;
+    border: 3px solid #f0c543;
+    background: #0f0e17;
+    color: #f0c543;
     font-family: 'Press Start 2P', cursive;
     font-size: 0.6rem;
     line-height: 1;
-    box-shadow: 2px 2px 0 rgba(69, 26, 3, 0.3);
+    box-shadow: 2px 2px 0 rgba(15, 14, 23, 0.55);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -284,14 +285,19 @@ main {
 }
 
 .library-arrow-btn:hover {
-    border-color: #92400e;
+    border-color: #ffe9a0;
     transform: translate(-1px, -1px);
-    background: #fffbeb;
+    background: #1f1f36;
 }
 
 .library-arrow-btn:active {
     transform: translate(1px, 1px);
-    box-shadow: 1px 1px 0 rgba(69, 26, 3, 0.3);
+    box-shadow: 1px 1px 0 rgba(15, 14, 23, 0.55);
+}
+
+.library-arrow-btn:focus-visible {
+    outline: 2px solid #f0e6d3;
+    outline-offset: 2px;
 }
 
 /* HTMX loading indicator - State managed by HTMX classes */
@@ -309,9 +315,6 @@ main {
 .htmx-request .htmx-hide-on-request {
     display: none;
 }
-.htmx-request .htmx-hide-on-request {
-    display: none;
-}
 
 @media (min-width: 900px) {
     .library-card-surface {
@@ -321,12 +324,77 @@ main {
 
 .library-card-top {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 1rem;
     border-bottom: 2px solid var(--card-border-dim);
     padding-bottom: 1rem;
     margin-bottom: 1.5rem;
+}
+
+.library-card-top-right {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.library-renewed-chip {
+    width: 100%;
+    max-width: 176px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.45rem 0.55rem;
+    border: 3px solid #f0c543;
+    background: #0f0e17;
+    box-shadow: 2px 2px 0 rgba(15, 14, 23, 0.55);
+    position: relative;
+}
+
+.library-renewed-chip::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        90deg,
+        rgba(240, 230, 211, 0.08) 0 1px,
+        transparent 1px 4px
+    );
+}
+
+.library-renewed-icon {
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1a2e;
+    border: 2px solid #f0c543;
+    flex-shrink: 0;
+}
+
+.library-renewed-copy {
+    min-width: 0;
+}
+
+.library-renewed-label {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.45rem;
+    line-height: 1.2;
+    text-transform: uppercase;
+    color: #f0e6d3;
+    letter-spacing: 0.04em;
+}
+
+.library-renewed-date {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.58rem;
+    line-height: 1.2;
+    color: #ffe9a0;
+    letter-spacing: 0.05em;
 }
 
 .library-card-org {
@@ -474,14 +542,27 @@ main {
 }
 
 @media (max-width: 640px) {
+    .library-card-top {
+        align-items: flex-start;
+    }
+
+    .library-card-top-right {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.6rem;
+    }
+
+    .library-renewed-chip {
+        max-width: 220px;
+    }
+
     .library-card-grid {
         grid-template-columns: 1fr;
     }
 
     .library-id-stack {
         margin: 0 auto;
-        order: 2; /* Move portrait below fields on mobile if desired, or keep as 1 */
-        order: 1; 
+        order: 1;
     }
     
     .library-fields {
@@ -715,13 +796,6 @@ main {
     animation: shimmer 3s linear infinite;
 }
 
-/* Review screen flash */
-@keyframes review-flash {
-    0% { opacity: 0; }
-    30% { opacity: 0.25; }
-    100% { opacity: 0; }
-}
-
 /* Star burst particle */
 @keyframes star-burst {
     0% { transform: translate(0, 0) scale(1); opacity: 1; }
@@ -740,6 +814,9 @@ main {
 
 /* Review button hover glow */
 .review-btn:hover {
+    box-shadow: 4px 4px 0 #0f0e17, 0 0 12px rgba(92, 219, 92, 0.3);
+}
+.review-btn:focus-visible {
     box-shadow: 4px 4px 0 #0f0e17, 0 0 12px rgba(92, 219, 92, 0.3);
 }
 

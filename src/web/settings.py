@@ -1,6 +1,6 @@
 """Settings page routes."""
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
@@ -31,16 +31,19 @@ async def settings_page(
     if librarian is None:
         return RedirectResponse(url="/login", status_code=302)
 
+    avatar_id = librarian.avatar_id if librarian.avatar_id in AVATAR_CATALOG else "avatar_01"
+    renewed_on = request.session.get("card_renewed_on") or librarian.created_at.strftime("%Y-%m-%d")
     card_form = {
         "username": librarian.username,
         "email": librarian.email,
         "role": librarian.role,
-        "avatar_id": librarian.avatar_id or "avatar_01",
+        "avatar_id": avatar_id,
     }
     card_meta = {
         "card_number": f"CARD-{librarian.id:05d}",
         "member_since": librarian.created_at.strftime("%Y-%m-%d"),
         "expires_on": (librarian.created_at + timedelta(days=365 * 3)).strftime("%Y-%m-%d"),
+        "renewed_on": renewed_on,
     }
     return templates.TemplateResponse("settings.html", {
         "request": request,
@@ -71,7 +74,6 @@ async def update_avatar(
     form = await request.form()
     username = str(form.get("username", "")).strip()
     email = str(form.get("email", "")).strip().lower()
-    role = str(form.get("role", "")).strip()
     avatar_id = str(form.get("avatar_id", "avatar_01"))
 
     errors: list[str] = []
@@ -81,10 +83,6 @@ async def update_avatar(
         errors.append("Username must be 100 characters or fewer.")
     if not email or "@" not in email:
         errors.append("A valid email is required.")
-    if not role:
-        errors.append("Library title is required.")
-    if len(role) > 50:
-        errors.append("Library title must be 50 characters or fewer.")
 
     if avatar_id not in AVATAR_CATALOG:
         avatar_id = "avatar_01"
@@ -110,16 +108,18 @@ async def update_avatar(
             errors.append("That email is already registered.")
 
     if errors:
+        renewed_on = request.session.get("card_renewed_on") or librarian.created_at.strftime("%Y-%m-%d")
         card_form = {
             "username": username or librarian.username,
             "email": email or librarian.email,
-            "role": role or librarian.role,
+            "role": librarian.role,
             "avatar_id": avatar_id,
         }
         card_meta = {
             "card_number": f"CARD-{librarian.id:05d}",
             "member_since": librarian.created_at.strftime("%Y-%m-%d"),
             "expires_on": (librarian.created_at + timedelta(days=365 * 3)).strftime("%Y-%m-%d"),
+            "renewed_on": renewed_on,
         }
         return templates.TemplateResponse("settings.html", {
             "request": request,
@@ -133,7 +133,6 @@ async def update_avatar(
 
     librarian.username = username
     librarian.email = email
-    librarian.role = role
     librarian.avatar_id = avatar_id
     await session.commit()
 
@@ -142,5 +141,6 @@ async def update_avatar(
         username=librarian.username,
         role=librarian.role,
     )
+    request.session["card_renewed_on"] = datetime.utcnow().strftime("%Y-%m-%d")
 
     return RedirectResponse(url="/settings?saved=1", status_code=302)

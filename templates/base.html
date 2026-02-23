@@ -115,9 +115,9 @@
         </div>
     </nav>
 
-    <div id="loading-overlay" class="htmx-indicator fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-[2px] pointer-events-none">
+    <div id="loading-overlay" class="htmx-indicator fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-[2px] pointer-events-none">
         <div class="pixel-card flex flex-col items-center gap-4 py-8 px-12 animate-bounce">
-            {{ render_icon('book-open--gold', 48) }}
+            {{ render_icon('book-open', 48, '#f0c543') }}
             <p class="font-pixel text-[10px] text-gold animate-pulse">Consulting the shelves...</p>
         </div>
     </div>
