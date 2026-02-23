@@ -45,11 +45,7 @@ async def leaderboard(
             "badge_count": badge_count,
             "current_streak": streak.current_streak if streak else 0,
             "is_bot": lib.is_bot,
-            "avatar_svg": (
-                f'<img src="/static/icons/{lib.avatar_id or "avatar_01"}.svg" '
-                f'width="28" height="28" class="pixel-icon" role="img" '
-                f'aria-hidden="true" style="image-rendering: pixelated;" alt="">'
-            ),
+            "avatar_id": lib.avatar_id or "avatar_01",
             "librarian_id": lib.id,
         })
 

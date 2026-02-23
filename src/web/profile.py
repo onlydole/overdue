@@ -51,18 +51,13 @@ async def librarian_profile(
         earned = librarian.total_xp - current_threshold
         progress = int((earned / total_needed) * 100) if total_needed > 0 else 100
 
-    _aid = librarian.avatar_id or "avatar_01"
-    avatar_svg = (
-        f'<img src="/static/icons/{_aid}.svg" '
-        f'width="80" height="80" class="pixel-icon" role="img" '
-        f'aria-hidden="true" style="image-rendering: pixelated;" alt="">'
-    )
+    avatar_id = librarian.avatar_id or "avatar_01"
 
     return templates.TemplateResponse("profile.html", {
         "request": request,
         "current_user": current_user,
         "librarian": librarian,
-        "avatar_svg": avatar_svg,
+        "avatar_id": avatar_id,
         "rank": rank,
         "next_rank": next_rank,
         "xp_to_next": xp_to_next,
