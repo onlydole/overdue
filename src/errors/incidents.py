@@ -84,7 +84,7 @@ class QuietHoursExceeded(LibraryIncident):
         self.retry_after = retry_after
         super().__init__(
             code="TS-007",
-            detail=f"Quiet hours, please. Try again in {retry_after}s.",
+            detail=f"The librarian says you're being too loud! Try again in {retry_after}s.",
             status_code=429,
         )
 

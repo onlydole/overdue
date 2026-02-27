@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.volumes import calculate_dewey_score
-from src.config.defaults import DEWEY_OVERDUE
+from src.config.defaults import DEWEY_OVERDUE, XP_DAILY_STREAK_BONUS, XP_REVIEW_CURRENT, XP_REVIEW_OVERDUE_MULTIPLIER, XP_SHELVE_VOLUME
 from src.db.tables import ReviewRow, VolumeRow
 from src.game.badges import check_badges_after_review, check_badges_after_shelve
 from src.game.streaks import update_streak
@@ -31,7 +31,10 @@ async def on_volume_shelved(
     rank_changed = new_rank != old_rank
 
     return GameResult(
-        xp_awarded=10,
+        xp_awarded=XP_SHELVE_VOLUME,
+        xp_breakdown=[
+            {"amount": XP_SHELVE_VOLUME, "reason": "Shelved a new volume"},
+        ],
         total_xp=total_xp,
         rank=new_rank,
         rank_changed=rank_changed,
@@ -63,7 +66,14 @@ async def on_volume_reviewed(
 
     # Award XP (2x for overdue volumes)
     was_overdue = dewey_score_before <= DEWEY_OVERDUE
-    xp_awarded = 10 if was_overdue else 5
+    review_amount = XP_REVIEW_CURRENT * XP_REVIEW_OVERDUE_MULTIPLIER if was_overdue else XP_REVIEW_CURRENT
+    review_reason = (
+        f"Reviewed an overdue volume ({XP_REVIEW_OVERDUE_MULTIPLIER}x bonus)"
+        if was_overdue
+        else "Reviewed a current volume"
+    )
+    xp_awarded = review_amount
+    xp_breakdown = [{"amount": review_amount, "reason": review_reason}]
     total_xp = await award_review_xp(session, librarian_id, was_overdue)
 
     # Update streak
@@ -71,8 +81,9 @@ async def on_volume_reviewed(
     streak_bonus = False
     if streak_info["is_new_day"]:
         await award_streak_bonus(session, librarian_id)
-        xp_awarded += 15
-        total_xp += 15
+        xp_awarded += XP_DAILY_STREAK_BONUS
+        total_xp += XP_DAILY_STREAK_BONUS
+        xp_breakdown.append({"amount": XP_DAILY_STREAK_BONUS, "reason": "Daily streak bonus"})
         streak_bonus = True
 
     # Refresh total_xp from DB after all awards
@@ -89,6 +100,7 @@ async def on_volume_reviewed(
 
     return GameResult(
         xp_awarded=xp_awarded,
+        xp_breakdown=xp_breakdown,
         total_xp=total_xp,
         rank=new_rank,
         rank_changed=rank_changed,

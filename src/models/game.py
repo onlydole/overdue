@@ -81,6 +81,7 @@ class GameResult(BaseModel):
     """Structured feedback from a game action (shelve/review)."""
 
     xp_awarded: int = 0
+    xp_breakdown: list[dict[str, str | int]] = []
     total_xp: int = 0
     rank: str = "Page"
     rank_changed: bool = False
