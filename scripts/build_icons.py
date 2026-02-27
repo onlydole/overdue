@@ -9,6 +9,7 @@ by templates:
   - ``{name}--green.svg`` (#5cdb5c): ``checkmark``, ``play``
   - ``{name}--gold.svg``  (#f0c543): ``book-open``, ``books``, ``chart``,
     ``crown``, ``fire``, ``gamepad``, ``house``, ``trophy``
+  - ``{name}--flame.svg`` (#f07a3e): ``fire``
 
 Usage:
     python scripts/build_icons.py
@@ -29,11 +30,13 @@ from src.game.icons import get_icon_names, render_icon_svg_bare  # noqa: E402
 TINTS: dict[str, str] = {
     "green": "#5cdb5c",
     "gold": "#f0c543",
+    "flame": "#f07a3e",
 }
 
 TINTED_ICON_NAMES: dict[str, set[str]] = {
     "green": {"checkmark", "play"},
     "gold": {"book-open", "books", "chart", "crown", "fire", "gamepad", "house", "trophy"},
+    "flame": {"fire"},
 }
 
 OUT_DIR = ROOT / "static" / "icons"
