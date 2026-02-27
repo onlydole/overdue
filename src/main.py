@@ -110,6 +110,10 @@ app.add_middleware(
 )
 app.add_middleware(SessionMiddleware, secret_key=settings.signing_secret_key)
 
+from src.web.mood_middleware import MoodMiddleware
+
+app.add_middleware(MoodMiddleware)
+
 # Register library incident handlers
 register_handlers(app)
 
@@ -172,19 +176,37 @@ async def quiet_hours_middleware(request: Request, call_next):  # type: ignore[n
             <html lang="en">
             <head>
                 <meta charset="UTF-8">
+                <meta http-equiv="refresh" content="{retry_after}">
                 <title>Quiet Hours</title>
                 <style>
                     body {{ background-color: #0f0e17; color: #f0e6d3; font-family: monospace; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }}
-                    .card {{ border: 4px solid #3d3d6b; background: #232342; padding: 2rem; text-align: center; box-shadow: 4px 4px 0 #0f0e17; }}
+                    .card {{ border: 4px solid #3d3d6b; background: #232342; padding: 2rem; text-align: center; box-shadow: 4px 4px 0 #0f0e17; max-width: 420px; }}
                     h1 {{ color: #f0c543; text-transform: uppercase; margin-bottom: 1rem; font-size: 1.5rem; }}
+                    .countdown {{ color: #f0c543; font-size: 2rem; margin: 1rem 0; }}
                 </style>
             </head>
             <body>
                 <div class="card">
                     <h1>Quiet Hours</h1>
-                    <p>Shhh! The librarian is watching.</p>
-                    <p>Try again in {retry_after} seconds.</p>
+                    <p>The librarian says you're being too loud!</p>
+                    <p class="countdown" id="countdown">{retry_after}</p>
+                    <p>seconds until you can return</p>
                 </div>
+                <script>
+                    (function() {{
+                        var remaining = {retry_after};
+                        var el = document.getElementById('countdown');
+                        var timer = setInterval(function() {{
+                            remaining--;
+                            if (remaining <= 0) {{
+                                clearInterval(timer);
+                                window.location.replace(document.referrer || '/');
+                                return;
+                            }}
+                            el.textContent = remaining;
+                        }}, 1000);
+                    }})();
+                </script>
             </body>
             </html>
             """,
