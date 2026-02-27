@@ -1,0 +1,98 @@
+<!-- Mood Banner -->
+<div class="pixel-card text-center py-8 mood-{{ mood.ambiance }}" style="border-color: {{ mood.color }}">
+    <div class="pixel-bounce inline-block mb-3">
+        {% if mood.ambiance == 'soft_pages' %}{{ render_icon('book-open', 32) }}
+        {% elif mood.ambiance == 'gentle_hum' %}{{ render_icon('books', 32) }}
+        {% elif mood.ambiance == 'restless' %}{{ render_icon('book-closed', 32) }}
+        {% elif mood.ambiance == 'urgent' %}{{ render_icon('fire', 32) }}
+        {% else %}{{ render_icon('construction', 32) }}{% endif %}
+    </div>
+    <h1 class="pixel-heading-lg mb-2">{{ mood.mood }}</h1>
+    <p class="text-parchment-dark text-xl mb-4">{{ mood.description }}</p>
+    <div class="inline-flex items-center gap-3 bg-pixel-bg/50 border-2 border-pixel-border px-5 py-2">
+        <span class="pixel-label">Library Score</span>
+        <span class="pixel-stat" style="color: {{ mood.color }}">{{ mood.average_dewey_score }}</span>
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="pixel-card text-center">
+        <div class="pixel-label mb-2">Total Volumes</div>
+        <div class="pixel-stat text-parchment">{{ total_volumes }}</div>
+    </div>
+    <div class="pixel-card text-center">
+        <div class="pixel-label mb-2">Gathering Dust</div>
+        <div class="pixel-stat text-dewey-overdue">{{ overdue_count }}</div>
+    </div>
+    <div class="pixel-card text-center">
+        <div class="pixel-label mb-2">Mood</div>
+        <div class="font-pixel text-sm" style="color: {{ mood.color }}">{{ mood.mood }}</div>
+    </div>
+</div>
+
+<!-- Dewey Score Distribution -->
+<div class="pixel-card">
+    <h2 class="pixel-heading mb-4">Dewey Score Distribution</h2>
+    <div class="flex h-6 gap-[2px] overflow-hidden">
+        {% if total_volumes > 0 %}
+        <div class="bg-dewey-pristine" style="width: {{ (distribution.pristine / total_volumes * 100)|round }}%" title="Pristine: {{ distribution.pristine }}"></div>
+        <div class="bg-dewey-good" style="width: {{ (distribution.good / total_volumes * 100)|round }}%" title="Good: {{ distribution.good }}"></div>
+        <div class="bg-dewey-attention" style="width: {{ (distribution.attention / total_volumes * 100)|round }}%" title="Needs attention: {{ distribution.attention }}"></div>
+        <div class="bg-dewey-overdue" style="width: {{ (distribution.overdue / total_volumes * 100)|round }}%" title="Overdue: {{ distribution.overdue }}"></div>
+        {% else %}
+        <div class="bg-pixel-highlight w-full flex items-center justify-center font-retro text-ink-light">Your shelves are empty. Every great library starts with a single volume.</div>
+        {% endif %}
+    </div>
+    {% if total_volumes > 0 %}
+    <div class="flex justify-between mt-3 text-sm">
+        <span class="text-dewey-pristine">Pristine {{ distribution.pristine }}</span>
+        <span class="text-dewey-good">Good {{ distribution.good }}</span>
+        <span class="text-dewey-attention">Dusty {{ distribution.attention }}</span>
+        <span class="text-dewey-overdue">Overdue {{ distribution.overdue }}</span>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Activity + Streaks -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Recent Activity -->
+    <div class="pixel-card">
+        <h2 class="pixel-heading mb-4">Recent Activity</h2>
+        {% if recent_reviews %}
+        <ul class="space-y-3">
+            {% for review in recent_reviews %}
+            <li class="flex items-center gap-3 text-base whitespace-nowrap overflow-hidden">
+                <span class="flex-shrink-0 text-dewey-pristine">{{ render_icon('play', 14, '#5cdb5c') }}</span>
+                <span class="flex-shrink-0 text-ink-light">{{ review.reviewed_at.strftime('%b %d, %H:%M') }}</span>
+                <span class="flex-shrink-0 text-parchment">{{ review.librarian.username }}</span>
+                <span class="flex-shrink-0 text-ink-light">reviewed</span>
+                <a href="/volumes/{{ review.volume_id }}" class="text-gold hover:underline truncate">{{ review.volume.title }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-ink-light">No recent activity. Your volumes are waiting for your wisdom.</p>
+        {% endif %}
+    </div>
+
+    <!-- Streak Leaderboard -->
+    <div class="pixel-card">
+        <h2 class="pixel-heading mb-4"><span class="fire-flicker">{{ render_icon('fire', 18) }}</span> Top Streaks</h2>
+        {% if streak_leaders %}
+        <ol class="space-y-3">
+            {% for entry in streak_leaders %}
+            <li class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="w-7 h-7 bg-pixel-highlight border-2 border-gold flex items-center justify-center font-pixel text-[8px] text-gold">{{ loop.index }}</span>
+                    <span class="text-parchment">{{ entry.username }}</span>
+                </div>
+                <span class="text-streak font-pixel text-[10px]">{{ entry.current_streak }}d</span>
+            </li>
+            {% endfor %}
+        </ol>
+        {% else %}
+        <p class="text-ink-light">No active streaks yet. Start reviewing to ignite yours.</p>
+        {% endif %}
+    </div>
+</div>
