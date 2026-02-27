@@ -44,8 +44,10 @@ function showToast(text, type, iconId) {
     var toast = document.createElement('div');
     toast.className = 'pixel-card text-center py-3 px-5 min-w-[220px]';
     toast.style.pointerEvents = 'auto';
-    toast.style.borderColor = type === 'badge' ? '#b76ef0' : type === 'rank' ? '#f0c543' : '#5cdb5c';
+    var borderColors = { badge: '#b76ef0', rank: '#f0c543', party: '#b76ef0' };
+    toast.style.borderColor = borderColors[type] || '#5cdb5c';
     toast.style.animation = 'toast-slide-in 0.3s ease-out';
+    if (type === 'party') toast.style.animation += ', party-glow 2s linear infinite';
 
     var span = document.createElement('span');
     span.className = 'font-pixel text-[10px]';
@@ -56,6 +58,8 @@ function showToast(text, type, iconId) {
     } else if (type === 'badge') {
         span.className += ' text-badge-common';
     } else if (type === 'rank') {
+        span.className += ' gold-shimmer';
+    } else if (type === 'party') {
         span.className += ' gold-shimmer';
     }
 
@@ -120,22 +124,164 @@ function showReviewCelebration() {
 }
 
 /* ============================================================
+   UI SOUND EFFECTS
+   ============================================================ */
+
+var uiSfxState = {
+    context: null
+};
+
+function getUiAudioContext() {
+    if (uiSfxState.context) return uiSfxState.context;
+    var AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return null;
+    uiSfxState.context = new AudioCtx();
+    return uiSfxState.context;
+}
+
+function scheduleUiTone(kind) {
+    var context = getUiAudioContext();
+    if (!context) return;
+
+    if (context.state === 'suspended' && typeof context.resume === 'function') {
+        context.resume().catch(function() {
+            // Ignore resume failures (usually permission/autoplay edge cases).
+        });
+    }
+
+    var now = context.currentTime;
+    var firstFreq = 680;
+    var secondFreq = 920;
+    var wave = 'triangle';
+
+    if (kind === 'review') {
+        firstFreq = 520;
+        secondFreq = 760;
+        wave = 'square';
+    } else if (kind === 'back') {
+        firstFreq = 620;
+        secondFreq = 360;
+        wave = 'sawtooth';
+    }
+
+    var oscillator = context.createOscillator();
+    var gain = context.createGain();
+
+    oscillator.type = wave;
+    oscillator.frequency.setValueAtTime(firstFreq, now);
+    oscillator.frequency.linearRampToValueAtTime(secondFreq, now + 0.08);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(0.07, now + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.13);
+
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start(now);
+    oscillator.stop(now + 0.14);
+}
+
+function shouldPlayUiSoundForClick(evt) {
+    if (!evt) return false;
+    if (evt.isTrusted === false) return false;
+    if (typeof evt.button === 'number' && evt.button !== 0) return false;
+    if (evt.metaKey || evt.ctrlKey || evt.shiftKey || evt.altKey) return false;
+    return true;
+}
+
+function playReviewActionSfx(kind) {
+    if (kind !== 'review' && kind !== 'back') {
+        kind = 'next';
+    }
+    scheduleUiTone(kind);
+}
+
+function navigateWithUiTransition(href) {
+    if (!href) return;
+    var target = new URL(href, window.location.origin);
+    var targetPath = target.pathname + target.search + target.hash;
+    var currentPath = window.location.pathname + window.location.search + window.location.hash;
+    if (targetPath === currentPath) return;
+
+    if (window.htmx && typeof window.htmx.ajax === 'function') {
+        window.htmx.ajax('GET', targetPath, { target: 'body', swap: 'innerHTML' });
+        window.history.pushState({ htmx: true }, '', targetPath);
+    } else {
+        window.location.assign(target.toString());
+    }
+}
+
+window.playReviewActionSfx = playReviewActionSfx;
+window.navigateWithUiTransition = navigateWithUiTransition;
+
+function handleUiNavigationClick(evt) {
+    if (!shouldPlayUiSoundForClick(evt)) return;
+
+    var reviewBtn = evt.target.closest('.review-btn');
+    if (reviewBtn) {
+        if (reviewBtn.disabled) return;
+        playReviewActionSfx('review');
+        return;
+    }
+
+    var nextAction = evt.target.closest('.next-vol-link');
+    if (nextAction) {
+        evt.preventDefault();
+        playReviewActionSfx('next');
+        navigateWithUiTransition(nextAction.getAttribute('href'));
+        return;
+    }
+
+    var backAction = evt.target.closest('.done-btn, .back-shelf-link');
+    if (backAction) {
+        evt.preventDefault();
+        playReviewActionSfx('back');
+        navigateWithUiTransition(backAction.getAttribute('href'));
+    }
+}
+
+if (!window.__overdueUiNavigationClickBound) {
+    document.addEventListener('click', handleUiNavigationClick, true);
+    window.__overdueUiNavigationClickBound = true;
+}
+
+/* ============================================================
    GAME EVENT HANDLER
    ============================================================ */
 
-document.body.addEventListener('gameEvent', function(evt) {
+function handleGameEventToast(evt) {
     var data = evt.detail;
     if (!data) return;
 
     // Trigger celebration effect
     showReviewCelebration();
 
-    if (data.xp_awarded > 0) {
-        queueToast('+' + data.xp_awarded + ' XP', 'xp', 'star');
+    var xpBreakdown = Array.isArray(data.xp_breakdown) ? data.xp_breakdown : [];
+    var totalXpFromBreakdown = 0;
+
+    xpBreakdown.forEach(function(entry) {
+        if (!entry) return;
+        var amount = Number(entry.amount || 0);
+        if (amount <= 0) return;
+        totalXpFromBreakdown += amount;
+    });
+
+    var xpToShow = totalXpFromBreakdown > 0 ? totalXpFromBreakdown : Number(data.xp_awarded || 0);
+    if (xpToShow > 0) {
+        queueToast('+' + xpToShow + ' XP (' + xpToShow + ' pages)', 'xp', 'star');
     }
 
-    if (data.streak_bonus_awarded) {
-        queueToast('Streak Bonus!', 'streak', 'fire');
+    var bonusLabels = [];
+    xpBreakdown.forEach(function(entry) {
+        if (!entry || typeof entry.reason !== 'string') return;
+        if (entry.reason.indexOf('overdue') >= 0) bonusLabels.push('overdue x2');
+        if (entry.reason.indexOf('streak bonus') >= 0) bonusLabels.push('streak');
+    });
+    if (bonusLabels.length > 0) {
+        var uniqueBonusLabels = bonusLabels.filter(function(label, index) {
+            return bonusLabels.indexOf(label) === index;
+        });
+        queueToast('Bonus: ' + uniqueBonusLabels.join(' + '), 'streak', 'fire');
     }
 
     if (data.badges_earned && data.badges_earned.length > 0) {
@@ -147,13 +293,296 @@ document.body.addEventListener('gameEvent', function(evt) {
     if (data.rank_changed && data.new_rank) {
         queueToast('Ranked up to ' + data.new_rank + '!', 'rank', 'crown');
     }
-});
+}
+
+if (!window.__overdueGameEventToastBound) {
+    document.body.addEventListener('gameEvent', handleGameEventToast);
+    window.__overdueGameEventToastBound = true;
+}
+
+/* ============================================================
+   PARTY MODE (Easter Egg -- click "OVERDUE" 5 times)
+   ============================================================ */
+
+(function() {
+    if (window.__overduePartyModeInit) return;
+    window.__overduePartyModeInit = true;
+
+    var PARTY_MODE_STORAGE_KEY = 'overdue:party-mode';
+    var PARTY_AUDIO_TIME_STORAGE_KEY = 'overdue:party-audio-time';
+    var CLICKS_NEEDED = 5;
+    var CLICK_WINDOW_MS = 3000;
+    var SINGLE_CLICK_NAV_DELAY_MS = 500;
+    var clicks = [];
+    var singleClickTimer = null;
+    var resumeOnInteraction = null;
+    var audio = getOrCreatePartyAudio();
+    restorePersistedPartyMode();
+
+    document.addEventListener('click', function(e) {
+        var logo = e.target.closest('#overdue-logo');
+        if (!logo) return;
+        if ((typeof e.button === 'number' && e.button !== 0) || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+            return;
+        }
+
+        var logoHref = logo.getAttribute('href') || '/';
+        var now = Date.now();
+        clicks.push(now);
+        clicks = clicks.filter(function(t) { return now - t < CLICK_WINDOW_MS; });
+
+        // Suppress immediate navigation so rapid click sequences can complete.
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (singleClickTimer) {
+            clearTimeout(singleClickTimer);
+            singleClickTimer = null;
+        }
+
+        // Preserve normal logo navigation for single clicks.
+        if (clicks.length === 1 && !isHrefCurrentLocation(logoHref)) {
+            singleClickTimer = window.setTimeout(function() {
+                singleClickTimer = null;
+                clicks = [];
+                navigateToLogoHref(logoHref);
+            }, SINGLE_CLICK_NAV_DELAY_MS);
+        }
+
+        // Visual pulse on each click in the sequence
+        if (clicks.length >= 1) {
+            logo.style.transform = 'scale(1.25)';
+            logo.style.transition = 'transform 0.15s ease';
+            setTimeout(function() {
+                logo.style.transform = 'scale(1)';
+            }, 150);
+        }
+
+        if (clicks.length >= CLICKS_NEEDED) {
+            clicks = [];
+            if (singleClickTimer) {
+                clearTimeout(singleClickTimer);
+                singleClickTimer = null;
+            }
+            togglePartyMode();
+        }
+    }, false);
+
+    function navigateToLogoHref(href) {
+        var target = new URL(href, window.location.origin);
+        var targetPath = target.pathname + target.search + target.hash;
+        var currentPath = window.location.pathname + window.location.search + window.location.hash;
+        if (targetPath === currentPath) return;
+        if (window.htmx && typeof window.htmx.ajax === 'function') {
+            window.htmx.ajax('GET', targetPath, { target: 'body', swap: 'innerHTML' });
+            window.history.pushState({ htmx: true }, '', targetPath);
+        } else {
+            window.location.assign(target.toString());
+        }
+    }
+
+    function isHrefCurrentLocation(href) {
+        var target = new URL(href, window.location.origin);
+        var targetPath = target.pathname + target.search + target.hash;
+        var currentPath = window.location.pathname + window.location.search + window.location.hash;
+        return targetPath === currentPath;
+    }
+
+    function togglePartyMode() {
+        var active = document.body.classList.toggle('party-mode');
+        persistPartyMode(active);
+        if (active) {
+            tryStartPartyAudio(true);
+            queueToast('Party Mode Activated', 'party', 'star');
+        } else {
+            stopPartyAudio();
+            queueToast('Party Completed', 'party', 'trophy');
+        }
+    }
+
+    function getOrCreatePartyAudio() {
+        if (window.__overduePartyAudio) return window.__overduePartyAudio;
+        var persistentAudio = new Audio('/static/audio/party.mp3');
+        persistentAudio.loop = true;
+        persistentAudio.preload = 'auto';
+        if (typeof persistentAudio.load === 'function') {
+            try {
+                persistentAudio.load();
+            } catch (_err) {
+                // Ignore media preload failures.
+            }
+        }
+        window.__overduePartyAudio = persistentAudio;
+        return persistentAudio;
+    }
+
+    function persistPartyAudioPosition() {
+        if (!audio || !readPersistedPartyMode()) return;
+        if (!Number.isFinite(audio.currentTime) || audio.currentTime <= 0) return;
+        try {
+            sessionStorage.setItem(PARTY_AUDIO_TIME_STORAGE_KEY, String(audio.currentTime));
+        } catch (_err) {
+            // Ignore storage availability issues.
+        }
+    }
+
+    function clearPersistedPartyAudioPosition() {
+        try {
+            sessionStorage.removeItem(PARTY_AUDIO_TIME_STORAGE_KEY);
+        } catch (_err) {
+            // Ignore storage availability issues.
+        }
+    }
+
+    function restorePersistedPartyAudioPosition() {
+        if (!audio) return;
+        var savedSeconds = null;
+        try {
+            savedSeconds = Number(sessionStorage.getItem(PARTY_AUDIO_TIME_STORAGE_KEY));
+        } catch (_err) {
+            savedSeconds = null;
+        }
+        if (!Number.isFinite(savedSeconds) || savedSeconds <= 0) return;
+
+        var applySavedTime = function() {
+            try {
+                if (Number.isFinite(audio.duration) && savedSeconds >= audio.duration) return;
+                audio.currentTime = savedSeconds;
+            } catch (_err) {
+                // Some browsers can throw if metadata is not ready yet.
+            }
+        };
+
+        if (audio.readyState >= 1) {
+            applySavedTime();
+        } else {
+            var onLoadedMetadata = function() {
+                audio.removeEventListener('loadedmetadata', onLoadedMetadata);
+                applySavedTime();
+            };
+            audio.addEventListener('loadedmetadata', onLoadedMetadata);
+        }
+    }
+
+    function tryStartPartyAudio(restart) {
+        if (!audio) return;
+        if (restart) {
+            audio.currentTime = 0;
+            clearPersistedPartyAudioPosition();
+        } else {
+            restorePersistedPartyAudioPosition();
+        }
+        var playPromise = audio.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(function() {
+                attachResumeOnInteraction();
+            });
+        }
+    }
+
+    function stopPartyAudio() {
+        if (!audio) return;
+        persistPartyAudioPosition();
+        audio.pause();
+        audio.currentTime = 0;
+        clearPersistedPartyAudioPosition();
+        detachResumeOnInteraction();
+    }
+
+    function attachResumeOnInteraction() {
+        if (resumeOnInteraction) return;
+        resumeOnInteraction = function() {
+            detachResumeOnInteraction();
+            if (readPersistedPartyMode()) tryStartPartyAudio(false);
+        };
+        document.addEventListener('pointerdown', resumeOnInteraction, true);
+        document.addEventListener('keydown', resumeOnInteraction, true);
+    }
+
+    function detachResumeOnInteraction() {
+        if (!resumeOnInteraction) return;
+        document.removeEventListener('pointerdown', resumeOnInteraction, true);
+        document.removeEventListener('keydown', resumeOnInteraction, true);
+        resumeOnInteraction = null;
+    }
+
+    function persistPartyMode(active) {
+        try {
+            if (active) {
+                localStorage.setItem(PARTY_MODE_STORAGE_KEY, '1');
+            } else {
+                localStorage.removeItem(PARTY_MODE_STORAGE_KEY);
+            }
+        } catch (_err) {
+            // Ignore storage availability issues.
+        }
+    }
+
+    function readPersistedPartyMode() {
+        try {
+            return localStorage.getItem(PARTY_MODE_STORAGE_KEY) === '1';
+        } catch (_err) {
+            return false;
+        }
+    }
+
+    function restorePersistedPartyMode() {
+        if (!readPersistedPartyMode()) return;
+        document.body.classList.add('party-mode');
+        tryStartPartyAudio(false);
+    }
+
+    function syncPartyAudioReference() {
+        var domAudio = document.getElementById('party-audio');
+        if (!domAudio || audio === domAudio) return;
+
+        var resumeSeconds = null;
+        if (audio && Number.isFinite(audio.currentTime) && audio.currentTime > 0) {
+            resumeSeconds = audio.currentTime;
+        }
+
+        window.__overduePartyAudio = null;
+        audio = getOrCreatePartyAudio();
+        if (!audio || !Number.isFinite(resumeSeconds) || resumeSeconds <= 0) return;
+        try {
+            audio.currentTime = resumeSeconds;
+        } catch (_err) {
+            // Ignore media seek failures.
+        }
+    }
+
+    function handlePartyModeBeforeSwap() {
+        if (!readPersistedPartyMode()) return;
+        persistPartyAudioPosition();
+    }
+
+    function handlePartyModeAfterSwap() {
+        syncPartyAudioReference();
+        if (!readPersistedPartyMode() || !audio) return;
+        document.body.classList.add('party-mode');
+        tryStartPartyAudio(false);
+    }
+
+    if (!window.__overduePartyModeBeforeSwapBound) {
+        document.addEventListener('htmx:beforeSwap', handlePartyModeBeforeSwap);
+        window.__overduePartyModeBeforeSwapBound = true;
+    }
+
+    if (!window.__overduePartyModeAfterSwapBound) {
+        document.addEventListener('htmx:afterSwap', handlePartyModeAfterSwap);
+        window.__overduePartyModeAfterSwapBound = true;
+    }
+
+    window.addEventListener('pagehide', function() {
+        if (readPersistedPartyMode()) persistPartyAudioPosition();
+    });
+})();
 
 /* ============================================================
    HTMX PRE-REQUEST HANDLER
    ============================================================ */
 
-document.body.addEventListener('htmx:beforeRequest', function(evt) {
+function handleHtmxBeforeRequest(evt) {
     var target = evt.detail.target;
     if (target && target.id === 'review-section') {
         // Capture old gauge score for animation
@@ -165,4 +594,9 @@ document.body.addEventListener('htmx:beforeRequest', function(evt) {
         // Capture rect for particles
         window.__reviewSectionRect = target.getBoundingClientRect();
     }
-});
+}
+
+if (!window.__overdueHtmxBeforeRequestBound) {
+    document.body.addEventListener('htmx:beforeRequest', handleHtmxBeforeRequest);
+    window.__overdueHtmxBeforeRequestBound = true;
+}
