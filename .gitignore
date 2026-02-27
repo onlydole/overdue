@@ -17,3 +17,4 @@ venv/
 htmlcov/
 *.log
 .DS_Store
+node_modules/
