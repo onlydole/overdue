@@ -532,40 +532,12 @@ if (!window.__overdueGameEventToastBound) {
         tryStartPartyAudio(false);
     }
 
-    function syncPartyAudioReference() {
-        var domAudio = document.getElementById('party-audio');
-        if (!domAudio || audio === domAudio) return;
-
-        var resumeSeconds = null;
-        if (audio && Number.isFinite(audio.currentTime) && audio.currentTime > 0) {
-            resumeSeconds = audio.currentTime;
-        }
-
-        window.__overduePartyAudio = null;
-        audio = getOrCreatePartyAudio();
-        if (!audio || !Number.isFinite(resumeSeconds) || resumeSeconds <= 0) return;
-        try {
-            audio.currentTime = resumeSeconds;
-        } catch (_err) {
-            // Ignore media seek failures.
-        }
-    }
-
-    function handlePartyModeBeforeSwap() {
-        if (!readPersistedPartyMode()) return;
-        persistPartyAudioPosition();
-    }
-
     function handlePartyModeAfterSwap() {
-        syncPartyAudioReference();
-        if (!readPersistedPartyMode() || !audio) return;
+        if (!readPersistedPartyMode()) return;
         document.body.classList.add('party-mode');
-        tryStartPartyAudio(false);
-    }
-
-    if (!window.__overduePartyModeBeforeSwapBound) {
-        document.addEventListener('htmx:beforeSwap', handlePartyModeBeforeSwap);
-        window.__overduePartyModeBeforeSwapBound = true;
+        if (audio && audio.paused) {
+            tryStartPartyAudio(false);
+        }
     }
 
     if (!window.__overduePartyModeAfterSwapBound) {
