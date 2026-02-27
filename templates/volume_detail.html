@@ -6,36 +6,61 @@
     handleEnter() {
         const reviewBtn = document.querySelector('.review-btn');
         if (reviewBtn && !reviewBtn.disabled) {
+            if (window.playReviewActionSfx) window.playReviewActionSfx('review');
             reviewBtn.click();
             return;
         }
         const nextLink = document.querySelector('.next-vol-link');
         if (nextLink) {
-            nextLink.click();
+            if (window.playReviewActionSfx) window.playReviewActionSfx('next');
+            const href = nextLink.getAttribute('href');
+            if (window.navigateWithUiTransition && href) {
+                window.navigateWithUiTransition(href);
+            } else {
+                nextLink.click();
+            }
             return;
         }
         const doneBtn = document.querySelector('.done-btn');
         if (doneBtn) {
-            doneBtn.click();
+            if (window.playReviewActionSfx) window.playReviewActionSfx('back');
+            const href = doneBtn.getAttribute('href');
+            if (window.navigateWithUiTransition && href) {
+                window.navigateWithUiTransition(href);
+            } else {
+                doneBtn.click();
+            }
         }
     },
     goNext() {
         const link = document.querySelector('.next-vol-link');
-        if (link) link.click();
+        if (!link) return;
+        const href = link.getAttribute('href');
+        if (window.navigateWithUiTransition && href) {
+            window.navigateWithUiTransition(href);
+        } else {
+            link.click();
+        }
     },
     goBack() {
         const link = document.querySelector('.back-shelf-link');
-        if (link) link.click();
+        if (!link) return;
+        const href = link.getAttribute('href');
+        if (window.navigateWithUiTransition && href) {
+            window.navigateWithUiTransition(href);
+        } else {
+            link.click();
+        }
     }
 }" @keydown.enter.window="handleEnter()" @keydown.right.window="goNext()" @keydown.left.window="goBack()">
-    <a href="/shelves/{{ volume.shelf_id }}" class="back-shelf-link pixel-btn pixel-btn-outline text-[10px]">&larr; Back to shelf</a>
+    <a href="/shelves/{{ volume.shelf_id }}" hx-boost="true" class="back-shelf-link pixel-btn pixel-btn-outline text-[10px]">&larr; Back to shelf</a>
 
     <div class="pixel-card pb-24 md:pb-6">
         <div class="flex flex-col md:flex-row items-start gap-6">
             <div class="flex-1">
                 <h1 class="pixel-heading-lg mb-3">{{ volume.title }}</h1>
                 {% if volume.author %}
-                <a href="/profile/{{ volume.author.id }}" class="inline-flex items-center gap-2 mb-3 group">
+                <a href="/profile/{{ volume.author.id }}" hx-boost="true" class="inline-flex items-center gap-2 mb-3 group">
                     {{ render_avatar(volume.author.avatar_id, 24) }}
                     <span class="font-retro text-sm text-ink-light group-hover:text-gold transition-colors">by {{ volume.author.username }}</span>
                 </a>

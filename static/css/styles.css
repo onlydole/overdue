@@ -652,6 +652,27 @@ main {
     color: #8b8b9e;
 }
 
+/* Shelves card layout helpers */
+.shelf-card-title {
+    margin-bottom: 0.25rem;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.shelf-card-description {
+    min-height: 3rem;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.shelf-card-volume-count {
+    color: #7eb5e3;
+}
+
 /* ============================================================
    DEWEY GAUGE
    ============================================================ */
@@ -923,6 +944,204 @@ select {
 }
 
 /* ============================================================
+   MOOD BACKDROP -- Atmospheric background effects
+   ============================================================ */
+
+#mood-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+    transition: opacity 0.8s ease;
+}
+
+/* Gradient layer */
+#mood-backdrop::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transition: background 1.2s ease;
+}
+
+/* Vignette layer */
+#mood-backdrop::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transition: box-shadow 1.2s ease;
+}
+
+/* --- Quiet Study (soft_pages) --- */
+body[data-mood="soft_pages"] #mood-backdrop::before {
+    background: radial-gradient(ellipse at 50% 40%, rgba(240, 197, 67, 0.04) 0%, transparent 70%);
+}
+body[data-mood="soft_pages"] #mood-backdrop::after {
+    box-shadow: inset 0 0 120px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* --- Gentle Hum (gentle_hum) --- */
+body[data-mood="gentle_hum"] #mood-backdrop::before {
+    background:
+        radial-gradient(ellipse at 30% 50%, rgba(160, 212, 104, 0.04) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 40%, rgba(240, 197, 67, 0.03) 0%, transparent 50%);
+}
+body[data-mood="gentle_hum"] #mood-backdrop::after {
+    box-shadow: inset 0 0 140px 50px rgba(0, 0, 0, 0.18);
+}
+
+/* --- Getting Noisy (restless) --- */
+body[data-mood="restless"] #mood-backdrop::before {
+    background: radial-gradient(ellipse at 50% 50%, rgba(246, 187, 66, 0.06) 0%, transparent 65%);
+    animation: mood-pulse-restless 4s ease-in-out infinite;
+}
+body[data-mood="restless"] #mood-backdrop::after {
+    box-shadow: inset 0 0 160px 60px rgba(0, 0, 0, 0.22);
+}
+
+@keyframes mood-pulse-restless {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* --- Call for Order (urgent) --- */
+body[data-mood="urgent"] #mood-backdrop::before {
+    background: radial-gradient(ellipse at 50% 50%, rgba(232, 86, 62, 0.07) 0%, transparent 60%);
+    animation: mood-pulse-urgent 2.5s ease-in-out infinite;
+}
+body[data-mood="urgent"] #mood-backdrop::after {
+    box-shadow: inset 0 0 200px 80px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes mood-pulse-urgent {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* --- Closed for Renovation (closed) --- */
+body[data-mood="closed"] #mood-backdrop::before {
+    background:
+        radial-gradient(ellipse at 50% 50%, rgba(158, 27, 27, 0.06) 0%, transparent 50%),
+        linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, transparent 30%, transparent 70%, rgba(0, 0, 0, 0.15) 100%);
+    animation: mood-storm 6s ease-in-out infinite;
+}
+body[data-mood="closed"] #mood-backdrop::after {
+    box-shadow: inset 0 0 250px 100px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes mood-storm {
+    0%, 100% { opacity: 0.7; }
+    30% { opacity: 1; }
+    60% { opacity: 0.5; }
+}
+
+/* --- Mood Particles --- */
+
+.mood-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    pointer-events: none;
+    opacity: 0;
+    left: calc(8% + (var(--i) * 7.5%));
+}
+
+/* --- Quiet Study Particles: golden dust motes floating up --- */
+body[data-mood="soft_pages"] .mood-particle {
+    background: #f0c543;
+    opacity: 0.25;
+    bottom: -10px;
+    animation: mood-float-up calc(7s + var(--i) * 0.4s) ease-in-out infinite;
+    animation-delay: calc(var(--i) * -0.8s);
+}
+
+@keyframes mood-float-up {
+    0% { transform: translateY(0) scale(1); opacity: 0; }
+    10% { opacity: 0.3; }
+    50% { transform: translateY(-50vh) scale(0.8); opacity: 0.25; }
+    90% { opacity: 0.1; }
+    100% { transform: translateY(-100vh) scale(0.6); opacity: 0; }
+}
+
+/* --- Gentle Hum Particles: parchment flutters drifting --- */
+body[data-mood="gentle_hum"] .mood-particle {
+    background: #d4c4a8;
+    opacity: 0.2;
+    width: 5px;
+    height: 3px;
+    bottom: -10px;
+    animation: mood-flutter calc(6s + var(--i) * 0.5s) ease-in-out infinite;
+    animation-delay: calc(var(--i) * -0.7s);
+}
+
+@keyframes mood-flutter {
+    0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.25; }
+    50% { transform: translate(30px, -45vh) rotate(180deg); opacity: 0.2; }
+    100% { transform: translate(-20px, -95vh) rotate(360deg); opacity: 0; }
+}
+
+/* --- Getting Noisy Particles: amber swirling --- */
+body[data-mood="restless"] .mood-particle {
+    background: #f6bb42;
+    opacity: 0.2;
+    top: 50%;
+    animation: mood-swirl calc(4.5s + var(--i) * 0.3s) ease-in-out infinite;
+    animation-delay: calc(var(--i) * -0.5s);
+}
+
+@keyframes mood-swirl {
+    0% { transform: translate(0, 0) scale(1); opacity: 0; }
+    25% { transform: translate(20px, -30px) scale(1.2); opacity: 0.3; }
+    50% { transform: translate(-15px, -60px) scale(0.9); opacity: 0.2; }
+    75% { transform: translate(25px, -90px) scale(1.1); opacity: 0.15; }
+    100% { transform: translate(0, -120px) scale(0.7); opacity: 0; }
+}
+
+/* --- Call for Order Particles: red-orange darting --- */
+body[data-mood="urgent"] .mood-particle {
+    background: #e8563e;
+    opacity: 0.15;
+    width: 3px;
+    height: 3px;
+    top: calc(10% + var(--i) * 7%);
+    animation: mood-dart calc(2.5s + var(--i) * 0.2s) ease-in-out infinite;
+    animation-delay: calc(var(--i) * -0.3s);
+}
+
+@keyframes mood-dart {
+    0% { transform: translate(0, 0) scale(1); opacity: 0; }
+    20% { opacity: 0.3; }
+    50% { transform: translate(calc(40px - var(--i) * 5px), calc(-20px + var(--i) * 3px)) scale(1.3); opacity: 0.2; }
+    100% { transform: translate(calc(-30px + var(--i) * 4px), calc(15px - var(--i) * 2px)) scale(0.5); opacity: 0; }
+}
+
+/* --- Closed Particles: grey debris falling --- */
+body[data-mood="closed"] .mood-particle {
+    background: #5a5a7a;
+    opacity: 0.15;
+    width: 5px;
+    height: 5px;
+    top: -10px;
+    animation: mood-debris calc(4s + var(--i) * 0.5s) linear infinite;
+    animation-delay: calc(var(--i) * -0.6s);
+}
+
+@keyframes mood-debris {
+    0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.2; }
+    80% { opacity: 0.15; }
+    100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+}
+
+/* Hide excess particles for moods that use fewer than 12 */
+body[data-mood="soft_pages"] .mood-particle:nth-child(n+9),
+body[data-mood="gentle_hum"] .mood-particle:nth-child(n+11) {
+    display: none;
+}
+
+/* ============================================================
    REDUCED MOTION
    ============================================================ */
 
@@ -945,6 +1164,13 @@ select {
     }
     #review-section {
         transition: none !important;
+    }
+    #mood-backdrop::before,
+    .mood-particle {
+        animation: none !important;
+    }
+    .mood-particle {
+        display: none !important;
     }
 }
 
@@ -979,5 +1205,111 @@ select {
     .book-spine-container > a {
         scroll-snap-align: start;
         flex-shrink: 0;
+    }
+}
+
+/* ============================================================
+   PARTY MODE (Easter Egg)
+   ============================================================ */
+
+@keyframes party-hue {
+    0%   { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+}
+
+@keyframes party-glow {
+    0%   { box-shadow: 0 0 8px #f0c543, 0 0 16px #f0c543; }
+    20%  { box-shadow: 0 0 8px #b76ef0, 0 0 16px #b76ef0; }
+    40%  { box-shadow: 0 0 8px #5cdb5c, 0 0 16px #5cdb5c; }
+    60%  { box-shadow: 0 0 8px #e8563e, 0 0 16px #e8563e; }
+    80%  { box-shadow: 0 0 8px #7eb5e3, 0 0 16px #7eb5e3; }
+    100% { box-shadow: 0 0 8px #f0c543, 0 0 16px #f0c543; }
+}
+
+@keyframes party-text {
+    0%   { color: #f0c543; }
+    20%  { color: #b76ef0; }
+    40%  { color: #5cdb5c; }
+    60%  { color: #e8563e; }
+    80%  { color: #7eb5e3; }
+    100% { color: #f0c543; }
+}
+
+@keyframes party-border {
+    0%   { border-color: #f0c543; }
+    20%  { border-color: #b76ef0; }
+    40%  { border-color: #5cdb5c; }
+    60%  { border-color: #e8563e; }
+    80%  { border-color: #7eb5e3; }
+    100% { border-color: #f0c543; }
+}
+
+body.party-mode .pixel-card {
+    animation: party-glow 2s linear infinite;
+}
+
+body.party-mode .pixel-heading,
+body.party-mode .pixel-heading-lg {
+    animation: party-text 2s linear infinite;
+}
+
+body.party-mode .pixel-btn {
+    animation: party-glow 2s linear infinite;
+}
+
+body.party-mode nav {
+    animation: party-border 2s linear infinite;
+    border-bottom-style: solid;
+}
+
+body.party-mode .nav-link-tag {
+    animation: party-glow 1.5s linear infinite;
+}
+
+body.party-mode .book-spine {
+    animation: party-glow 2s linear infinite;
+}
+
+body.party-mode .xp-bar-fill {
+    animation: party-hue 1.5s linear infinite;
+}
+
+body.party-mode .badge-common,
+body.party-mode .badge-rare,
+body.party-mode .badge-legendary {
+    animation: party-glow 2s linear infinite;
+}
+
+body.party-mode #overdue-logo {
+    animation: party-text 1s linear infinite;
+}
+
+#overdue-logo {
+    transition: transform 0.15s ease;
+}
+
+body.party-mode footer {
+    animation: party-border 2s linear infinite;
+    border-top-style: solid;
+}
+
+body.party-mode .pixel-card:nth-child(odd)  { animation-delay: -0.5s; }
+body.party-mode .pixel-card:nth-child(even) { animation-delay: -1.5s; }
+
+@media (prefers-reduced-motion: reduce) {
+    body.party-mode .pixel-card,
+    body.party-mode .pixel-heading,
+    body.party-mode .pixel-heading-lg,
+    body.party-mode .pixel-btn,
+    body.party-mode nav,
+    body.party-mode .nav-link-tag,
+    body.party-mode .book-spine,
+    body.party-mode .xp-bar-fill,
+    body.party-mode .badge-common,
+    body.party-mode .badge-rare,
+    body.party-mode .badge-legendary,
+    body.party-mode #overdue-logo,
+    body.party-mode footer {
+        animation: none !important;
     }
 }
