@@ -204,8 +204,9 @@ function navigateWithUiTransition(href) {
     if (targetPath === currentPath) return;
 
     if (window.htmx && typeof window.htmx.ajax === 'function') {
-        window.htmx.ajax('GET', targetPath, { target: 'body', swap: 'innerHTML' });
-        window.history.pushState({ htmx: true }, '', targetPath);
+        const src = document.createElement('a');
+        src.setAttribute('hx-push-url', 'true');
+        window.htmx.ajax('GET', targetPath, { source: src, target: 'body', swap: 'innerHTML' });
     } else {
         window.location.assign(target.toString());
     }
@@ -374,8 +375,9 @@ if (!window.__overdueGameEventToastBound) {
         const currentPath = window.location.pathname + window.location.search + window.location.hash;
         if (targetPath === currentPath) return;
         if (window.htmx && typeof window.htmx.ajax === 'function') {
-            window.htmx.ajax('GET', targetPath, { target: 'body', swap: 'innerHTML' });
-            window.history.pushState({ htmx: true }, '', targetPath);
+            const src = document.createElement('a');
+            src.setAttribute('hx-push-url', 'true');
+            window.htmx.ajax('GET', targetPath, { source: src, target: 'body', swap: 'innerHTML' });
         } else {
             window.location.assign(target.toString());
         }
