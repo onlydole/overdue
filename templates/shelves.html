@@ -15,15 +15,17 @@
     {% if shelves %}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {% for shelf in shelves %}
-        <a href="/shelves/{{ shelf.id }}" class="pixel-card block group flex flex-col min-h-[180px]">
-            <div class="flex items-start justify-between mb-3">
-                <h3 class="font-pixel text-sm text-gold uppercase tracking-wider">{{ shelf.name }}</h3>
-                <span class="pixel-label">{{ shelf.volume_count }} vol{{ 's' if shelf.volume_count != 1 }}</span>
+        <a href="/shelves/{{ shelf.id }}" class="pixel-card block group flex flex-col h-full">
+            <div class="shelf-card-title">
+                <h3 class="font-pixel text-sm text-gold uppercase tracking-wider leading-relaxed">{{ shelf.name }}</h3>
             </div>
-            {% if shelf.description %}
-            <p class="text-ink-light text-base mb-4">{{ shelf.description }}</p>
-            {% endif %}
-            <div class="space-y-2 mt-auto">
+            <div class="mb-1">
+                <span class="pixel-label shelf-card-volume-count">{{ shelf.volume_count }} vol{{ 's' if shelf.volume_count != 1 }}</span>
+            </div>
+            <p class="shelf-card-description text-ink-light text-base mb-2">
+                {{ shelf.description if shelf.description else "No description yet." }}
+            </p>
+            <div class="space-y-2">
                 <div class="dewey-gauge dewey-gauge-bar h-8 w-full" data-score="{{ shelf.average_dewey }}"></div>
                 <div class="flex items-center justify-between">
                     <span class="pixel-label">Dewey Score</span>

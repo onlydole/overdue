@@ -19,6 +19,12 @@ _GOLD_TINT_STATIC_ICONS = {
     "house",
     "trophy",
 }
+_FLAME_TINT_STATIC_ICONS = {"fire"}
+_DEFAULT_TINT_STATIC_ICONS = {
+    "books": "gold",
+    "fire": "flame",
+    "trophy": "gold",
+}
 
 
 def _render_avatar(avatar_id: str, size: int = 32) -> Markup:
@@ -33,11 +39,14 @@ def _render_icon(name: str, size: int = 16, color: str | None = None) -> Markup:
         variant = f"{name}--green"
     elif color == "#f0c543" and name in _GOLD_TINT_STATIC_ICONS:
         variant = f"{name}--gold"
+    elif color == "#f07a3e" and name in _FLAME_TINT_STATIC_ICONS:
+        variant = f"{name}--flame"
     elif color:
         # Uncommon tint — fall back to inline SVG
         return Markup(render_icon_svg(name, size=size, color=color))
     else:
-        variant = name
+        default_tint = _DEFAULT_TINT_STATIC_ICONS.get(name)
+        variant = f"{name}--{default_tint}" if default_tint else name
     return Markup(
         f'<img src="/static/icons/{variant}.svg" '
         f'width="{size}" height="{size}" '
@@ -55,3 +64,11 @@ def _title_hash(title: str) -> int:
 
 
 templates.env.filters["title_hash"] = _title_hash
+
+
+def _get_mood_ambiance(request) -> str:
+    """Get the mood ambiance from request state, with fallback."""
+    return getattr(getattr(request, "state", None), "mood_ambiance", "soft_pages")
+
+
+templates.env.globals["get_mood_ambiance"] = _get_mood_ambiance

@@ -26,6 +26,7 @@ def _game_trigger_header(game_result) -> dict[str, str]:
     """Build HX-Trigger header for game feedback toast."""
     event_data = {
         "xp_awarded": game_result.xp_awarded,
+        "xp_breakdown": game_result.xp_breakdown,
         "total_xp": game_result.total_xp,
         "rank": game_result.rank,
         "rank_changed": game_result.rank_changed,
@@ -224,6 +225,7 @@ async def review_volume_web(
         current_rank = get_rank(user["total_xp"])
         game_result = GameResult(
             xp_awarded=0,
+            xp_breakdown=[],
             total_xp=user["total_xp"],
             rank=current_rank,
             rank_changed=False,

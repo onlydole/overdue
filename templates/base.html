@@ -8,51 +8,34 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Alex+Brush&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="/static/js/htmx.min.js"></script>
     <script src="/static/js/alpine.min.js" defer></script>
+    <link rel="stylesheet" href="/static/css/tailwind.css">
     <link rel="stylesheet" href="/static/css/styles.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        pixel: {
-                            bg: '#0f0e17',
-                            surface: '#1a1a2e',
-                            card: '#232342',
-                            border: '#3d3d6b',
-                            highlight: '#4a4a7a',
-                        },
-                        parchment: { light: '#fff8ee', DEFAULT: '#f0e6d3', dark: '#d4c4a8' },
-                        gold: { light: '#ffe9a0', DEFAULT: '#f0c543', dark: '#c49b22' },
-                        ink: { light: '#8b8b9e', DEFAULT: '#5a5a7a', dark: '#2e2e4a' },
-                        dewey: {
-                            pristine: '#5cdb5c',
-                            good: '#a0d468',
-                            attention: '#f6bb42',
-                            overdue: '#e8563e',
-                            lost: '#9e1b1b',
-                        },
-                        badge: { common: '#7eb5e3', rare: '#b76ef0', legendary: '#f0c543' },
-                        streak: '#f07a3e',
-                    },
-                    fontFamily: {
-                        pixel: ['"Press Start 2P"', 'cursive'],
-                        retro: ['"VT323"', 'monospace'],
-                    },
-                }
-            }
-        }
-    </script>
 </head>
-<body class="bg-pixel-bg text-parchment min-h-screen font-retro text-lg">
+<body class="bg-pixel-bg text-parchment min-h-screen font-retro text-lg" data-mood="{{ get_mood_ambiance(request) }}">
+    <!-- Mood Backdrop -->
+    <div id="mood-backdrop" aria-hidden="true">
+        <div class="mood-particle" style="--i:0"></div>
+        <div class="mood-particle" style="--i:1"></div>
+        <div class="mood-particle" style="--i:2"></div>
+        <div class="mood-particle" style="--i:3"></div>
+        <div class="mood-particle" style="--i:4"></div>
+        <div class="mood-particle" style="--i:5"></div>
+        <div class="mood-particle" style="--i:6"></div>
+        <div class="mood-particle" style="--i:7"></div>
+        <div class="mood-particle" style="--i:8"></div>
+        <div class="mood-particle" style="--i:9"></div>
+        <div class="mood-particle" style="--i:10"></div>
+        <div class="mood-particle" style="--i:11"></div>
+    </div>
+
     <!-- Navigation -->
     <nav class="bg-pixel-surface border-b-4 border-pixel-border sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center space-x-8">
-                    <a href="/" class="font-pixel text-gold text-sm tracking-wider hover:text-gold-light transition-colors flex items-center gap-3" hx-boost="true">
+                    <a id="overdue-logo" href="/" class="font-pixel text-gold text-sm tracking-wider hover:text-gold-light transition-colors flex items-center gap-3">
                         {{ render_icon('books', 24) }} OVERDUE
                     </a>
                     <div class="hidden md:flex space-x-1 items-end h-16">
@@ -122,7 +105,7 @@
         </div>
     </div>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" hx-indicator="#loading-overlay">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" hx-indicator="#loading-overlay" hx-boost="true">
         {% block content %}{% endblock %}
     </main>
 

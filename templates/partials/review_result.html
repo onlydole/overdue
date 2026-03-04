@@ -7,7 +7,7 @@
 <!-- OOB swap: update mobile actions -->
 <div id="mobile-actions" hx-swap-oob="innerHTML" class="md:hidden fixed bottom-0 left-0 right-0 bg-pixel-surface border-t-4 border-gold p-4 z-50 flex justify-center safe-area-pb gap-2">
     {% if next_volume %}
-    <a href="/volumes/{{ next_volume.id }}" class="pixel-btn pixel-btn-gold w-full shadow-lg text-center next-vol-link flex items-center justify-center gap-2 px-4">
+    <a href="/volumes/{{ next_volume.id }}" hx-boost="true" class="pixel-btn pixel-btn-gold w-full shadow-lg text-center next-vol-link flex items-center justify-center gap-2 px-4">
         <span>Next:</span>
         <span class="truncate">{{ next_volume.title }}</span>
     </a>
@@ -64,12 +64,12 @@
             </a>
             {% endif %}
 
-            <a href="/shelves/{{ volume.shelf_id }}" class="pixel-btn pixel-btn-outline w-full md:w-auto text-center back-shelf-link">
+            <a href="/shelves/{{ volume.shelf_id }}" hx-boost="true" class="pixel-btn pixel-btn-outline w-full md:w-auto text-center back-shelf-link">
                 Back to Shelf
             </a>
 
             {% if not next_volume %}
-            <a href="/shelves" class="pixel-btn pixel-btn-gold w-full md:w-auto text-center done-btn inline-flex items-center gap-4 px-4">
+            <a href="/shelves" hx-boost="true" class="pixel-btn pixel-btn-gold w-full md:w-auto text-center done-btn inline-flex items-center gap-4 px-4">
                 <span class="inline-flex items-center gap-2">
                     {{ render_icon('checkmark', 12) }}
                     <span>Back to Shelves</span>
