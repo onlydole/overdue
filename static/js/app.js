@@ -7,8 +7,8 @@
    TOAST SYSTEM (with stagger queue)
    ============================================================ */
 
-var toastQueue = [];
-var toastProcessing = false;
+const toastQueue = [];
+let toastProcessing = false;
 
 function queueToast(text, type, iconId) {
     toastQueue.push({ text: text, type: type, iconId: iconId });
@@ -21,7 +21,7 @@ function processToastQueue() {
         return;
     }
     toastProcessing = true;
-    var item = toastQueue.shift();
+    const item = toastQueue.shift();
     showToast(item.text, item.type, item.iconId);
     setTimeout(processToastQueue, 400);
 }
@@ -32,24 +32,24 @@ function processToastQueue() {
  * originates from server-rendered templates, never from user input.
  */
 function _iconNode(id) {
-    var tpl = document.getElementById('icon-' + id);
+    const tpl = document.getElementById('icon-' + id);
     if (!tpl) return null;
     return tpl.content.cloneNode(true);
 }
 
 function showToast(text, type, iconId) {
-    var container = document.getElementById('toast-container');
+    const container = document.getElementById('toast-container');
     if (!container) return;
 
-    var toast = document.createElement('div');
+    const toast = document.createElement('div');
     toast.className = 'pixel-card text-center py-3 px-5 min-w-[220px]';
     toast.style.pointerEvents = 'auto';
-    var borderColors = { badge: '#b76ef0', rank: '#f0c543', party: '#b76ef0' };
+    const borderColors = { badge: '#b76ef0', rank: '#f0c543', party: '#b76ef0' };
     toast.style.borderColor = borderColors[type] || '#5cdb5c';
     toast.style.animation = 'toast-slide-in 0.3s ease-out';
     if (type === 'party') toast.style.animation += ', party-glow 2s linear infinite';
 
-    var span = document.createElement('span');
+    const span = document.createElement('span');
     span.className = 'font-pixel text-[10px]';
     if (type === 'xp') {
         span.className += ' text-dewey-pristine';
@@ -64,7 +64,7 @@ function showToast(text, type, iconId) {
     }
 
     /* Prepend pixel art icon if available, then add text safely */
-    var icon = iconId ? _iconNode(iconId) : null;
+    const icon = iconId ? _iconNode(iconId) : null;
     if (icon) {
         span.appendChild(icon);
         span.appendChild(document.createTextNode(' '));
@@ -91,22 +91,22 @@ function showReviewCelebration() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     // Pixel particle burst from review section (use pre-swap position if available)
-    var rect = window.__reviewSectionRect;
+    let rect = window.__reviewSectionRect;
     if (!rect) {
-        var target = document.getElementById('review-section');
+        const target = document.getElementById('review-section');
         if (!target) return;
         rect = target.getBoundingClientRect();
     }
     delete window.__reviewSectionRect;
-    var cx = rect.left + rect.width / 2;
-    var cy = rect.top + rect.height / 2;
-    var colors = ['#f0c543', '#5cdb5c', '#b76ef0', '#e8563e', '#7eb5e3', '#ffe9a0', '#a0d468', '#f6bb42'];
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const colors = ['#f0c543', '#5cdb5c', '#b76ef0', '#e8563e', '#7eb5e3', '#ffe9a0', '#a0d468', '#f6bb42'];
 
-    for (var i = 0; i < 8; i++) {
-        var particle = document.createElement('div');
-        var angle = (i / 8) * 2 * Math.PI;
-        var dx = Math.cos(angle) * 80;
-        var dy = Math.sin(angle) * 80;
+    for (let i = 0; i < 8; i++) {
+        const particle = document.createElement('div');
+        const angle = (i / 8) * 2 * Math.PI;
+        const dx = Math.cos(angle) * 80;
+        const dy = Math.sin(angle) * 80;
         particle.style.cssText = 'position:fixed;width:6px;height:6px;pointer-events:none;z-index:9999;' +
             'left:' + cx + 'px;top:' + cy + 'px;background:' + colors[i] + ';' +
             'animation:star-burst 0.6s ease-out forwards;' +
@@ -127,20 +127,20 @@ function showReviewCelebration() {
    UI SOUND EFFECTS
    ============================================================ */
 
-var uiSfxState = {
+const uiSfxState = {
     context: null
 };
 
 function getUiAudioContext() {
     if (uiSfxState.context) return uiSfxState.context;
-    var AudioCtx = window.AudioContext || window.webkitAudioContext;
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (!AudioCtx) return null;
     uiSfxState.context = new AudioCtx();
     return uiSfxState.context;
 }
 
 function scheduleUiTone(kind) {
-    var context = getUiAudioContext();
+    const context = getUiAudioContext();
     if (!context) return;
 
     if (context.state === 'suspended' && typeof context.resume === 'function') {
@@ -149,10 +149,10 @@ function scheduleUiTone(kind) {
         });
     }
 
-    var now = context.currentTime;
-    var firstFreq = 680;
-    var secondFreq = 920;
-    var wave = 'triangle';
+    const now = context.currentTime;
+    let firstFreq = 680;
+    let secondFreq = 920;
+    let wave = 'triangle';
 
     if (kind === 'review') {
         firstFreq = 520;
@@ -164,8 +164,8 @@ function scheduleUiTone(kind) {
         wave = 'sawtooth';
     }
 
-    var oscillator = context.createOscillator();
-    var gain = context.createGain();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
 
     oscillator.type = wave;
     oscillator.frequency.setValueAtTime(firstFreq, now);
@@ -198,9 +198,9 @@ function playReviewActionSfx(kind) {
 
 function navigateWithUiTransition(href) {
     if (!href) return;
-    var target = new URL(href, window.location.origin);
-    var targetPath = target.pathname + target.search + target.hash;
-    var currentPath = window.location.pathname + window.location.search + window.location.hash;
+    const target = new URL(href, window.location.origin);
+    const targetPath = target.pathname + target.search + target.hash;
+    const currentPath = window.location.pathname + window.location.search + window.location.hash;
     if (targetPath === currentPath) return;
 
     if (window.htmx && typeof window.htmx.ajax === 'function') {
@@ -217,14 +217,14 @@ window.navigateWithUiTransition = navigateWithUiTransition;
 function handleUiNavigationClick(evt) {
     if (!shouldPlayUiSoundForClick(evt)) return;
 
-    var reviewBtn = evt.target.closest('.review-btn');
+    const reviewBtn = evt.target.closest('.review-btn');
     if (reviewBtn) {
         if (reviewBtn.disabled) return;
         playReviewActionSfx('review');
         return;
     }
 
-    var nextAction = evt.target.closest('.next-vol-link');
+    const nextAction = evt.target.closest('.next-vol-link');
     if (nextAction) {
         evt.preventDefault();
         playReviewActionSfx('next');
@@ -232,7 +232,7 @@ function handleUiNavigationClick(evt) {
         return;
     }
 
-    var backAction = evt.target.closest('.done-btn, .back-shelf-link');
+    const backAction = evt.target.closest('.done-btn, .back-shelf-link');
     if (backAction) {
         evt.preventDefault();
         playReviewActionSfx('back');
@@ -250,35 +250,35 @@ if (!window.__overdueUiNavigationClickBound) {
    ============================================================ */
 
 function handleGameEventToast(evt) {
-    var data = evt.detail;
+    const data = evt.detail;
     if (!data) return;
 
     // Trigger celebration effect
     showReviewCelebration();
 
-    var xpBreakdown = Array.isArray(data.xp_breakdown) ? data.xp_breakdown : [];
-    var totalXpFromBreakdown = 0;
+    const xpBreakdown = Array.isArray(data.xp_breakdown) ? data.xp_breakdown : [];
+    let totalXpFromBreakdown = 0;
 
     xpBreakdown.forEach(function(entry) {
         if (!entry) return;
-        var amount = Number(entry.amount || 0);
+        const amount = Number(entry.amount || 0);
         if (amount <= 0) return;
         totalXpFromBreakdown += amount;
     });
 
-    var xpToShow = totalXpFromBreakdown > 0 ? totalXpFromBreakdown : Number(data.xp_awarded || 0);
+    const xpToShow = totalXpFromBreakdown > 0 ? totalXpFromBreakdown : Number(data.xp_awarded || 0);
     if (xpToShow > 0) {
         queueToast('+' + xpToShow + ' XP (' + xpToShow + ' pages)', 'xp', 'star');
     }
 
-    var bonusLabels = [];
+    const bonusLabels = [];
     xpBreakdown.forEach(function(entry) {
         if (!entry || typeof entry.reason !== 'string') return;
         if (entry.reason.indexOf('overdue') >= 0) bonusLabels.push('overdue x2');
         if (entry.reason.indexOf('streak bonus') >= 0) bonusLabels.push('streak');
     });
     if (bonusLabels.length > 0) {
-        var uniqueBonusLabels = bonusLabels.filter(function(label, index) {
+        const uniqueBonusLabels = bonusLabels.filter(function(label, index) {
             return bonusLabels.indexOf(label) === index;
         });
         queueToast('Bonus: ' + uniqueBonusLabels.join(' + '), 'streak', 'fire');
@@ -308,26 +308,26 @@ if (!window.__overdueGameEventToastBound) {
     if (window.__overduePartyModeInit) return;
     window.__overduePartyModeInit = true;
 
-    var PARTY_MODE_STORAGE_KEY = 'overdue:party-mode';
-    var PARTY_AUDIO_TIME_STORAGE_KEY = 'overdue:party-audio-time';
-    var CLICKS_NEEDED = 5;
-    var CLICK_WINDOW_MS = 3000;
-    var SINGLE_CLICK_NAV_DELAY_MS = 500;
-    var clicks = [];
-    var singleClickTimer = null;
-    var resumeOnInteraction = null;
-    var audio = getOrCreatePartyAudio();
+    const PARTY_MODE_STORAGE_KEY = 'overdue:party-mode';
+    const PARTY_AUDIO_TIME_STORAGE_KEY = 'overdue:party-audio-time';
+    const CLICKS_NEEDED = 5;
+    const CLICK_WINDOW_MS = 3000;
+    const SINGLE_CLICK_NAV_DELAY_MS = 500;
+    let clicks = [];
+    let singleClickTimer = null;
+    let resumeOnInteraction = null;
+    const audio = getOrCreatePartyAudio();
     restorePersistedPartyMode();
 
     document.addEventListener('click', function(e) {
-        var logo = e.target.closest('#overdue-logo');
+        const logo = e.target.closest('#overdue-logo');
         if (!logo) return;
         if ((typeof e.button === 'number' && e.button !== 0) || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
             return;
         }
 
-        var logoHref = logo.getAttribute('href') || '/';
-        var now = Date.now();
+        const logoHref = logo.getAttribute('href') || '/';
+        const now = Date.now();
         clicks.push(now);
         clicks = clicks.filter(function(t) { return now - t < CLICK_WINDOW_MS; });
 
@@ -369,9 +369,9 @@ if (!window.__overdueGameEventToastBound) {
     }, false);
 
     function navigateToLogoHref(href) {
-        var target = new URL(href, window.location.origin);
-        var targetPath = target.pathname + target.search + target.hash;
-        var currentPath = window.location.pathname + window.location.search + window.location.hash;
+        const target = new URL(href, window.location.origin);
+        const targetPath = target.pathname + target.search + target.hash;
+        const currentPath = window.location.pathname + window.location.search + window.location.hash;
         if (targetPath === currentPath) return;
         if (window.htmx && typeof window.htmx.ajax === 'function') {
             window.htmx.ajax('GET', targetPath, { target: 'body', swap: 'innerHTML' });
@@ -382,14 +382,14 @@ if (!window.__overdueGameEventToastBound) {
     }
 
     function isHrefCurrentLocation(href) {
-        var target = new URL(href, window.location.origin);
-        var targetPath = target.pathname + target.search + target.hash;
-        var currentPath = window.location.pathname + window.location.search + window.location.hash;
+        const target = new URL(href, window.location.origin);
+        const targetPath = target.pathname + target.search + target.hash;
+        const currentPath = window.location.pathname + window.location.search + window.location.hash;
         return targetPath === currentPath;
     }
 
     function togglePartyMode() {
-        var active = document.body.classList.toggle('party-mode');
+        const active = document.body.classList.toggle('party-mode');
         persistPartyMode(active);
         if (active) {
             tryStartPartyAudio(true);
@@ -402,7 +402,7 @@ if (!window.__overdueGameEventToastBound) {
 
     function getOrCreatePartyAudio() {
         if (window.__overduePartyAudio) return window.__overduePartyAudio;
-        var persistentAudio = new Audio('/static/audio/party.mp3');
+        const persistentAudio = new Audio('/static/audio/party.mp3');
         persistentAudio.loop = true;
         persistentAudio.preload = 'auto';
         if (typeof persistentAudio.load === 'function') {
@@ -436,7 +436,7 @@ if (!window.__overdueGameEventToastBound) {
 
     function restorePersistedPartyAudioPosition() {
         if (!audio) return;
-        var savedSeconds = null;
+        let savedSeconds = null;
         try {
             savedSeconds = Number(sessionStorage.getItem(PARTY_AUDIO_TIME_STORAGE_KEY));
         } catch (_err) {
@@ -444,7 +444,7 @@ if (!window.__overdueGameEventToastBound) {
         }
         if (!Number.isFinite(savedSeconds) || savedSeconds <= 0) return;
 
-        var applySavedTime = function() {
+        const applySavedTime = function() {
             try {
                 if (Number.isFinite(audio.duration) && savedSeconds >= audio.duration) return;
                 audio.currentTime = savedSeconds;
@@ -456,7 +456,7 @@ if (!window.__overdueGameEventToastBound) {
         if (audio.readyState >= 1) {
             applySavedTime();
         } else {
-            var onLoadedMetadata = function() {
+            const onLoadedMetadata = function() {
                 audio.removeEventListener('loadedmetadata', onLoadedMetadata);
                 applySavedTime();
             };
@@ -472,7 +472,7 @@ if (!window.__overdueGameEventToastBound) {
         } else {
             restorePersistedPartyAudioPosition();
         }
-        var playPromise = audio.play();
+        const playPromise = audio.play();
         if (playPromise && typeof playPromise.catch === 'function') {
             playPromise.catch(function() {
                 attachResumeOnInteraction();
@@ -555,11 +555,11 @@ if (!window.__overdueGameEventToastBound) {
    ============================================================ */
 
 function handleHtmxBeforeRequest(evt) {
-    var target = evt.detail.target;
+    const target = evt.detail.target;
     if (target && target.id === 'review-section') {
         // Capture old gauge score for animation
-        var gaugeEl = document.querySelector('#dewey-gauge-container .dewey-gauge');
-        var container = document.getElementById('dewey-gauge-container');
+        const gaugeEl = document.querySelector('#dewey-gauge-container .dewey-gauge');
+        const container = document.getElementById('dewey-gauge-container');
         if (gaugeEl && container) {
             container.dataset.previousScore = gaugeEl.dataset.score || '0';
         }

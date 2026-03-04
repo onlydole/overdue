@@ -1,5 +1,7 @@
 """Middleware to compute library mood and inject into request state."""
 
+import time
+
 from fastapi import Request
 from sqlalchemy import select
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -8,6 +10,9 @@ from src.api.volumes import calculate_dewey_score
 from src.db.engine import async_session
 from src.db.tables import VolumeRow
 from src.game.mood import calculate_mood
+
+_MOOD_CACHE_TTL = 30  # seconds
+_mood_cache: dict[str, object] = {"ambiance": "", "expires_at": 0.0}
 
 
 class MoodMiddleware(BaseHTTPMiddleware):
@@ -19,22 +24,29 @@ class MoodMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         try:
-            async with async_session() as session:
-                result = await session.execute(
-                    select(VolumeRow.last_reviewed_at).where(
-                        VolumeRow.archived == False  # noqa: E712
-                    )
-                )
-                reviewed_ats = result.scalars().all()
-
-            if reviewed_ats:
-                scores = [calculate_dewey_score(ts) for ts in reviewed_ats]
-                avg = sum(scores) / len(scores)
+            now = time.time()
+            if now < _mood_cache["expires_at"]:
+                request.state.mood_ambiance = _mood_cache["ambiance"]
             else:
-                avg = 100.0
+                async with async_session() as session:
+                    result = await session.execute(
+                        select(VolumeRow.last_reviewed_at).where(
+                            VolumeRow.archived == False  # noqa: E712
+                        )
+                    )
+                    reviewed_ats = result.scalars().all()
 
-            mood = calculate_mood(avg)
-            request.state.mood_ambiance = mood["ambiance"]
+                if reviewed_ats:
+                    scores = [calculate_dewey_score(ts) for ts in reviewed_ats]
+                    avg = sum(scores) / len(scores)
+                else:
+                    avg = 100.0
+
+                mood = calculate_mood(avg)
+                ambiance = mood["ambiance"]
+                _mood_cache["ambiance"] = ambiance
+                _mood_cache["expires_at"] = now + _MOOD_CACHE_TTL
+                request.state.mood_ambiance = ambiance
         except Exception:
             request.state.mood_ambiance = "soft_pages"
 

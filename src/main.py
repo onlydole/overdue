@@ -20,6 +20,7 @@ from src.db.tables import Base, VolumeRow
 
 from src.errors.handlers import register_handlers
 from src.errors.incidents import QuietHoursExceeded
+from src.web.mood_middleware import MoodMiddleware
 
 # Track last Dewey recalculation time
 _last_dewey_recalc: datetime | None = None
@@ -109,8 +110,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(SessionMiddleware, secret_key=settings.signing_secret_key)
-
-from src.web.mood_middleware import MoodMiddleware
 
 app.add_middleware(MoodMiddleware)
 
