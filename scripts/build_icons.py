@@ -8,7 +8,7 @@ Tinted variants are generated only for icon/color combinations currently used
 by templates:
   - ``{name}--green.svg`` (#5cdb5c): ``checkmark``, ``play``
   - ``{name}--gold.svg``  (#f0c543): ``book-open``, ``books``, ``chart``,
-    ``crown``, ``fire``, ``gamepad``, ``house``, ``trophy``
+    ``crown``, ``fire``, ``gamepad``, ``house``, ``award``
   - ``{name}--flame.svg`` (#f07a3e): ``fire``
 
 Usage:
@@ -35,7 +35,7 @@ TINTS: dict[str, str] = {
 
 TINTED_ICON_NAMES: dict[str, set[str]] = {
     "green": {"checkmark", "play"},
-    "gold": {"book-open", "books", "chart", "crown", "fire", "gamepad", "house", "trophy"},
+    "gold": {"book-open", "books", "chart", "crown", "fire", "gamepad", "house", "award"},
     "flame": {"fire"},
 }
 

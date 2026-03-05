@@ -53,7 +53,7 @@ BADGE_DEFINITIONS = {
     },
     "Completionist": {
         "description": "Earned all other badges",
-        "icon": "trophy",
+        "icon": "award",
         "tier": "Common",
         "check": "all_badges",
     },
@@ -72,7 +72,7 @@ BADGE_DEFINITIONS = {
     },
     "Centurion": {
         "description": "Reviewed 100 volumes total",
-        "icon": "trophy",
+        "icon": "award",
         "tier": "Rare",
         "check": "total_reviews >= 100",
     },

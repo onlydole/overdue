@@ -17,13 +17,13 @@ _GOLD_TINT_STATIC_ICONS = {
     "fire",
     "gamepad",
     "house",
-    "trophy",
+    "award",
 }
 _FLAME_TINT_STATIC_ICONS = {"fire"}
 _DEFAULT_TINT_STATIC_ICONS = {
     "books": "gold",
     "fire": "flame",
-    "trophy": "gold",
+    "award": "gold",
 }
 
 
