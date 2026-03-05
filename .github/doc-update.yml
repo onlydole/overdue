@@ -1,0 +1,133 @@
+# Auto-Update Documentation on Merged PRs
+#
+# This workflow uses Claude Code to automatically detect when merged PRs
+# introduce documentation drift and proposes updates via a follow-up PR.
+#
+# Setup:
+# 1. Add your Anthropic API key as a repository secret: ANTHROPIC_API_KEY
+# 2. Install the Claude GitHub App: https://github.com/apps/claude
+# 3. Customize the CLAUDE.md in your repo root (see claude-md-example.md)
+#
+# Reference: https://code.claude.com/docs/en/github-actions
+
+name: Auto-Update Documentation
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "src/**"
+concurrency:
+  group: docs-update-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  update-docs:
+    if: >
+      github.event.pull_request.merged == true &&
+      !contains(github.event.pull_request.labels.*.name, 'skip-docs-check') &&
+      github.event.pull_request.user.login != 'github-actions[bot]' &&
+      github.event.pull_request.user.login != 'claude[bot]'
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed
+        run: |
+          set -euo pipefail
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+
+          FILES=$(git diff --name-only "$BASE" "$HEAD" | tr '\n' ' ')
+          echo "files=$FILES" >> "$GITHUB_OUTPUT"
+
+          FILE_COUNT=$(git diff --name-only "$BASE" "$HEAD" | wc -l)
+          echo "file_count=$FILE_COUNT" >> "$GITHUB_OUTPUT"
+
+          echo "Found $FILE_COUNT changed files"
+
+      - name: Analyze and update documentation
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: "--max-turns 15"
+          prompt: |
+            ## Task: Documentation Update Check
+
+            A PR was just merged into main. Determine whether any documentation
+            needs updating as a result of the code changes, and if so, make
+            those updates.
+
+            ### Context
+
+            **PR Title:** ${{ github.event.pull_request.title }}
+            **PR Body:** ${{ github.event.pull_request.body }}
+            **PR Number:** #${{ github.event.pull_request.number }}
+            **PR Author:** @${{ github.event.pull_request.user.login }}
+            **Changed files:** ${{ steps.changed.outputs.files }}
+            **Number of files changed:** ${{ steps.changed.outputs.file_count }}
+
+            ### Instructions
+
+            Follow these steps in order:
+
+            1. **Read the changed files** to understand what was modified.
+               Focus on public API changes, configuration changes, and
+               behavioral changes.
+
+            2. **Read all files in the docs/ directory** (and any
+               README.md files in the repository root or package roots).
+
+            3. **Identify affected documentation.** For each doc page, ask:
+               - Does this page reference any of the changed code?
+               - Does this page describe behavior that was modified?
+               - Does this page contain code examples that use changed APIs?
+
+            4. **Decide whether updates are needed.** Skip doc updates if:
+               - The change is purely internal
+               - The change is a bug fix that matches existing documentation
+               - The change is a performance optimization with no user-facing impact
+
+            5. **If updates are needed:**
+               - Create a new branch named
+                 docs/update-from-pr-${{ github.event.pull_request.number }}
+               - Make the documentation changes directly on that branch
+               - Commit with a clear message like:
+                 "docs: update X to reflect changes from
+                  #${{ github.event.pull_request.number }}"
+               - Open a pull request from that branch to main. In the PR
+                 description, explain which docs changed, why, and which
+                 original PR triggered the update.
+
+            6. **If no updates are needed:**
+               - Explain briefly why no documentation changes are required
+
+            ### Guidelines
+
+            - Only update docs that are affected by the code changes
+            - Match the existing documentation's voice and formatting
+            - If a function signature changed, update all code examples
+            - Do not remove documentation unless the feature was deleted
+            - Keep changes focused and easy to review
+
+      - name: Summarize outcome
+        if: always()
+        run: |
+          {
+            echo "## Documentation Check"
+            echo "- **PR:** #${{ github.event.pull_request.number }}"
+            echo "- **Files changed:** ${{ steps.changed.outputs.file_count }}"
+          } >> "$GITHUB_STEP_SUMMARY"
