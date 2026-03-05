@@ -210,6 +210,16 @@ Web routes serve HTML pages via Jinja2 templates. Authentication uses session co
 | `/leaderboard` | GET | Leaderboard page |
 | `/how-to-play` | GET | How to play guide |
 
+### Keyboard Shortcuts
+
+| Page | Key | Action |
+|---|---|---|
+| Volume detail (`/volumes/{id}`) | `Enter` | Review / next volume / done (priority order) |
+| Volume detail (`/volumes/{id}`) | `Escape` / `ArrowLeft` | Back to shelf |
+| Volume detail (`/volumes/{id}`) | `ArrowRight` | Next volume |
+| Shelf detail (`/shelves/{id}`) | `Enter` | Open the most overdue volume for review |
+| Shelf detail (`/shelves/{id}`) | `Escape` / `ArrowLeft` | Back to shelves list |
+
 ## Docker
 
 ### Build and Run

@@ -43,7 +43,7 @@ All user-facing text and code identifiers use library-themed names. Never use th
 All decorative visuals are custom-built pixel art SVGs. This is a hard rule:
 
 - **NO emoji** anywhere in templates, JS, or Python-rendered HTML. Every decorative element uses a pixel art icon or avatar.
-- **Icons** (24x24 viewBox): 28 icons defined as SVG path strings in `src/game/icons/_catalog.py`. Supports `currentColor` CSS tinting for flexible theming. Rendered as static `<img>` tags pointing to pre-rendered SVGs in `static/icons/`. For uncommon tint colors, falls back to inline SVG. Use `{{ render_icon("star", 24) }}` in templates.
+- **Icons** (24x24 viewBox): 26 icons defined as SVG path strings in `src/game/icons/_catalog.py`. Supports `currentColor` CSS tinting for flexible theming. Rendered as static `<img>` tags pointing to pre-rendered SVGs in `static/icons/`. For uncommon tint colors, falls back to inline SVG. Use `{{ render_icon("star", 24) }}` in templates.
 - **Avatars** (32x32 grid): 8 heroic librarian silhouettes defined as hand-crafted SVG path strings in `src/game/avatars.py`. Each avatar has a unique character design. Rendered via the `render_avatar(avatar_id, size)` Jinja2 global. Use `{{ render_avatar("avatar_01", 32) }}` in templates.
 - **Shared palette**: The system uses a consistent set of colors (GOLD, FLAME, GREEN, BLUE, PURPLE, PARCHMENT, INK) defined directly in `src/game/avatars.py` and `src/game/icons/_catalog.py`.
 - **Static asset build**: `scripts/build_icons.py` pre-renders all icons and avatars to `static/icons/` as bare SVGs. Bare exports default to parchment (#f0e6d3) for visibility in `<img>` tags. Generates base icons plus tinted variants (`--green`, `--gold`) and prunes stale tints. Run after any icon or avatar changes.
@@ -114,7 +114,7 @@ overdue/
       avatars.py            # 8 heroic librarian silhouettes (32x32 SVG paths)
       icons/                # Pixel art icon system (24x24 SVG paths)
         __init__.py          # Re-exports render_icon_svg, get_icon_names
-        _catalog.py          # 28 icons as SVG path strings with currentColor support
+        _catalog.py          # 26 icons as SVG path strings with currentColor support
         _renderer.py         # render_icon_svg() with viewBox="0 0 24 24"
       bots.py               # AI bot player engine (create, simulate, remove)
     models/                 # Pydantic & SQLAlchemy models
@@ -261,6 +261,67 @@ The settings page (`/settings`) renders a pixel art library card UI:
 6. Run `python scripts/build_icons.py` to update static SVGs
 7. Use in templates: `{{ render_avatar("avatar_XX", 32) }}`
 
+### Keyboard Navigation
+
+Pages with interactive actions support keyboard shortcuts. Each page defines its own `<script>` block with a keydown handler that is cleaned up on htmx navigation via `htmx:beforeSwap`.
+
+**Pattern:**
+- Guard against double-binding with `window.__pageKeysBound` flags
+- Skip when focus is in `input`, `textarea`, or `select`
+- Clean up the listener on full-page htmx swaps
+- Play UI sound effects via `playReviewActionSfx(kind)` where `kind` is `'review'`, `'next'`, or `'back'`
+
+**Current bindings:**
+
+| Page | Key | Action |
+|---|---|---|
+| Volume detail | `Enter` | Click review/next/done button (priority order) |
+| Volume detail | `Escape` / `ArrowLeft` | Navigate back to shelf |
+| Volume detail | `ArrowRight` | Navigate to next volume |
+| Shelf detail | `Enter` | Navigate to most overdue volume (lowest Dewey Score) |
+| Shelf detail | `Escape` / `ArrowLeft` | Navigate back to shelves list |
+
+**Keyboard hint UX:**
+- Show hints as `pixel-label text-ink-light` spans, desktop-only (`hidden md:flex`)
+- Separate multiple hints with a visible `|` divider (`text-pixel-border`) -- never run hints together as unseparated text
+- Volume detail embeds hints inside buttons (`opacity-60 text-[10px] border-l border-black/20 pl-3`)
+
+### Tiered Loading Indicator
+
+Navigation loading feedback uses a three-tier system instead of an always-visible overlay:
+
+1. **Tier 1 (0-300ms):** No indicator. The page-flip CSS transition provides sufficient feedback.
+2. **Tier 2 (300ms+):** Thin pixel art progress bar fixed to top of viewport (green-to-gold gradient, 3px tall, segmented).
+3. **Tier 3 (2s+):** Full "Consulting the shelves..." overlay (rare, only for genuinely slow loads).
+
+**Key details:**
+- `<main>` has no `hx-indicator` -- the overlay is JS-controlled via `loading-overlay-hidden`/`loading-overlay-visible` classes
+- The `isBoostNavigation()` filter excludes POST requests (review button), polling (`hx-trigger="every ..."`), and targeted partial swaps
+- Inline HTMX indicators (`.htmx-indicator` / `.htmx-hide-on-request` on buttons) are unaffected -- they work via `htmx-request` class on the element itself
+- Progress bar uses a logarithmic curve (fast start, caps at 85%, snaps to 100% on completion)
+
+### Dewey Gauge Layout
+
+Circular Dewey Score gauges use a specific layout:
+
+- **Score number**: Large (`0.85rem`), centered inside the `.gauge-inner` circle
+- **Status stamp**: Positioned **to the left** of the circle (not inside or below), via `position: absolute; top: 50%; right: calc(100% + 6px); transform: translateY(-50%) rotate(-3deg)`
+- The stamp is appended to the `.dewey-gauge` element (not `.gauge-inner`) so it sits outside the inner circle
+- Bar gauges (`dewey-gauge-bar`) do not show stamps
+
+### Importing External SVG Icons
+
+When replacing or adding icons from external SVG sources (e.g., Noun Project):
+
+1. Extract the `<path d="...">` data from the source SVG
+2. Note the source `viewBox` dimensions (commonly 1200x1200)
+3. Store the path data as a Python string constant (e.g., `_BOOKS_ARTWORK_PATH`) in `_catalog.py`
+4. Scale to 24x24 viewBox: `transform="scale(0.02)"` for 1200x1200 sources (24/1200 = 0.02)
+5. Preserve `fill-rule="evenodd"` if the source SVG uses it
+6. Use `fill="currentColor"` for CSS tinting support
+7. Register in `ICON_CATALOG` using an f-string: `f'<path d="{_PATH}" fill="currentColor" fill-rule="evenodd" transform="scale(0.02)"/>'`
+8. Run `python scripts/build_icons.py` to regenerate static SVGs
+
 ### Mood Backdrop
 
 The library's ambient background effect is driven by the `MoodMiddleware` in `src/web/mood_middleware.py`:
@@ -321,7 +382,7 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/):
 - `test:` -- Adding or updating tests
 - `chore:` -- Build, CI, dependency updates
 
-Example: `feat: add pixel art icon system with 27 icons`
+Example: `feat: add pixel art icon system with 26 icons`
 
 ## AI Bot Players
 
