@@ -2,6 +2,8 @@
 
 > Your knowledge is fading. Fight back.
 
+[![Ask Dosu](https://img.shields.io/badge/Ask%20Dosu-our%20archivist-f0c543?style=flat&labelColor=0f0e17)](https://app.dosu.dev/04283041-db40-47f2-9553-9b7452d3ac02/ask)
+
 Overdue is a gamified knowledge library where every fact you capture starts decaying the moment you shelve it. You're a **librarian** in a pixel art world -- shelving **volumes** of knowledge, watching their **Dewey Scores** crumble as dust settles, and racing to review them before they're lost. Earn XP ("pages read"), climb ranks from Page to Head Librarian, unlock badges, and keep your streak alive. Neglect your stacks and the Reading Room descends into chaos.
 
 This isn't a to-do app with a theme. It's a game that happens to make you smarter.

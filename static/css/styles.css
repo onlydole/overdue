@@ -364,6 +364,16 @@ main {
     display: flex !important;
 }
 
+/* Reference Desk modal backdrop */
+.reference-desk-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 250;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    background: rgba(15, 14, 23, 0.7);
+}
+
 @media (min-width: 900px) {
     .library-card-surface {
         aspect-ratio: 86 / 54;

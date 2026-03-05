@@ -559,7 +559,7 @@ content %}
             Navigate the library quickly with keyboard shortcuts. Available on
             desktop browsers.
         </p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div class="bg-pixel-surface border-2 border-pixel-border p-4">
                 <div class="font-pixel text-[9px] text-gold uppercase mb-3">
                     Volume Detail
@@ -610,6 +610,22 @@ content %}
                         <span
                             class="font-pixel text-[9px] text-parchment bg-pixel-bg border border-pixel-border px-2 py-1"
                             >Enter</span
+                        >
+                    </div>
+                </div>
+            </div>
+            <div class="bg-pixel-surface border-2 border-pixel-border p-4">
+                <div class="font-pixel text-[9px] text-gold uppercase mb-3">
+                    Anywhere
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-ink-light text-sm"
+                            >Open the Reference Desk</span
+                        >
+                        <span
+                            class="font-pixel text-[9px] text-parchment bg-pixel-bg border border-pixel-border px-2 py-1"
+                            >?</span
                         >
                     </div>
                 </div>
@@ -736,5 +752,19 @@ content %}
         </div>
         {% endif %}
     </div>
+
+    <!-- Reference Desk -->
+    <div class="pixel-card text-center py-8">
+        <div class="mb-3">{{ render_icon('search', 28) }}</div>
+        <h2 class="pixel-heading mb-4">The Reference Desk</h2>
+        <p class="text-parchment-dark text-lg mb-6">
+            Got a question about Overdue? Our archivist,
+            <span class="text-gold">Dosu</span>, knows every shelf, badge,
+            and game mechanic inside out.
+        </p>
+        <a href="https://app.dosu.dev/04283041-db40-47f2-9553-9b7452d3ac02/ask"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="pixel-btn pixel-btn-gold">Ask Dosu</a>    </div>
 </div>
 {% endblock %}

@@ -683,3 +683,125 @@ if (!window.__overdueHtmxBeforeRequestBound) {
         hideAll();
     });
 })();
+
+/* ============================================================
+   REFERENCE DESK MODAL (Easter Egg -- press ? anywhere)
+   ============================================================ */
+
+(function() {
+    if (window.__overdueReferenceDeskInit) return;
+    window.__overdueReferenceDeskInit = true;
+
+    var backdropEl = null;
+    var isOpen = false;
+
+    function createModal() {
+        var backdrop = document.createElement('div');
+        backdrop.className = 'reference-desk-backdrop loading-overlay-hidden';
+        backdrop.style.display = 'none';
+        backdrop.style.alignItems = 'center';
+        backdrop.style.justifyContent = 'center';
+
+        var card = document.createElement('div');
+        card.className = 'pixel-card text-center py-8 px-6';
+        card.style.maxWidth = '420px';
+        card.style.width = '90vw';
+        card.style.position = 'relative';
+        card.style.zIndex = '251';
+
+        var icon = document.createElement('img');
+        icon.src = '/static/icons/search.svg';
+        icon.alt = '';
+        icon.width = 28;
+        icon.height = 28;
+        icon.className = 'pixel-icon';
+        icon.style.display = 'inline-block';
+        icon.style.marginBottom = '0.75rem';
+
+        var heading = document.createElement('h2');
+        heading.className = 'pixel-heading mb-4';
+        heading.textContent = 'THE REFERENCE DESK';
+
+        var desc = document.createElement('p');
+        desc.className = 'text-parchment-dark text-lg mb-6';
+        var descText1 = document.createTextNode('Got a question? Our archivist, ');
+        var dosuSpan = document.createElement('span');
+        dosuSpan.className = 'text-gold';
+        dosuSpan.textContent = 'Dosu';
+        var descText2 = document.createTextNode(', is here to help.');
+        desc.appendChild(descText1);
+        desc.appendChild(dosuSpan);
+        desc.appendChild(descText2);
+
+        var btn = document.createElement('a');
+        btn.href = 'https://app.dosu.dev/04283041-db40-47f2-9553-9b7452d3ac02/ask';
+        btn.target = '_blank';
+        btn.rel = 'noopener noreferrer';
+        btn.className = 'pixel-btn pixel-btn-gold';
+        btn.textContent = 'Ask Dosu';
+        btn.style.display = 'inline-block';
+
+        var hint = document.createElement('p');
+        hint.className = 'pixel-label text-ink-light mt-4';
+        hint.textContent = 'Press ? to close';
+
+        card.appendChild(icon);
+        card.appendChild(heading);
+        card.appendChild(desc);
+        card.appendChild(btn);
+        card.appendChild(hint);
+        backdrop.appendChild(card);
+        document.body.appendChild(backdrop);
+
+        backdrop.addEventListener('click', function(e) {
+            if (e.target === backdrop) closeModal();
+        });
+
+        return backdrop;
+    }
+
+    function openModal() {
+        if (!backdropEl) backdropEl = createModal();
+        backdropEl.style.display = 'flex';
+        backdropEl.classList.remove('loading-overlay-hidden');
+        backdropEl.classList.add('loading-overlay-visible');
+        isOpen = true;
+    }
+
+    function closeModal() {
+        if (!backdropEl) return;
+        backdropEl.classList.remove('loading-overlay-visible');
+        backdropEl.classList.add('loading-overlay-hidden');
+        backdropEl.style.display = 'none';
+        isOpen = false;
+    }
+
+    document.addEventListener('keydown', function(e) {
+        var tag = (e.target.tagName || '').toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+        if (e.key === '?') {
+            e.preventDefault();
+            if (isOpen) {
+                closeModal();
+            } else {
+                openModal();
+            }
+            return;
+        }
+
+        if (e.key === 'Escape' && isOpen) {
+            e.stopPropagation();
+            e.preventDefault();
+            closeModal();
+        }
+    });
+
+    // Clean up DOM reference on full-page body swap
+    document.addEventListener('htmx:beforeSwap', function(evt) {
+        if (evt.detail && evt.detail.target === document.body) {
+            backdropEl = null;
+            isOpen = false;
+        }
+    });
+})();
