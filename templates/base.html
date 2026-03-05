@@ -98,14 +98,18 @@
         </div>
     </nav>
 
-    <div id="loading-overlay" class="htmx-indicator fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-[2px] pointer-events-none">
+    <div id="nav-progress" class="nav-progress" aria-hidden="true">
+        <div class="nav-progress-bar"></div>
+    </div>
+    <div id="loading-overlay" class="loading-overlay-hidden fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-[2px] pointer-events-none">
         <div class="pixel-card flex flex-col items-center gap-4 py-8 px-12 animate-bounce">
             {{ render_icon('book-open', 48, '#f0c543') }}
             <p class="font-pixel text-[10px] text-gold animate-pulse">Consulting the shelves...</p>
         </div>
     </div>
+    <div id="no-indicator" style="display:none"></div>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" hx-indicator="#loading-overlay" hx-boost="true">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" hx-boost="true">
         {% block content %}{% endblock %}
     </main>
 
@@ -118,7 +122,7 @@
     <!-- Pre-rendered pixel art icons for JS toast messages -->
     <template id="icon-star">{{ render_icon('star', 12) }}</template>
     <template id="icon-fire">{{ render_icon('fire', 12) }}</template>
-    <template id="icon-trophy">{{ render_icon('trophy', 12) }}</template>
+    <template id="icon-award">{{ render_icon('award', 12) }}</template>
     <template id="icon-crown">{{ render_icon('crown', 12) }}</template>
 
     <script src="/static/js/gauges.js"></script>

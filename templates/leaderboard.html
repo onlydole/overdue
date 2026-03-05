@@ -4,7 +4,7 @@
 {% block content %}
 <div class="space-y-8">
     <div class="pixel-card text-center py-6">
-        <div class="mb-3">{{ render_icon('trophy', 32) }}</div>
+        <div class="mb-3">{{ render_icon('award', 32) }}</div>
         <h1 class="pixel-heading-lg mb-2">Leaderboard</h1>
         <p class="text-parchment-dark text-lg">Top librarians ranked by pages read.</p>
     </div>
@@ -109,7 +109,7 @@
                     </td>
                     <td class="px-4 py-4 text-right">
                         {% if entry.current_streak > 0 %}
-                        <span class="font-pixel text-[10px] text-streak">{{ entry.current_streak }}d {{ render_icon('fire', 12) }}</span>
+                        <span class="font-pixel text-[10px] text-streak">{{ entry.current_streak }}d {{ render_icon('fire', 14) }}</span>
                         {% else %}
                         <span class="text-ink-light">--</span>
                         {% endif %}
