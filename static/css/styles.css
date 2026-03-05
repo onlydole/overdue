@@ -1446,7 +1446,8 @@ body.party-mode .party-toggle.library-barcode::after {
     body.party-mode .badge-legendary,
     body.party-mode #overdue-logo,
     body.party-mode footer,
-    body.party-mode .party-toggle {
+    body.party-mode .party-toggle,
+    body.party-mode .party-toggle.library-barcode::after {
         animation: none !important;
     }
 }

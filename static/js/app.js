@@ -384,6 +384,7 @@ if (!window.__overdueGameEventToastBound) {
     function togglePartyMode() {
         const active = document.body.classList.toggle('party-mode');
         persistPartyMode(active);
+        syncPartyToggleAria(active);
         if (active) {
             tryStartPartyAudio(true);
             queueToast('Party Mode Activated', 'party', 'star');
@@ -391,6 +392,11 @@ if (!window.__overdueGameEventToastBound) {
             stopPartyAudio();
             queueToast('Party Completed', 'party', 'award');
         }
+    }
+
+    function syncPartyToggleAria(active) {
+        var el = document.getElementById('party-toggle');
+        if (el) el.setAttribute('aria-pressed', String(active));
     }
 
     window.__overdueTogglePartyMode = togglePartyMode;
@@ -524,12 +530,14 @@ if (!window.__overdueGameEventToastBound) {
     function restorePersistedPartyMode() {
         if (!readPersistedPartyMode()) return;
         document.body.classList.add('party-mode');
+        syncPartyToggleAria(true);
         tryStartPartyAudio(false);
     }
 
     function handlePartyModeAfterSwap() {
         if (!readPersistedPartyMode()) return;
         document.body.classList.add('party-mode');
+        syncPartyToggleAria(true);
         if (audio && audio.paused) {
             tryStartPartyAudio(false);
         }
@@ -809,7 +817,7 @@ if (!window.__overdueHtmxBeforeRequestBound) {
 })();
 
 /* ============================================================
-   PARTY TOGGLE (Footer easter egg)
+   PARTY TOGGLE (Settings barcode easter egg, #party-toggle)
    ============================================================ */
 
 (function() {
@@ -824,9 +832,13 @@ if (!window.__overdueHtmxBeforeRequestBound) {
         }
     }
 
+    // Document delegation so the handler survives htmx content swaps.
     document.addEventListener('click', handlePartyToggle);
     document.addEventListener('keydown', function(e) {
-        if (e.key !== 'Enter' && e.key !== ' ') return;
-        handlePartyToggle(e);
+        if (e.repeat) return;
+        if (e.key === 'Enter') handlePartyToggle(e);
+    });
+    document.addEventListener('keyup', function(e) {
+        if (e.key === ' ') handlePartyToggle(e);
     });
 })();
