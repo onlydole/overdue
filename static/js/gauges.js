@@ -22,6 +22,13 @@ function _gaugeLabel(score) {
     return 'OVERDUE';
 }
 
+function _gaugeStampClass(score) {
+    if (score >= 75) return 'dewey-stamp-pristine';
+    if (score >= 50) return 'dewey-stamp-good';
+    if (score >= 25) return 'dewey-stamp-dusty';
+    return 'dewey-stamp-overdue';
+}
+
 /* ============================================================
    RENDER A GAUGE AT A SPECIFIC SCORE
    ============================================================ */
@@ -58,7 +65,7 @@ function renderGaugeAtScore(gauge, score) {
         var inner = gauge.querySelector('.gauge-inner');
         if (!inner) {
             inner = document.createElement('div');
-            inner.className = 'gauge-inner flex flex-col items-center justify-center rounded-full';
+            inner.className = 'gauge-inner flex items-center justify-center rounded-full';
             inner.style.background = '#232342';
             inner.style.width = '75%';
             inner.style.height = '75%';
@@ -67,30 +74,28 @@ function renderGaugeAtScore(gauge, score) {
             var num = document.createElement('span');
             num.className = 'gauge-num';
             num.style.fontFamily = '"Press Start 2P", cursive';
-            num.style.fontSize = '0.55rem';
+            num.style.fontSize = '0.85rem';
             num.style.color = color;
             num.textContent = Math.round(score);
             inner.appendChild(num);
 
-            var lbl = document.createElement('span');
-            lbl.className = 'gauge-label';
-            lbl.style.fontFamily = '"VT323", monospace';
-            lbl.style.fontSize = '0.6rem';
-            lbl.style.color = '#8b8b9e';
-            lbl.style.marginTop = '2px';
-            lbl.textContent = label;
-            inner.appendChild(lbl);
-
             gauge.appendChild(inner);
+
+            // Stamp sits outside the inner circle, appended to the gauge itself
+            var lbl = document.createElement('span');
+            lbl.className = 'gauge-label dewey-stamp ' + _gaugeStampClass(score);
+            lbl.textContent = label;
+            gauge.appendChild(lbl);
         } else {
             var numEl = inner.querySelector('.gauge-num');
-            var lblEl = inner.querySelector('.gauge-label');
+            var lblEl = gauge.querySelector('.gauge-label');
             if (numEl) {
                 numEl.textContent = Math.round(score);
                 numEl.style.color = color;
             }
             if (lblEl) {
                 lblEl.textContent = label;
+                lblEl.className = 'gauge-label dewey-stamp ' + _gaugeStampClass(score);
             }
         }
     }

@@ -171,8 +171,9 @@ function scheduleUiTone(kind) {
     oscillator.frequency.setValueAtTime(firstFreq, now);
     oscillator.frequency.linearRampToValueAtTime(secondFreq, now + 0.08);
 
+    var baseGain = document.body.classList.contains('party-mode') ? 0.15 : 0.07;
     gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.linearRampToValueAtTime(0.07, now + 0.015);
+    gain.gain.linearRampToValueAtTime(baseGain, now + 0.015);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.13);
 
     oscillator.connect(gain);
@@ -227,17 +228,13 @@ function handleUiNavigationClick(evt) {
 
     const nextAction = evt.target.closest('.next-vol-link');
     if (nextAction) {
-        evt.preventDefault();
         playReviewActionSfx('next');
-        navigateWithUiTransition(nextAction.getAttribute('href'));
         return;
     }
 
     const backAction = evt.target.closest('.done-btn, .back-shelf-link');
     if (backAction) {
-        evt.preventDefault();
         playReviewActionSfx('back');
-        navigateWithUiTransition(backAction.getAttribute('href'));
     }
 }
 
@@ -269,7 +266,7 @@ function handleGameEventToast(evt) {
 
     const xpToShow = totalXpFromBreakdown > 0 ? totalXpFromBreakdown : Number(data.xp_awarded || 0);
     if (xpToShow > 0) {
-        queueToast('+' + xpToShow + ' XP (' + xpToShow + ' pages)', 'xp', 'star');
+        queueToast(xpToShow + ' pages (+' + xpToShow + ' XP)', 'xp', 'star');
     }
 
     const bonusLabels = [];
@@ -287,7 +284,7 @@ function handleGameEventToast(evt) {
 
     if (data.badges_earned && data.badges_earned.length > 0) {
         data.badges_earned.forEach(function(badge) {
-            queueToast(badge + ' earned!', 'badge', 'trophy');
+            queueToast(badge + ' earned!', 'badge', 'award');
         });
     }
 
@@ -374,13 +371,7 @@ if (!window.__overdueGameEventToastBound) {
         const targetPath = target.pathname + target.search + target.hash;
         const currentPath = window.location.pathname + window.location.search + window.location.hash;
         if (targetPath === currentPath) return;
-        if (window.htmx && typeof window.htmx.ajax === 'function') {
-            const src = document.createElement('a');
-            src.setAttribute('hx-push-url', 'true');
-            window.htmx.ajax('GET', targetPath, { source: src, target: 'body', swap: 'innerHTML' });
-        } else {
-            window.location.assign(target.toString());
-        }
+        window.location.assign(target.toString());
     }
 
     function isHrefCurrentLocation(href) {
@@ -398,7 +389,7 @@ if (!window.__overdueGameEventToastBound) {
             queueToast('Party Mode Activated', 'party', 'star');
         } else {
             stopPartyAudio();
-            queueToast('Party Completed', 'party', 'trophy');
+            queueToast('Party Completed', 'party', 'award');
         }
     }
 
@@ -574,3 +565,121 @@ if (!window.__overdueHtmxBeforeRequestBound) {
     document.body.addEventListener('htmx:beforeRequest', handleHtmxBeforeRequest);
     window.__overdueHtmxBeforeRequestBound = true;
 }
+
+/* ============================================================
+   TIERED LOADING INDICATOR
+   Tier 1 (0-300ms): nothing -- page-flip transition is enough.
+   Tier 2 (300ms+):  thin pixel progress bar at top of viewport.
+   Tier 3 (2s+):     full "Consulting the shelves..." overlay.
+   ============================================================ */
+
+(function() {
+    if (window.__overdueTieredLoadingInit) return;
+    window.__overdueTieredLoadingInit = true;
+
+    var TIER2_DELAY = 300;
+    var TIER3_DELAY = 2000;
+    var COMPLETION_FADE = 300;
+
+    var tier2Timer = null;
+    var tier3Timer = null;
+    var progressTimer = null;
+    var progressStart = 0;
+
+    var progressEl = document.getElementById('nav-progress');
+    var progressBar = progressEl ? progressEl.querySelector('.nav-progress-bar') : null;
+    var overlayEl = document.getElementById('loading-overlay');
+
+    function isBoostNavigation(evt) {
+        if (!evt || !evt.detail) return false;
+        var verb = evt.detail.verb;
+        if (verb && verb.toUpperCase() !== 'GET') return false;
+        var elt = evt.detail.elt;
+        if (!elt) return false;
+        // Exclude polling requests (hx-trigger="every ...")
+        var trigger = elt.getAttribute && elt.getAttribute('hx-trigger');
+        if (trigger && trigger.indexOf('every') >= 0) return false;
+        // Exclude targeted partial swaps (review section, etc.)
+        var target = evt.detail.target;
+        if (target && target.id && target.id !== 'main' && target.tagName !== 'BODY') {
+            // Allow only full-page boost navigations
+            var hxBoost = elt.closest && elt.closest('[hx-boost="true"]');
+            if (!hxBoost) return false;
+        }
+        return true;
+    }
+
+    function updateProgressBar() {
+        if (!progressBar) return;
+        var elapsed = Date.now() - progressStart;
+        // Logarithmic curve: fast start, asymptotically approaches 85%
+        var pct = 85 * (1 - Math.exp(-elapsed / 2000));
+        progressBar.style.width = pct + '%';
+        progressTimer = requestAnimationFrame(updateProgressBar);
+    }
+
+    function showTier2() {
+        if (!progressEl || !progressBar) return;
+        progressStart = Date.now();
+        progressBar.style.width = '0%';
+        progressBar.style.transition = 'none';
+        progressEl.classList.add('active');
+        progressEl.classList.remove('complete');
+        progressTimer = requestAnimationFrame(updateProgressBar);
+    }
+
+    function showTier3() {
+        if (!overlayEl) return;
+        overlayEl.classList.remove('loading-overlay-hidden');
+        overlayEl.classList.add('loading-overlay-visible');
+    }
+
+    function hideAll() {
+        // Clear pending timers
+        if (tier2Timer) { clearTimeout(tier2Timer); tier2Timer = null; }
+        if (tier3Timer) { clearTimeout(tier3Timer); tier3Timer = null; }
+        if (progressTimer) { cancelAnimationFrame(progressTimer); progressTimer = null; }
+
+        // Complete progress bar animation
+        if (progressEl && progressEl.classList.contains('active')) {
+            if (progressBar) {
+                progressBar.style.transition = 'width 0.15s ease-out';
+                progressBar.style.width = '100%';
+            }
+            progressEl.classList.add('complete');
+            setTimeout(function() {
+                progressEl.classList.remove('active', 'complete');
+                if (progressBar) {
+                    progressBar.style.transition = 'none';
+                    progressBar.style.width = '0%';
+                }
+            }, COMPLETION_FADE);
+        }
+
+        // Hide overlay
+        if (overlayEl) {
+            overlayEl.classList.remove('loading-overlay-visible');
+            overlayEl.classList.add('loading-overlay-hidden');
+        }
+    }
+
+    document.body.addEventListener('htmx:beforeRequest', function(evt) {
+        if (!isBoostNavigation(evt)) return;
+        // Start timer chain
+        tier2Timer = setTimeout(showTier2, TIER2_DELAY);
+        tier3Timer = setTimeout(showTier3, TIER3_DELAY);
+    });
+
+    document.body.addEventListener('htmx:afterRequest', function(evt) {
+        if (!isBoostNavigation(evt)) return;
+        hideAll();
+    });
+
+    document.body.addEventListener('htmx:responseError', function() {
+        hideAll();
+    });
+
+    document.body.addEventListener('htmx:sendError', function() {
+        hideAll();
+    });
+})();

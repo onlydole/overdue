@@ -13,9 +13,9 @@
     </div>
 
     {% if shelves %}
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="shelf-grid">
         {% for shelf in shelves %}
-        <a href="/shelves/{{ shelf.id }}" class="pixel-card block group flex flex-col h-full">
+        <a href="/shelves/{{ shelf.id }}" class="pixel-card shelf-card block group flex flex-col h-full" data-dewey="{{ shelf.average_dewey }}" hx-boost="true">
             <div class="shelf-card-title">
                 <h3 class="font-pixel text-sm text-gold uppercase tracking-wider leading-relaxed">{{ shelf.name }}</h3>
             </div>
@@ -38,6 +38,9 @@
         </a>
         {% endfor %}
     </div>
+    <div class="hidden md:flex justify-end items-center mt-2 gap-3">
+        <span class="pixel-label text-ink-light">Enter ⏎ open most overdue shelf</span>
+    </div>
     {% else %}
     <div class="pixel-card text-center py-12">
         <div class="mb-4">{{ render_icon('book-open', 32) }}</div>
@@ -46,4 +49,37 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+(function() {
+    if (window.__shelvesKeysBound) return;
+    window.__shelvesKeysBound = true;
+
+    function handleKey(evt) {
+        var tag = (evt.target.tagName || '').toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+        if (evt.key === 'Enter') {
+            evt.preventDefault();
+            var cards = Array.from(document.querySelectorAll('.shelf-card[data-dewey]'));
+            if (!cards.length) return;
+            cards.sort(function(a, b) {
+                return parseFloat(a.dataset.dewey) - parseFloat(b.dataset.dewey);
+            });
+            cards[0].click();
+        }
+    }
+
+    window.addEventListener('keydown', handleKey);
+
+    document.body.addEventListener('htmx:beforeSwap', function cleanup(evt) {
+        var target = evt.detail.target;
+        if (target === document.body || target.tagName === 'MAIN' || target.id === 'main-content') {
+            window.removeEventListener('keydown', handleKey);
+            window.__shelvesKeysBound = false;
+            document.body.removeEventListener('htmx:beforeSwap', cleanup);
+        }
+    });
+})();
+</script>
 {% endblock %}

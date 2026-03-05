@@ -2,57 +2,7 @@
 {% block title %}{{ volume.title }}{% endblock %}
 
 {% block content %}
-<div class="space-y-8" x-data="{
-    handleEnter() {
-        const reviewBtn = document.querySelector('.review-btn');
-        if (reviewBtn && !reviewBtn.disabled) {
-            if (window.playReviewActionSfx) window.playReviewActionSfx('review');
-            reviewBtn.click();
-            return;
-        }
-        const nextLink = document.querySelector('.next-vol-link');
-        if (nextLink) {
-            if (window.playReviewActionSfx) window.playReviewActionSfx('next');
-            const href = nextLink.getAttribute('href');
-            if (window.navigateWithUiTransition && href) {
-                window.navigateWithUiTransition(href);
-            } else {
-                nextLink.click();
-            }
-            return;
-        }
-        const doneBtn = document.querySelector('.done-btn');
-        if (doneBtn) {
-            if (window.playReviewActionSfx) window.playReviewActionSfx('back');
-            const href = doneBtn.getAttribute('href');
-            if (window.navigateWithUiTransition && href) {
-                window.navigateWithUiTransition(href);
-            } else {
-                doneBtn.click();
-            }
-        }
-    },
-    goNext() {
-        const link = document.querySelector('.next-vol-link');
-        if (!link) return;
-        const href = link.getAttribute('href');
-        if (window.navigateWithUiTransition && href) {
-            window.navigateWithUiTransition(href);
-        } else {
-            link.click();
-        }
-    },
-    goBack() {
-        const link = document.querySelector('.back-shelf-link');
-        if (!link) return;
-        const href = link.getAttribute('href');
-        if (window.navigateWithUiTransition && href) {
-            window.navigateWithUiTransition(href);
-        } else {
-            link.click();
-        }
-    }
-}" @keydown.enter.window="handleEnter()" @keydown.right.window="goNext()" @keydown.left.window="goBack()">
+<div class="space-y-8">
     <a href="/shelves/{{ volume.shelf_id }}" hx-boost="true" class="back-shelf-link pixel-btn pixel-btn-outline text-[10px]">&larr; Back to shelf</a>
 
     <div class="pixel-card pb-24 md:pb-6">
@@ -100,7 +50,7 @@
                         {{ render_icon('play', 12) }}
                         <span>Review This Volume</span>
                     </span>
-                    <span class="htmx-hide-on-request opacity-60 text-[10px] hidden md:inline border-l border-black/20 pl-3">Enter ↵</span>
+                    <span class="htmx-hide-on-request opacity-60 text-[10px] hidden md:inline border-l border-black/20 pl-3">Enter ⏎</span>
                     <span class="htmx-indicator">{{ render_icon('hourglass', 12) }} Reviewing...</span>
                 </button>
                 {% else %}
@@ -111,9 +61,9 @@
             </div>
 
             <div class="mt-6">
-                <h2 class="pixel-heading mb-4">Review History</h2>
+                <h2 class="pixel-heading mb-4">Review History{% if total_reviews > 0 %} <span class="text-ink-light font-retro text-sm">({{ total_reviews }})</span>{% endif %}</h2>
                 {% if reviews %}
-                <div class="space-y-0">
+                <div class="space-y-0" id="review-history-list">
                     {% for review in reviews %}
                     <div class="flex items-center justify-between py-3 border-b-2 border-pixel-border/30 last:border-0">
                         <div class="flex items-center gap-3">
@@ -129,6 +79,14 @@
                         </div>
                     </div>
                     {% endfor %}
+                    {% if has_more_reviews %}
+                    <button hx-get="/volumes/{{ volume.id }}/reviews?page={{ review_page + 1 }}"
+                            hx-swap="outerHTML"
+                            hx-indicator="#no-indicator"
+                            class="pixel-btn pixel-btn-outline text-[10px] w-full mt-3">
+                        Load more reviews
+                    </button>
+                    {% endif %}
                 </div>
                 {% else %}
                 <p class="text-parchment-dark text-sm text-center py-4">No reviews recorded yet.</p>
@@ -151,4 +109,64 @@
         padding-bottom: env(safe-area-inset-bottom, 1rem);
     }
 </style>
+
+<script>
+(function() {
+    // Guard: only register once per page lifecycle
+    if (window.__volumeKeysBound) return;
+    window.__volumeKeysBound = true;
+
+    function handleKey(evt) {
+        // Don't intercept when typing in an input/textarea
+        var tag = (evt.target.tagName || '').toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+        if (evt.key === 'Enter') {
+            evt.preventDefault();
+            var nextLink = document.querySelector('.next-vol-link');
+            if (nextLink) {
+                if (window.playReviewActionSfx) window.playReviewActionSfx('next');
+                nextLink.click();
+                return;
+            }
+            var reviewBtn = document.querySelector('.review-btn');
+            if (reviewBtn && !reviewBtn.disabled) {
+                if (window.playReviewActionSfx) window.playReviewActionSfx('review');
+                reviewBtn.click();
+                return;
+            }
+            var doneBtn = document.querySelector('.done-btn');
+            if (doneBtn) {
+                if (window.playReviewActionSfx) window.playReviewActionSfx('back');
+                doneBtn.click();
+            }
+        } else if (evt.key === 'Escape' || evt.key === 'ArrowLeft') {
+            var backLink = document.querySelector('.back-shelf-link');
+            if (backLink) {
+                if (window.playReviewActionSfx) window.playReviewActionSfx('back');
+                backLink.click();
+            }
+        } else if (evt.key === 'ArrowRight') {
+            var next = document.querySelector('.next-vol-link');
+            if (next) {
+                if (window.playReviewActionSfx) window.playReviewActionSfx('next');
+                next.click();
+            }
+        }
+    }
+
+    window.addEventListener('keydown', handleKey);
+
+    // Clean up when navigating away via htmx
+    document.body.addEventListener('htmx:beforeSwap', function cleanup(evt) {
+        // Only clean up on full-page navigations (target is body or main content)
+        var target = evt.detail.target;
+        if (target === document.body || target.tagName === 'MAIN' || target.id === 'main-content') {
+            window.removeEventListener('keydown', handleKey);
+            window.__volumeKeysBound = false;
+            document.body.removeEventListener('htmx:beforeSwap', cleanup);
+        }
+    });
+})();
+</script>
 {% endblock %}
