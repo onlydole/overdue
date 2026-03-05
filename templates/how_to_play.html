@@ -5,7 +5,7 @@
 <div class="space-y-8">
     <!-- Hero -->
     <div class="pixel-card text-center py-10">
-        <div class="pixel-bounce inline-block mb-3">{{ render_icon('scroll', 32) }}</div>
+        <div class="pixel-bounce inline-block mb-3">{{ render_icon('book-open', 32) }}</div>
         <h1 class="pixel-heading-lg mb-4">Your Knowledge Is Fading</h1>
         <p class="text-parchment text-xl max-w-2xl mx-auto leading-relaxed">
             Every day, what you've learned gathers dust -- facts blur, details slip away, connections break.
@@ -131,7 +131,7 @@
                 </div>
                 <div class="flex items-center justify-between py-2 border-b-2 border-pixel-border/30">
                     <span class="text-parchment">Review an overdue volume</span>
-                    <span class="font-pixel text-[10px] text-dewey-pristine">+25 pages (2x)</span>
+                    <span class="font-pixel text-[10px] text-dewey-pristine">+10 pages (2x)</span>
                 </div>
                 <div class="flex items-center justify-between py-2 border-b-2 border-pixel-border/30">
                     <span class="text-parchment">Review a current volume</span>
@@ -194,8 +194,8 @@
 
     <!-- Badges -->
     <div class="pixel-card">
-        <h2 class="pixel-heading mb-4">{{ render_icon('trophy', 18, '#f0c543') }} Badges</h2>
-        <p class="text-parchment-dark mb-4">Unlock achievements by reaching milestones. Badges come in three tiers.</p>
+        <h2 class="pixel-heading mb-4">{{ render_icon('award', 18, '#f0c543') }} Badges</h2>
+        <p class="text-parchment-dark mb-4">Unlock achievements by reaching milestones. Badges come in two tiers.</p>
 
         <!-- Common Badges -->
         <h3 class="font-pixel text-[9px] text-badge-common uppercase tracking-wider mb-3 mt-6">Common Badges</h3>
@@ -250,7 +250,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-3 bg-pixel-surface border-2 border-badge-common/30 p-3">
-                {{ render_icon('trophy', 20) }}
+                {{ render_icon('award', 20) }}
                 <div>
                     <div class="font-pixel text-[8px] text-parchment uppercase">Completionist</div>
                     <div class="text-ink-light text-sm">Earned all other badges</div>
@@ -272,11 +272,11 @@
                 {{ render_icon('award', 20) }}
                 <div>
                     <div class="font-pixel text-[8px] text-parchment uppercase">Dewey Devotee</div>
-                    <div class="text-ink-light text-sm">Average Dewey above 90 for 7 days</div>
+                    <div class="text-ink-light text-sm">Maintained average Dewey Score above 90</div>
                 </div>
             </div>
             <div class="flex items-center gap-3 bg-pixel-surface border-2 border-badge-rare/30 p-3 badge-glow-rare">
-                {{ render_icon('trophy', 20) }}
+                {{ render_icon('award', 20) }}
                 <div>
                     <div class="font-pixel text-[8px] text-parchment uppercase">Centurion</div>
                     <div class="text-ink-light text-sm">Reviewed 100 volumes total</div>
@@ -305,41 +305,78 @@
         </div>
     </div>
 
+    <!-- Keyboard Shortcuts -->
+    <div class="pixel-card">
+        <h2 class="pixel-heading mb-4">{{ render_icon('gamepad', 18, '#f0c543') }} Keyboard Shortcuts</h2>
+        <p class="text-parchment-dark mb-4">Navigate the library quickly with keyboard shortcuts. Available on desktop browsers.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="bg-pixel-surface border-2 border-pixel-border p-4">
+                <div class="font-pixel text-[9px] text-gold uppercase mb-3">Volume Detail</div>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-ink-light text-sm">Review / Next / Done</span>
+                        <span class="font-pixel text-[9px] text-parchment bg-pixel-bg border border-pixel-border px-2 py-1">Enter</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-ink-light text-sm">Back to shelf</span>
+                        <div class="flex gap-1">
+                            <span class="font-pixel text-[9px] text-parchment bg-pixel-bg border border-pixel-border px-2 py-1">Esc</span>
+                            <span class="font-pixel text-[9px] text-parchment bg-pixel-bg border border-pixel-border px-2 py-1">&larr;</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-ink-light text-sm">Next volume</span>
+                        <span class="font-pixel text-[9px] text-parchment bg-pixel-bg border border-pixel-border px-2 py-1">&rarr;</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-pixel-surface border-2 border-pixel-border p-4">
+                <div class="font-pixel text-[9px] text-gold uppercase mb-3">Shelves Listing</div>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-ink-light text-sm">Open most overdue shelf</span>
+                        <span class="font-pixel text-[9px] text-parchment bg-pixel-bg border border-pixel-border px-2 py-1">Enter</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Reading Room Mood -->
     <div class="pixel-card">
         <h2 class="pixel-heading mb-4">{{ render_icon('house', 18, '#f0c543') }} Reading Room Mood</h2>
         <p class="text-parchment-dark mb-4">The library's overall health is reflected in the Reading Room's mood. Keep your volumes fresh to maintain a calm atmosphere.</p>
         <div class="space-y-3">
             <div class="flex items-center gap-4 p-3 mood-quiet">
-                {{ render_icon('book-open', 24) }}
+                {{ render_icon('book-open', 24, '#5cdb5c') }}
                 <div class="flex-1">
                     <div class="font-pixel text-[9px] text-dewey-pristine uppercase">Quiet Study</div>
                     <div class="text-ink-light text-sm">Average Dewey 80-100. Warm golden light, everything is serene.</div>
                 </div>
             </div>
             <div class="flex items-center gap-4 p-3 mood-gentle">
-                {{ render_icon('books', 24) }}
+                {{ render_icon('books', 24, '#a0d468') }}
                 <div class="flex-1">
                     <div class="font-pixel text-[9px] text-dewey-good uppercase">Gentle Hum</div>
                     <div class="text-ink-light text-sm">Average Dewey 60-79. Normal lighting, a slight bustle in the air.</div>
                 </div>
             </div>
             <div class="flex items-center gap-4 p-3 mood-noisy">
-                {{ render_icon('book-closed', 24) }}
+                {{ render_icon('book-closed', 24, '#f6bb42') }}
                 <div class="flex-1">
                     <div class="font-pixel text-[9px] text-dewey-attention uppercase">Getting Noisy</div>
                     <div class="text-ink-light text-sm">Average Dewey 40-59. Flickering lights, books slightly askew.</div>
                 </div>
             </div>
             <div class="flex items-center gap-4 p-3 mood-order">
-                {{ render_icon('fire', 24) }}
+                {{ render_icon('fire', 24, '#e8563e') }}
                 <div class="flex-1">
                     <div class="font-pixel text-[9px] text-dewey-overdue uppercase">Call for Order</div>
                     <div class="text-ink-light text-sm">Average Dewey 20-39. Red accents, warning indicators everywhere.</div>
                 </div>
             </div>
             <div class="flex items-center gap-4 p-3 mood-closed">
-                {{ render_icon('construction', 24) }}
+                {{ render_icon('construction', 24, '#9e1b1b') }}
                 <div class="flex-1">
                     <div class="font-pixel text-[9px] text-dewey-lost uppercase">Closed for Renovation</div>
                     <div class="text-ink-light text-sm">Average Dewey 0-19. The library is in crisis. Review everything!</div>

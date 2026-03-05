@@ -1,13 +1,13 @@
 <!-- Mood Banner -->
 <div class="pixel-card text-center py-8 mood-{{ mood.ambiance }}" style="border-color: {{ mood.color }}">
     <div class="pixel-bounce inline-block mb-3">
-        {% if mood.ambiance == 'soft_pages' %}{{ render_icon('book-open', 32) }}
-        {% elif mood.ambiance == 'gentle_hum' %}{{ render_icon('books', 32) }}
-        {% elif mood.ambiance == 'restless' %}{{ render_icon('book-closed', 32) }}
-        {% elif mood.ambiance == 'urgent' %}{{ render_icon('fire', 32) }}
-        {% else %}{{ render_icon('construction', 32) }}{% endif %}
+        {% if mood.ambiance == 'soft_pages' %}{{ render_icon('book-open', 32, mood.color) }}
+        {% elif mood.ambiance == 'gentle_hum' %}{{ render_icon('books', 32, mood.color) }}
+        {% elif mood.ambiance == 'restless' %}{{ render_icon('book-closed', 32, mood.color) }}
+        {% elif mood.ambiance == 'urgent' %}{{ render_icon('fire', 32, mood.color) }}
+        {% else %}{{ render_icon('construction', 32, mood.color) }}{% endif %}
     </div>
-    <h1 class="pixel-heading-lg mb-2">{{ mood.mood }}</h1>
+    <h1 class="pixel-heading-lg mb-2" style="color: {{ mood.color }}">{{ mood.mood }}</h1>
     <p class="text-parchment-dark text-xl mb-4">{{ mood.description }}</p>
     <div class="inline-flex items-center gap-3 bg-pixel-bg/50 border-2 border-pixel-border px-5 py-2">
         <span class="pixel-label">Library Score</span>
