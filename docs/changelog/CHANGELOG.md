@@ -16,19 +16,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Tab-style navigation with active states and `hx-boost` page transitions.
 - Interactive library card UI on settings page with material variants (stone, gelatin, chitin, spectral).
 - Keyboard-accessible avatar picker with arrow button navigation.
-- Global HTMX loading overlay with animated book icon.
+- Keyboard shortcuts for volume detail (`Enter`/`Escape`/arrows) and shelves listing (`Enter` for most overdue).
+- Tiered loading indicator: silent <300ms, pixel progress bar at 300ms+, full overlay at 2s+.
+- Paginated review history with HTMX-driven "load more" on volume detail.
+- Keyboard shortcuts section on the how-to-play page.
+- Mood-appropriate colors on how-to-play mood icons and Reading Room mood title.
 - Mobile sticky action bars for volume review.
+- Live-updating Reading Room dashboard with HTMX polling.
+- Mood backdrop system with ambient gradient, vignette, and particle effects per mood level.
 
 ### Changed
-- Replaced 5 icon modules (~4,000 lines of 16x16 pixel-coordinate tuples) with single `_catalog.py` file defining 28 icons as SVG path strings on 24x24 viewBox.
+- Replaced 5 icon modules (~4,000 lines of 16x16 pixel-coordinate tuples) with single `_catalog.py` file defining 26 icons as SVG path strings on 24x24 viewBox.
 - Replaced 12 procedurally-generated 48x48 monster librarian avatars (~1,200 lines) with 8 hand-crafted 32x32 heroic librarian silhouettes (~150 lines) using SVG paths.
 - Icons now scale cleanly and support CSS `currentColor` tinting. Bare exports default to parchment for `<img>` tag visibility.
+- Replaced `trophy` icon with `award` across badge definitions and tinted icon sets.
+- Renamed "Streak Master" badge to "Streak Freak!" for more personality.
 - Upgraded frontend with material-changing library card effects, stamp animations, and barcode scan animations.
 - Enhanced volume review UX with pristine volume detection and disabled states.
 - Improved rate limiting to exclude static files and return styled 429 pages for web requests and JSON for API requests.
 
+### Fixed
+- How-to-play: overdue review XP corrected from +25 to +10 (matching 5 x 2 multiplier).
+- How-to-play: badge tier count corrected from "three tiers" to "two tiers".
+- How-to-play: Dewey Devotee description updated to match code (removed "for 7 days").
+
 ### Removed
 - Catalog search feature: removed `POST /api/catalog/search` endpoint and `/search` web route. Autocomplete retained via `GET /api/catalog/autocomplete`.
+- Removed `scroll`, `trophy` icons and extra avatar SVGs (avatar_09 through avatar_12).
 
 ## [0.8.0] - 2026-02-21
 

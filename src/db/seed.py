@@ -199,7 +199,7 @@ async def seed_demo_data(session: AsyncSession) -> None:
     badge_entries = [
         (0, "First Shelve"),
         (0, "Encyclopedist"),
-        (0, "Streak Master"),
+        (0, "Streak Freak!"),
         (0, "Night Owl"),
         (1, "First Shelve"),
         (2, "First Shelve"),

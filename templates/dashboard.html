@@ -5,7 +5,8 @@
 <div class="space-y-8"
      hx-get="/reading-room/live"
      hx-trigger="every 5s"
-     hx-swap="innerHTML">
+     hx-swap="innerHTML"
+     hx-indicator="#no-indicator">
     {% include "partials/reading_room_live.html" %}
 </div>
 {% endblock %}

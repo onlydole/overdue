@@ -5,26 +5,27 @@ category: guides
 
 # Gameplay Guide
 
-Overdue isn't just a knowledge base -- it's a game. Keep your library healthy, earn XP, level up, and compete with fellow librarians.
+Overdue isn't just a knowledge base -- it's a game where your memory is the battlefield. Every volume you shelve starts pristine and immediately begins gathering dust. Your job: fight the decay, climb the ranks, and keep the library from descending into chaos.
 
 ## The game loop
 
 1. **Shelve** new volumes of knowledge
 2. Knowledge accumulates **dust** over time (Dewey Score decays)
-3. **Review** volumes to keep them fresh
+3. **Review** volumes to brush off the dust and reset their score to 100
 4. Earn **pages read** (XP) for your efforts
 5. Level up your **rank** and unlock **badges**
 6. Maintain your **review streak** for bonus pages
+7. Watch the Reading Room **mood** shift based on your library's health
 
 ## Pages read (XP)
 
-Every action in the library earns you "pages read" -- your experience points.
+Every action in the library earns you "pages read" -- your experience points. Overdue volumes are worth double.
 
 | Action | Pages earned |
 |---|---|
 | Shelve a new volume | +10 |
-| Review an overdue volume | +25 |
 | Review a current volume | +5 |
+| Review an overdue volume | +10 (2x multiplier) |
 | Daily streak bonus | +15/day |
 | All volumes on a shelf above Dewey 75 | +50 (shelf bonus) |
 
@@ -42,40 +43,74 @@ As you accumulate pages read, you level up through the librarian ranks:
 
 ## Badges
 
-Badges are achievements earned by reaching specific milestones:
+Badges are achievements you unlock by hitting milestones. They come in two tiers: **Common** (consistent effort) and **Rare** (serious dedication).
 
-| Badge | Description |
+### Common badges
+
+| Badge | How to earn it |
 |---|---|
-| First Shelve | Created your first volume |
-| Dust Buster | Reviewed 10 overdue volumes |
-| Streak Master | 7-day review streak |
-| Pristine Stacks | All volumes above Dewey 75 at once |
-| Encyclopedist | 50 volumes authored |
-| Night Owl | Reviewed a volume after midnight |
-| Speed Reader | Reviewed 5 volumes in under a minute |
-| Completionist | Earned all other badges |
+| First Shelve | Create your first volume |
+| Dust Buster | Review 10 overdue volumes |
+| Streak Freak! | Hit a 7-day review streak |
+| Pristine Stacks | Get all your volumes above Dewey 75 at once |
+| Encyclopedist | Author 50 volumes |
+| Night Owl | Review a volume after midnight |
+| Speed Reader | Review 5 volumes in under a minute |
+| Completionist | Earn every other badge |
+
+### Rare badges
+
+| Badge | How to earn it |
+|---|---|
+| Marathon Reader | Maintain a 30-day review streak |
+| Dewey Devotee | Maintain an average Dewey Score above 90 |
+| Centurion | Review 100 volumes total |
 
 ## Streaks
 
-Review at least one volume each day to maintain your streak. The streak counter resets if you miss a day. Each day you maintain the streak, you earn +15 bonus pages.
+Review at least one volume each day to keep your streak alive. Every day you maintain it, you earn +15 bonus pages. Miss a day and the counter resets to zero. Streaks show up on the leaderboard, so everyone knows who's been putting in the work.
+
+Hit 7 days for the Streak Freak! badge. Hit 30 and you earn the rare Marathon Reader.
+
+## The Dewey Score
+
+Every volume has a freshness score from 0 to 100. It starts at 100 when you create or review it, then decays over time.
+
+| Score | Status | What it means |
+|---|---|---|
+| 75-100 | Pristine | Freshly reviewed, perfectly current |
+| 50-74 | Good | Slightly dusty, still reliable |
+| 25-49 | Dusty | Getting stale, needs attention soon |
+| 0-24 | Overdue | Significantly outdated -- review immediately |
 
 ## Reading Room mood
 
-The library's mood reflects the overall health of your knowledge collection:
+The library's ambient atmosphere reflects your collective Dewey Scores. Keep your stacks healthy and the mood stays calm. Let things decay and the atmosphere turns hostile.
 
-| Average Dewey Score | Mood | Visual |
+| Average Dewey Score | Mood | What happens |
 |---|---|---|
-| 80-100 | Quiet study | Warm golden light, soft ambient sounds |
-| 60-79 | Gentle hum | Normal lighting, slight bustle |
-| 40-59 | Getting noisy | Flickering lights, books slightly askew |
-| 20-39 | Call for order | Red accents, warning indicators |
-| 0-19 | Closed for renovation | Dimmed, urgent status |
+| 80-100 | Quiet Study | Warm golden light, everything is serene |
+| 60-79 | Gentle Hum | Normal lighting, a slight bustle in the air |
+| 40-59 | Getting Noisy | Flickering lights, books slightly askew |
+| 20-39 | Call for Order | Red accents, warning indicators everywhere |
+| 0-19 | Closed for Renovation | The library is in crisis. Review everything! |
+
+## Keyboard shortcuts
+
+Navigate the library at speed with keyboard shortcuts (desktop browsers):
+
+| Page | Key | Action |
+|---|---|---|
+| Volume detail | `Enter` | Review / next volume / done (priority order) |
+| Volume detail | `Escape` / `ArrowLeft` | Back to shelf |
+| Volume detail | `ArrowRight` | Next volume |
+| Shelves listing | `Enter` | Open the most overdue shelf |
 
 ## Avatars
 
-When you register, you choose from 8 unique pixel art heroic librarian avatars. Your avatar appears on your profile, the leaderboard, and in the navigation bar. Each option is a heroic librarian character with distinct silhouette, palette, accessories, and lore flavor.
+When you register, you choose from 8 unique pixel art heroic librarian avatars -- each with a distinct silhouette, palette, and lore. Your avatar appears on your profile, the leaderboard, and in the navigation bar.
 
-## AI Bot players
+## AI bot players
 
 The leaderboard includes AI bot players that simulate library activity. Bots are marked with a robot indicator so you can tell them apart from real players. Their XP shifts each time the server restarts, keeping competition dynamic.
 

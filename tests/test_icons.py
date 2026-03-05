@@ -7,19 +7,19 @@ import pytest
 from src.game.icons import get_icon_names, render_icon_svg
 
 
-# The exact set of 28 icon names that must be present
+# The exact set of 26 icon names that must be present
 EXPECTED_ICONS = sorted([
-    "books", "book-open", "book-closed", "scroll", "bookmark", "clipboard",
+    "books", "book-open", "book-closed", "bookmark", "clipboard",
     "fire", "moon", "star", "sparkles", "zap",
-    "trophy", "crown", "award", "chart",
+    "crown", "award", "chart",
     "clock", "search", "key", "hourglass", "gear", "house", "library", "construction",
     "person", "robot", "gamepad", "play", "checkmark",
 ])
-assert len(EXPECTED_ICONS) == 28
+assert len(EXPECTED_ICONS) == 26
 
 
-def test_all_28_icons_registered():
-    """All 28 icons must be present in the catalog."""
+def test_all_26_icons_registered():
+    """All 26 icons must be present in the catalog."""
     names = get_icon_names()
     assert names == EXPECTED_ICONS
 

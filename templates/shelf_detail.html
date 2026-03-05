@@ -77,9 +77,9 @@
     </div>
 
     <!-- Volume Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="volume-grid">
         {% for vol in volumes %}
-        <a href="/volumes/{{ vol.id }}" class="pixel-card block group">
+        <a href="/volumes/{{ vol.id }}" class="pixel-card block group volume-card" data-dewey="{{ vol.dewey_score }}">
             <h3 class="font-retro text-lg text-parchment mb-3">{{ vol.title }}</h3>
             <div class="flex items-center justify-between">
                 <div class="dewey-gauge dewey-gauge-bar h-6 flex-1 mr-3" data-score="{{ vol.dewey_score }}"></div>
@@ -94,6 +94,11 @@
         </a>
         {% endfor %}
     </div>
+    <div class="hidden md:flex justify-end items-center mt-2 gap-3">
+        <span class="pixel-label text-ink-light">Enter ⏎ review most overdue</span>
+        <span class="text-pixel-border">|</span>
+        <span class="pixel-label text-ink-light">Esc ← back to shelves</span>
+    </div>
     {% else %}
     <div class="pixel-card text-center py-12">
         <div class="mb-4">{{ render_icon('bookmark', 32) }}</div>
@@ -102,4 +107,55 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+(function() {
+    if (window.__shelfKeysBound) return;
+    window.__shelfKeysBound = true;
+
+    function handleKey(evt) {
+        var tag = (evt.target.tagName || '').toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+        if (evt.key === 'Enter') {
+            // Find the most overdue volume (lowest dewey score)
+            var cards = document.querySelectorAll('.volume-card');
+            if (!cards.length) return;
+            var target = null;
+            var lowestScore = Infinity;
+            cards.forEach(function(card) {
+                var score = parseFloat(card.dataset.dewey);
+                if (isNaN(score)) score = 100;
+                if (score < lowestScore) {
+                    lowestScore = score;
+                    target = card;
+                }
+            });
+            if (target) {
+                evt.preventDefault();
+                if (window.playReviewActionSfx) window.playReviewActionSfx('review');
+                target.click();
+            }
+        } else if (evt.key === 'Escape' || evt.key === 'ArrowLeft') {
+            var backBtn = document.querySelector('.pixel-btn-outline[href="/shelves"]');
+            if (backBtn) {
+                evt.preventDefault();
+                if (window.playReviewActionSfx) window.playReviewActionSfx('back');
+                backBtn.click();
+            }
+        }
+    }
+
+    window.addEventListener('keydown', handleKey);
+
+    document.body.addEventListener('htmx:beforeSwap', function cleanup(evt) {
+        var target = evt.detail.target;
+        if (target === document.body || target.tagName === 'MAIN' || target.id === 'main-content') {
+            window.removeEventListener('keydown', handleKey);
+            window.__shelfKeysBound = false;
+            document.body.removeEventListener('htmx:beforeSwap', cleanup);
+        }
+    });
+})();
+</script>
 {% endblock %}

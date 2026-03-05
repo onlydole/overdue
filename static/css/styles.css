@@ -316,9 +316,58 @@ main {
     display: none;
 }
 
+/* ============================================================
+   NAV PROGRESS BAR (Tier 2 loading indicator)
+   ============================================================ */
+
+.nav-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 300;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.nav-progress.active {
+    opacity: 1;
+}
+
+.nav-progress.complete {
+    opacity: 0;
+    transition: opacity 0.3s ease 0.1s;
+}
+
+.nav-progress-bar {
+    height: 100%;
+    width: 0%;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            #5cdb5c 0 3px,
+            transparent 3px 4px
+        ),
+        linear-gradient(90deg, #5cdb5c, #f0c543);
+    background-blend-mode: overlay;
+    box-shadow: 0 0 6px rgba(92, 219, 92, 0.4);
+}
+
+/* Loading overlay -- JS-controlled (not HTMX-controlled) */
+.loading-overlay-hidden {
+    display: none !important;
+}
+
+.loading-overlay-visible {
+    display: flex !important;
+}
+
 @media (min-width: 900px) {
     .library-card-surface {
         aspect-ratio: 86 / 54;
+        overflow: visible;
     }
 }
 
@@ -671,6 +720,43 @@ main {
 
 .shelf-card-volume-count {
     color: #7eb5e3;
+}
+
+/* ============================================================
+   DEWEY STAMP (status labels inside gauges)
+   ============================================================ */
+
+.dewey-stamp {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.45rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border: 2px double currentColor;
+    padding: 2px 6px;
+    transform: rotate(-3deg);
+    opacity: 0.85;
+    display: inline-block;
+}
+
+.dewey-stamp-pristine { color: #5cdb5c; }
+.dewey-stamp-good { color: #a0d468; }
+.dewey-stamp-dusty { color: #f6bb42; }
+.dewey-stamp-overdue { color: #e8563e; }
+
+/* Compact stamp variant below circular gauges */
+.gauge-inner {
+    overflow: visible;
+}
+.dewey-gauge > .dewey-stamp {
+    position: absolute;
+    top: 50%;
+    right: calc(100% + 10px);
+    transform: translateY(-50%) rotate(-3deg);
+    font-size: 0.45rem;
+    padding: 2px 5px;
+    border-width: 1px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
 }
 
 /* ============================================================
@@ -1050,7 +1136,9 @@ body[data-mood="closed"] #mood-backdrop::after {
 /* --- Quiet Study Particles: golden dust motes floating up --- */
 body[data-mood="soft_pages"] .mood-particle {
     background: #f0c543;
-    opacity: 0.25;
+    opacity: 0.4;
+    width: 5px;
+    height: 5px;
     bottom: -10px;
     animation: mood-float-up calc(7s + var(--i) * 0.4s) ease-in-out infinite;
     animation-delay: calc(var(--i) * -0.8s);
@@ -1058,18 +1146,18 @@ body[data-mood="soft_pages"] .mood-particle {
 
 @keyframes mood-float-up {
     0% { transform: translateY(0) scale(1); opacity: 0; }
-    10% { opacity: 0.3; }
-    50% { transform: translateY(-50vh) scale(0.8); opacity: 0.25; }
-    90% { opacity: 0.1; }
+    10% { opacity: 0.5; }
+    50% { transform: translateY(-50vh) scale(0.8); opacity: 0.4; }
+    90% { opacity: 0.15; }
     100% { transform: translateY(-100vh) scale(0.6); opacity: 0; }
 }
 
 /* --- Gentle Hum Particles: parchment flutters drifting --- */
 body[data-mood="gentle_hum"] .mood-particle {
     background: #d4c4a8;
-    opacity: 0.2;
-    width: 5px;
-    height: 3px;
+    opacity: 0.35;
+    width: 6px;
+    height: 4px;
     bottom: -10px;
     animation: mood-flutter calc(6s + var(--i) * 0.5s) ease-in-out infinite;
     animation-delay: calc(var(--i) * -0.7s);
@@ -1077,15 +1165,17 @@ body[data-mood="gentle_hum"] .mood-particle {
 
 @keyframes mood-flutter {
     0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
-    10% { opacity: 0.25; }
-    50% { transform: translate(30px, -45vh) rotate(180deg); opacity: 0.2; }
+    10% { opacity: 0.4; }
+    50% { transform: translate(30px, -45vh) rotate(180deg); opacity: 0.35; }
     100% { transform: translate(-20px, -95vh) rotate(360deg); opacity: 0; }
 }
 
 /* --- Getting Noisy Particles: amber swirling --- */
 body[data-mood="restless"] .mood-particle {
     background: #f6bb42;
-    opacity: 0.2;
+    opacity: 0.4;
+    width: 5px;
+    height: 5px;
     top: 50%;
     animation: mood-swirl calc(4.5s + var(--i) * 0.3s) ease-in-out infinite;
     animation-delay: calc(var(--i) * -0.5s);
@@ -1093,18 +1183,18 @@ body[data-mood="restless"] .mood-particle {
 
 @keyframes mood-swirl {
     0% { transform: translate(0, 0) scale(1); opacity: 0; }
-    25% { transform: translate(20px, -30px) scale(1.2); opacity: 0.3; }
-    50% { transform: translate(-15px, -60px) scale(0.9); opacity: 0.2; }
-    75% { transform: translate(25px, -90px) scale(1.1); opacity: 0.15; }
+    25% { transform: translate(20px, -30px) scale(1.2); opacity: 0.5; }
+    50% { transform: translate(-15px, -60px) scale(0.9); opacity: 0.35; }
+    75% { transform: translate(25px, -90px) scale(1.1); opacity: 0.2; }
     100% { transform: translate(0, -120px) scale(0.7); opacity: 0; }
 }
 
 /* --- Call for Order Particles: red-orange darting --- */
 body[data-mood="urgent"] .mood-particle {
     background: #e8563e;
-    opacity: 0.15;
-    width: 3px;
-    height: 3px;
+    opacity: 0.35;
+    width: 4px;
+    height: 4px;
     top: calc(10% + var(--i) * 7%);
     animation: mood-dart calc(2.5s + var(--i) * 0.2s) ease-in-out infinite;
     animation-delay: calc(var(--i) * -0.3s);
@@ -1112,17 +1202,17 @@ body[data-mood="urgent"] .mood-particle {
 
 @keyframes mood-dart {
     0% { transform: translate(0, 0) scale(1); opacity: 0; }
-    20% { opacity: 0.3; }
-    50% { transform: translate(calc(40px - var(--i) * 5px), calc(-20px + var(--i) * 3px)) scale(1.3); opacity: 0.2; }
+    20% { opacity: 0.5; }
+    50% { transform: translate(calc(40px - var(--i) * 5px), calc(-20px + var(--i) * 3px)) scale(1.3); opacity: 0.35; }
     100% { transform: translate(calc(-30px + var(--i) * 4px), calc(15px - var(--i) * 2px)) scale(0.5); opacity: 0; }
 }
 
 /* --- Closed Particles: grey debris falling --- */
 body[data-mood="closed"] .mood-particle {
-    background: #5a5a7a;
-    opacity: 0.15;
-    width: 5px;
-    height: 5px;
+    background: #8a8aaa;
+    opacity: 0.35;
+    width: 6px;
+    height: 6px;
     top: -10px;
     animation: mood-debris calc(4s + var(--i) * 0.5s) linear infinite;
     animation-delay: calc(var(--i) * -0.6s);
@@ -1130,8 +1220,8 @@ body[data-mood="closed"] .mood-particle {
 
 @keyframes mood-debris {
     0% { transform: translateY(0) rotate(0deg); opacity: 0; }
-    10% { opacity: 0.2; }
-    80% { opacity: 0.15; }
+    10% { opacity: 0.4; }
+    80% { opacity: 0.3; }
     100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
 }
 
@@ -1171,6 +1261,10 @@ body[data-mood="gentle_hum"] .mood-particle:nth-child(n+11) {
     }
     .mood-particle {
         display: none !important;
+    }
+    .nav-progress,
+    .nav-progress-bar {
+        transition: none !important;
     }
 }
 

@@ -6,13 +6,14 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.volumes import calculate_dewey_score
 from src.auth.web_session import get_current_librarian_optional, get_current_librarian_required
 from src.config.settings import settings
 from src.db.engine import get_session
+from src.web.volumes import REVIEWS_PER_PAGE
 from src.db.tables import ReviewRow, ShelfRow, VolumeRow, volume_bookmarks
 from src.errors.incidents import VolumeTooLarge
 from src.game.engine import on_volume_reviewed, on_volume_shelved
@@ -248,9 +249,16 @@ async def review_volume_web(
             select(ReviewRow)
             .where(ReviewRow.volume_id == volume.id)
             .order_by(ReviewRow.reviewed_at.desc())
-            .limit(20)
+            .limit(REVIEWS_PER_PAGE + 1)
         )
-        reviews = reviews_result.scalars().all()
+        reviews = list(reviews_result.scalars().all())
+        has_more_reviews = len(reviews) > REVIEWS_PER_PAGE
+        reviews = reviews[:REVIEWS_PER_PAGE]
+        count_result = await session.execute(
+            select(func.count()).select_from(ReviewRow)
+            .where(ReviewRow.volume_id == volume.id)
+        )
+        total_reviews = count_result.scalar() or 0
 
         # Find next overdue volume to suggest
         next_volume = None
@@ -298,6 +306,9 @@ async def review_volume_web(
             "volume": volume,
             "dewey_score": round(new_score, 1),
             "reviews": reviews,
+            "review_page": 1,
+            "has_more_reviews": has_more_reviews,
+            "total_reviews": total_reviews,
             "game_result": game_result,
             "next_volume": next_volume,
         })

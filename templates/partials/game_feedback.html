@@ -8,7 +8,7 @@
     <div class="font-pixel text-[9px] text-streak">{{ render_icon('fire', 12) }} Streak Bonus!</div>
     {% endif %}
     {% for badge in game_result.badges_earned %}
-    <div class="font-pixel text-[9px] text-badge-common mt-1">{{ render_icon('trophy', 12) }} {{ badge }} earned!</div>
+    <div class="font-pixel text-[9px] text-badge-common mt-1">{{ render_icon('award', 12) }} {{ badge }} earned!</div>
     {% endfor %}
     {% if game_result.rank_changed %}
     <div class="font-pixel text-[10px] gold-shimmer mt-1">Ranked up to {{ game_result.new_rank }}!</div>

@@ -1,7 +1,7 @@
 """Volume detail routes."""
 
 from fastapi import APIRouter, Depends, Request
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -12,6 +12,8 @@ from src.db.tables import ReviewRow, VolumeRow, volume_bookmarks
 from src.web.templates import templates
 
 router = APIRouter()
+
+REVIEWS_PER_PAGE = 5
 
 
 @router.get("/volumes/{volume_id}")
@@ -42,14 +44,20 @@ async def volume_detail(
     )
     bookmarks = [b for (b,) in bm_result]
 
-    # Get review history
+    # Get first page of review history and total count for the heading
     reviews_result = await session.execute(
         select(ReviewRow)
         .where(ReviewRow.volume_id == volume.id)
         .order_by(ReviewRow.reviewed_at.desc())
-        .limit(20)
+        .limit(REVIEWS_PER_PAGE + 1)
     )
-    reviews = reviews_result.scalars().all()
+    reviews = list(reviews_result.scalars().all())
+    has_more = len(reviews) > REVIEWS_PER_PAGE
+    reviews = reviews[:REVIEWS_PER_PAGE]
+    count_result = await session.execute(
+        select(func.count()).select_from(ReviewRow).where(ReviewRow.volume_id == volume.id)
+    )
+    total_reviews = count_result.scalar() or 0
 
     return templates.TemplateResponse("volume_detail.html", {
         "request": request,
@@ -58,4 +66,36 @@ async def volume_detail(
         "dewey_score": round(score, 1),
         "bookmarks": bookmarks,
         "reviews": reviews,
+        "review_page": 1,
+        "has_more_reviews": has_more,
+        "total_reviews": total_reviews,
+    })
+
+
+@router.get("/volumes/{volume_id}/reviews")
+async def volume_reviews_page(
+    volume_id: int,
+    request: Request,
+    page: int = 2,
+    session: AsyncSession = Depends(get_session),
+):
+    """Return a page of review history as an HTML fragment for HTMX."""
+    offset = (page - 1) * REVIEWS_PER_PAGE
+    reviews_result = await session.execute(
+        select(ReviewRow)
+        .where(ReviewRow.volume_id == volume_id)
+        .order_by(ReviewRow.reviewed_at.desc())
+        .offset(offset)
+        .limit(REVIEWS_PER_PAGE + 1)
+    )
+    reviews = list(reviews_result.scalars().all())
+    has_more = len(reviews) > REVIEWS_PER_PAGE
+    reviews = reviews[:REVIEWS_PER_PAGE]
+
+    return templates.TemplateResponse("partials/review_history_page.html", {
+        "request": request,
+        "reviews": reviews,
+        "volume_id": volume_id,
+        "review_page": page,
+        "has_more_reviews": has_more,
     })
