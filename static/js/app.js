@@ -384,6 +384,7 @@ if (!window.__overdueGameEventToastBound) {
     function togglePartyMode() {
         const active = document.body.classList.toggle('party-mode');
         persistPartyMode(active);
+        syncPartyToggleAria(active);
         if (active) {
             tryStartPartyAudio(true);
             queueToast('Party Mode Activated', 'party', 'star');
@@ -392,6 +393,13 @@ if (!window.__overdueGameEventToastBound) {
             queueToast('Party Completed', 'party', 'award');
         }
     }
+
+    function syncPartyToggleAria(active) {
+        var el = document.getElementById('party-toggle');
+        if (el) el.setAttribute('aria-pressed', String(active));
+    }
+
+    window.__overdueTogglePartyMode = togglePartyMode;
 
     function getOrCreatePartyAudio() {
         if (window.__overduePartyAudio) return window.__overduePartyAudio;
@@ -522,12 +530,14 @@ if (!window.__overdueGameEventToastBound) {
     function restorePersistedPartyMode() {
         if (!readPersistedPartyMode()) return;
         document.body.classList.add('party-mode');
+        syncPartyToggleAria(true);
         tryStartPartyAudio(false);
     }
 
     function handlePartyModeAfterSwap() {
         if (!readPersistedPartyMode()) return;
         document.body.classList.add('party-mode');
+        syncPartyToggleAria(true);
         if (audio && audio.paused) {
             tryStartPartyAudio(false);
         }
@@ -803,5 +813,32 @@ if (!window.__overdueHtmxBeforeRequestBound) {
             backdropEl = null;
             isOpen = false;
         }
+    });
+})();
+
+/* ============================================================
+   PARTY TOGGLE (Settings barcode easter egg, #party-toggle)
+   ============================================================ */
+
+(function() {
+    if (window.__overduePartyToggleInit) return;
+    window.__overduePartyToggleInit = true;
+
+    function handlePartyToggle(e) {
+        if (!e.target.closest('#party-toggle')) return;
+        e.preventDefault();
+        if (typeof window.__overdueTogglePartyMode === 'function') {
+            window.__overdueTogglePartyMode();
+        }
+    }
+
+    // Document delegation so the handler survives htmx content swaps.
+    document.addEventListener('click', handlePartyToggle);
+    document.addEventListener('keydown', function(e) {
+        if (e.repeat) return;
+        if (e.key === 'Enter') handlePartyToggle(e);
+    });
+    document.addEventListener('keyup', function(e) {
+        if (e.key === ' ') handlePartyToggle(e);
     });
 })();

@@ -151,7 +151,7 @@
                     </div>
 
                     <div class="library-card-bottom mt-6 pt-4 border-t-2 border-black/10">
-                        <div class="library-barcode h-12" aria-hidden="true"></div>
+                        <div id="party-toggle" class="library-barcode h-12 party-toggle" role="button" tabindex="0" aria-label="Toggle party mode" aria-pressed="false"></div>
                         <div class="library-meta-row mt-2 flex justify-between text-[10px] font-pixel text-ink/70">
                             <span>Member Since {{ card_meta.member_since }}</span>
                             <span>Expires {{ card_meta.expires_on }}</span>
