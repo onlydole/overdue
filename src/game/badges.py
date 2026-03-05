@@ -21,7 +21,7 @@ BADGE_DEFINITIONS = {
         "tier": "Common",
         "check": "overdue_reviews >= 10",
     },
-    "Streak Master": {
+    "Streak Freak!": {
         "description": "7-day review streak",
         "icon": "fire",
         "tier": "Common",
@@ -155,14 +155,14 @@ async def check_badges_after_review(session: AsyncSession, librarian_id: int) ->
         await grant_badge(session, librarian_id, "Night Owl")
         awarded.append("Night Owl")
 
-    # Streak Master (7-day streak)
+    # Streak Freak! (7-day streak)
     streak_result = await session.execute(
         select(StreakRow).where(StreakRow.librarian_id == librarian_id)
     )
     streak = streak_result.scalar_one_or_none()
-    if streak and streak.current_streak >= 7 and not await has_badge(session, librarian_id, "Streak Master"):
-        await grant_badge(session, librarian_id, "Streak Master")
-        awarded.append("Streak Master")
+    if streak and streak.current_streak >= 7 and not await has_badge(session, librarian_id, "Streak Freak!"):
+        await grant_badge(session, librarian_id, "Streak Freak!")
+        awarded.append("Streak Freak!")
 
     # Marathon Reader (30-day streak)
     if streak and streak.current_streak >= 30 and not await has_badge(session, librarian_id, "Marathon Reader"):

@@ -89,7 +89,7 @@ NAME_POOLS: dict[str, list[str]] = {
 }
 
 # Badges a bot can earn
-_BOT_BADGE_POOL = ["First Shelve", "Night Owl", "Streak Master", "Dust Buster"]
+_BOT_BADGE_POOL = ["First Shelve", "Night Owl", "Streak Freak!", "Dust Buster"]
 
 # Sample content fragments for bot-authored volumes
 _VOLUME_TITLES = [

@@ -389,7 +389,7 @@ content %}
                 {{ render_icon('fire', 20) }}
                 <div>
                     <div class="font-pixel text-[8px] text-parchment uppercase">
-                        Streak Master
+                        Streak Freak!
                     </div>
                     <div class="text-ink-light text-sm">
                         7-day review streak
@@ -536,7 +536,7 @@ content %}
             >
                 <div class="pixel-stat text-gold mb-2">7d</div>
                 <p class="text-ink-light text-sm">
-                    Streak Master badge at 7 consecutive days
+                    Streak Freak! badge at 7 consecutive days
                 </p>
             </div>
             <div
@@ -702,6 +702,23 @@ content %}
 
     <!-- CTA -->
     <div class="pixel-card text-center py-8">
+        {% if current_user %}
+        <h2 class="pixel-heading mb-4">Your Library Awaits</h2>
+        <p class="text-parchment-dark text-lg mb-6">
+            Get back to the stacks and keep that dust at bay.
+        </p>
+        <div class="flex items-center justify-center gap-4 flex-wrap">
+            <a href="/shelves" class="pixel-btn pixel-btn-gold"
+                >Browse Shelves</a
+            >
+            <a href="/leaderboard" class="pixel-btn pixel-btn-outline"
+                >View Leaderboard</a
+            >
+            <a href="/" class="pixel-btn pixel-btn-outline"
+                >Reading Room</a
+            >
+        </div>
+        {% else %}
         <h2 class="pixel-heading mb-4">Ready to Build Your Library?</h2>
         <p class="text-parchment-dark text-lg mb-6">
             Register as a librarian and shelve your first volume.
@@ -717,6 +734,7 @@ content %}
                 >View Leaderboard</a
             >
         </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
