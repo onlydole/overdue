@@ -75,15 +75,30 @@ python scripts/build_icons.py
 ```
 
 **What it does:**
-- Renders all 28 base icons as bare SVGs (no width/height/class attributes)
+- Renders all 26 base icons as bare SVGs (no width/height/class attributes)
 - Generates tinted variants for icons used in templates:
   - `{name}--green.svg` for: `checkmark`, `play`
-  - `{name}--gold.svg` for: `book-open`, `books`, `chart`, `crown`, `fire`, `gamepad`, `house`, `trophy`
-- Renders all 12 avatar SVGs (`avatar_01.svg` through `avatar_12.svg`)
+  - `{name}--gold.svg` for: `book-open`, `books`, `chart`, `crown`, `fire`, `gamepad`, `house`, `award`
+  - `{name}--flame.svg` for: `fire`
+- Renders all 8 avatar SVGs (`avatar_01.svg` through `avatar_08.svg`)
 - Prunes stale tinted SVG files no longer referenced by templates
 - Reports count of written and pruned files
 
 **When to run:** After any change to icon pixel maps (`src/game/icons/_*.py`), avatar definitions (`src/game/avatars.py`), or tint configuration.
+
+## CSS Build (Tailwind)
+
+Overdue uses Tailwind CSS with a custom configuration. The built output lives at `static/css/tailwind.css`.
+
+```bash
+# One-time build
+npm run css:build
+
+# Watch mode (auto-rebuild on template changes)
+npm run css:watch
+```
+
+**When to run:** After adding or removing Tailwind utility classes in any template file.
 
 ## Development Tools
 
@@ -337,7 +352,7 @@ svg_html = render_icon_svg("star", size=16)
 svg_bare = render_icon_svg_bare("star")
 
 # List all registered icon names
-names = get_icon_names()  # ["books", "star", "trophy", ...]
+names = get_icon_names()  # ["books", "star", "award", ...]
 ```
 
 ### Avatar Rendering (`src/game/avatars.py`)

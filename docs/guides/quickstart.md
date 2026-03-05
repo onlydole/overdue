@@ -5,63 +5,79 @@ category: guides
 
 # Quick Start
 
-Get up and running with Overdue in under five minutes.
+Get your library open for business in under two minutes.
 
-## 1. Install
+## 1. Launch with Docker Compose
 
 ```bash
 git clone https://github.com/onlydole/overdue.git
 cd overdue
-pip install -e ".[dev]"
+docker compose up --build
 ```
 
-## 2. Start the server
+That's it. The database is created, demo shelves and volumes are seeded, bot players are active, and the server is running. Open `http://localhost:8000`.
+
+## 2. Register a librarian
+
+Visit `http://localhost:8000/register` in your browser, pick an avatar, and create your account. You now have a library card.
+
+## 3. Shelve your first volume
+
+Navigate to any shelf and click **New Volume**. Give it a title and some content -- this is knowledge you want to keep fresh.
+
+## 4. Watch the dust settle
+
+Head to the Reading Room (`http://localhost:8000`). Your volume's Dewey Score is already ticking down. The clock is running.
+
+## 5. Review before it's too late
+
+Open your volume and hit **Review** (or press `Enter`). The score resets to 100, you earn XP, and your streak begins.
+
+## 6. Check the leaderboard
+
+Visit `/leaderboard` to see where you stack up against the bot players. They're already accumulating XP. Can you catch them?
+
+## Using the CLI
+
+Docker Compose commands for managing the library:
 
 ```bash
-uvicorn src.main:app --reload
+# Shuffle the bot leaderboard
+docker compose exec overdue overdue bots simulate
+
+# Add more bots to the competition
+docker compose exec overdue overdue bots create obsessive --count 2
+
+# Check library statistics
+docker compose exec overdue overdue stats
+
+# Re-seed demo data
+docker compose exec overdue overdue seed demo
 ```
 
-The API is now running at `http://localhost:8000`. Visit `http://localhost:8000/docs` for the interactive API documentation.
+## Using the API
 
-## 3. Create a shelf
+If you prefer curl, register and get a library card first:
 
 ```bash
-curl -X POST http://localhost:8000/api/shelves/ \
+# Register
+curl -X POST http://localhost:8000/api/librarians/register \
   -H "Content-Type: application/json" \
-  -d '{"name": "Cloud Native", "description": "All things Kubernetes and beyond"}'
-```
+  -d '{"username": "ada", "email": "ada@example.com", "password": "lovelace1815"}'
 
-## 4. Shelve a volume
-
-```bash
-curl -X POST http://localhost:8000/api/volumes/ \
+# Login (get your library card)
+curl -X POST http://localhost:8000/api/librarians/login \
   -H "Content-Type: application/json" \
-  -d '{
-    "title": "Container Orchestration 101",
-    "content": "Kubernetes manages containerized workloads...",
-    "shelf_id": 1,
-    "bookmarks": ["kubernetes", "containers"]
-  }'
-```
+  -d '{"username": "ada", "password": "lovelace1815"}'
 
-## 5. Check the reading room
-
-```bash
+# Check the library's mood
 curl http://localhost:8000/api/reading-room/health
-```
-
-You should see the library's mood and health stats.
-
-## 6. Review a volume
-
-As time passes, volumes accumulate dust (their Dewey Score decays). Keep them fresh by reviewing:
-
-```bash
-curl -X POST http://localhost:8000/api/volumes/1/review
 ```
 
 ## Next steps
 
-- [Configuration](configuration.md) -- Customize your library settings
+- [Gameplay Guide](gameplay.md) -- XP, ranks, badges, streaks, and mood
+- [Configuration](configuration.md) -- Tune decay rates and game balance
+- [Bot Players](bots.md) -- Manage your AI competition
 - [API Endpoints](../api/endpoints.md) -- Full endpoint reference
 - [Architecture](../architecture/overview.md) -- How it all fits together
