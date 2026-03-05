@@ -393,6 +393,8 @@ if (!window.__overdueGameEventToastBound) {
         }
     }
 
+    window.__overdueTogglePartyMode = togglePartyMode;
+
     function getOrCreatePartyAudio() {
         if (window.__overduePartyAudio) return window.__overduePartyAudio;
         const persistentAudio = new Audio('/static/audio/party.mp3');
@@ -803,5 +805,28 @@ if (!window.__overdueHtmxBeforeRequestBound) {
             backdropEl = null;
             isOpen = false;
         }
+    });
+})();
+
+/* ============================================================
+   PARTY TOGGLE (Footer easter egg)
+   ============================================================ */
+
+(function() {
+    if (window.__overduePartyToggleInit) return;
+    window.__overduePartyToggleInit = true;
+
+    function handlePartyToggle(e) {
+        if (!e.target.closest('#party-toggle')) return;
+        e.preventDefault();
+        if (typeof window.__overdueTogglePartyMode === 'function') {
+            window.__overdueTogglePartyMode();
+        }
+    }
+
+    document.addEventListener('click', handlePartyToggle);
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        handlePartyToggle(e);
     });
 })();

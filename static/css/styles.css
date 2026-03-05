@@ -1400,6 +1400,38 @@ body.party-mode footer {
 body.party-mode .pixel-card:nth-child(odd)  { animation-delay: -0.5s; }
 body.party-mode .pixel-card:nth-child(even) { animation-delay: -1.5s; }
 
+/* Party toggle -- hidden in the barcode */
+.party-toggle.library-barcode {
+    cursor: default;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.party-toggle.library-barcode:hover {
+    border-color: #f0c543;
+    box-shadow: 0 0 8px rgba(240, 197, 67, 0.3);
+    cursor: pointer;
+}
+
+.party-toggle.library-barcode:hover::after {
+    background: linear-gradient(90deg, transparent, rgba(240, 197, 67, 0.5), transparent);
+    animation-duration: 1s;
+}
+
+.party-toggle.library-barcode:focus-visible {
+    outline: 2px solid #f0c543;
+    outline-offset: 2px;
+}
+
+body.party-mode .party-toggle.library-barcode {
+    animation: party-border 2s linear infinite;
+    box-shadow: 0 0 10px rgba(183, 110, 240, 0.3);
+}
+
+body.party-mode .party-toggle.library-barcode::after {
+    background: linear-gradient(90deg, transparent, rgba(183, 110, 240, 0.5), transparent);
+    animation-duration: 1s;
+}
+
 @media (prefers-reduced-motion: reduce) {
     body.party-mode .pixel-card,
     body.party-mode .pixel-heading,
@@ -1413,7 +1445,8 @@ body.party-mode .pixel-card:nth-child(even) { animation-delay: -1.5s; }
     body.party-mode .badge-rare,
     body.party-mode .badge-legendary,
     body.party-mode #overdue-logo,
-    body.party-mode footer {
+    body.party-mode footer,
+    body.party-mode .party-toggle {
         animation: none !important;
     }
 }
