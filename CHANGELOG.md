@@ -1,8 +1,3 @@
----
-title: Changelog
-category: changelog
----
-
 # Changelog
 
 All notable changes to Overdue will be documented in this file.

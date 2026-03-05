@@ -130,7 +130,7 @@ docs/           # Guides, API reference, architecture, changelog
 - [API Endpoints](docs/api/endpoints.md)
 - [Authentication](docs/api/authentication.md)
 - [Architecture](docs/architecture/overview.md)
-- [Changelog](docs/changelog/CHANGELOG.md)
+- [Changelog](CHANGELOG.md)
 
 ## Contributing
 
