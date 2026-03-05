@@ -44,21 +44,20 @@ async def volume_detail(
     )
     bookmarks = [b for (b,) in bm_result]
 
-    # Get first page of review history
+    # Get first page of review history and total count for the heading
     reviews_result = await session.execute(
         select(ReviewRow)
         .where(ReviewRow.volume_id == volume.id)
         .order_by(ReviewRow.reviewed_at.desc())
-        .limit(REVIEWS_PER_PAGE)
+        .limit(REVIEWS_PER_PAGE + 1)
     )
-    reviews = reviews_result.scalars().all()
-
-    # Check if there are more reviews
+    reviews = list(reviews_result.scalars().all())
+    has_more = len(reviews) > REVIEWS_PER_PAGE
+    reviews = reviews[:REVIEWS_PER_PAGE]
     count_result = await session.execute(
         select(func.count()).select_from(ReviewRow).where(ReviewRow.volume_id == volume.id)
     )
     total_reviews = count_result.scalar() or 0
-    has_more = total_reviews > REVIEWS_PER_PAGE
 
     return templates.TemplateResponse("volume_detail.html", {
         "request": request,
@@ -87,15 +86,11 @@ async def volume_reviews_page(
         .where(ReviewRow.volume_id == volume_id)
         .order_by(ReviewRow.reviewed_at.desc())
         .offset(offset)
-        .limit(REVIEWS_PER_PAGE)
+        .limit(REVIEWS_PER_PAGE + 1)
     )
-    reviews = reviews_result.scalars().all()
-
-    count_result = await session.execute(
-        select(func.count()).select_from(ReviewRow).where(ReviewRow.volume_id == volume_id)
-    )
-    total_reviews = count_result.scalar() or 0
-    has_more = (offset + REVIEWS_PER_PAGE) < total_reviews
+    reviews = list(reviews_result.scalars().all())
+    has_more = len(reviews) > REVIEWS_PER_PAGE
+    reviews = reviews[:REVIEWS_PER_PAGE]
 
     return templates.TemplateResponse("partials/review_history_page.html", {
         "request": request,

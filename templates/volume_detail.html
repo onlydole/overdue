@@ -123,16 +123,16 @@
 
         if (evt.key === 'Enter') {
             evt.preventDefault();
-            var nextLink = document.querySelector('.next-vol-link');
-            if (nextLink) {
-                if (window.playReviewActionSfx) window.playReviewActionSfx('next');
-                nextLink.click();
-                return;
-            }
             var reviewBtn = document.querySelector('.review-btn');
             if (reviewBtn && !reviewBtn.disabled) {
                 if (window.playReviewActionSfx) window.playReviewActionSfx('review');
                 reviewBtn.click();
+                return;
+            }
+            var nextLink = document.querySelector('.next-vol-link');
+            if (nextLink) {
+                if (window.playReviewActionSfx) window.playReviewActionSfx('next');
+                nextLink.click();
                 return;
             }
             var doneBtn = document.querySelector('.done-btn');
