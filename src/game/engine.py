@@ -94,6 +94,7 @@ async def on_volume_reviewed(
     if was_overdue:
         await award_rescue_bonus(session, librarian_id)
         xp_awarded += XP_RESCUE_BONUS
+        total_xp += XP_RESCUE_BONUS
         xp_breakdown.append({
             "amount": XP_RESCUE_BONUS,
             "reason": "Rescue bonus (saved from Overdue)",

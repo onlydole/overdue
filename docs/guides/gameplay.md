@@ -26,7 +26,7 @@ Every action in the library earns you "pages read" -- your experience points. Ov
 | Shelve a new volume | +10 XP (10 pages) |
 | Review a current volume | +5 XP (5 pages) |
 | Review an overdue volume | +10 XP (10 pages, 2x multiplier) |
-| Rescue an overdue volume | +20 XP (20 pages) |
+| Rescue bonus (for overdue review) | +20 XP (20 pages) |
 | Daily streak bonus | +15 XP/day (15 pages) |
 | All volumes on a shelf above Dewey 75 | +50 XP (50 pages, shelf bonus) |
 
