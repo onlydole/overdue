@@ -21,13 +21,14 @@ Overdue isn't just a knowledge base -- it's a game where your memory is the batt
 
 Every action in the library earns you "pages read" -- your experience points. Overdue volumes are worth double.
 
-| Action | Pages earned |
+| Action | XP earned |
 |---|---|
-| Shelve a new volume | +10 |
-| Review a current volume | +5 |
-| Review an overdue volume | +10 (2x multiplier) |
-| Daily streak bonus | +15/day |
-| All volumes on a shelf above Dewey 75 | +50 (shelf bonus) |
+| Shelve a new volume | +10 XP (10 pages) |
+| Review a current volume | +5 XP (5 pages) |
+| Review an overdue volume | +10 XP (10 pages, 2x multiplier) |
+| Rescue an overdue volume | +20 XP (20 pages) |
+| Daily streak bonus | +15 XP/day (15 pages) |
+| All volumes on a shelf above Dewey 75 | +50 XP (50 pages, shelf bonus) |
 
 ## Ranks
 

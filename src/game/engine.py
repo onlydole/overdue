@@ -4,12 +4,24 @@ from datetime import datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.volumes import calculate_dewey_score
-from src.config.defaults import DEWEY_OVERDUE, XP_DAILY_STREAK_BONUS, XP_REVIEW_CURRENT, XP_REVIEW_OVERDUE_MULTIPLIER, XP_SHELVE_VOLUME
-from src.db.tables import ReviewRow, VolumeRow
+from src.config.defaults import (
+    DEWEY_OVERDUE,
+    XP_DAILY_STREAK_BONUS,
+    XP_RESCUE_BONUS,
+    XP_REVIEW_CURRENT,
+    XP_REVIEW_OVERDUE_MULTIPLIER,
+    XP_SHELVE_VOLUME,
+)
+from src.db.tables import ReviewRow
 from src.game.badges import check_badges_after_review, check_badges_after_shelve
 from src.game.streaks import update_streak
-from src.game.xp import award_review_xp, award_shelve_xp, award_streak_bonus, get_rank
+from src.game.xp import (
+    award_rescue_bonus,
+    award_review_xp,
+    award_shelve_xp,
+    award_streak_bonus,
+    get_rank,
+)
 from src.models.game import GameResult
 
 
@@ -66,7 +78,9 @@ async def on_volume_reviewed(
 
     # Award XP (2x for overdue volumes)
     was_overdue = dewey_score_before <= DEWEY_OVERDUE
-    review_amount = XP_REVIEW_CURRENT * XP_REVIEW_OVERDUE_MULTIPLIER if was_overdue else XP_REVIEW_CURRENT
+    review_amount = (
+        XP_REVIEW_CURRENT * XP_REVIEW_OVERDUE_MULTIPLIER if was_overdue else XP_REVIEW_CURRENT
+    )
     review_reason = (
         f"Reviewed an overdue volume ({XP_REVIEW_OVERDUE_MULTIPLIER}x bonus)"
         if was_overdue
@@ -75,6 +89,15 @@ async def on_volume_reviewed(
     xp_awarded = review_amount
     xp_breakdown = [{"amount": review_amount, "reason": review_reason}]
     total_xp = await award_review_xp(session, librarian_id, was_overdue)
+
+    # Award rescue bonus for saving a volume from Overdue territory
+    if was_overdue:
+        await award_rescue_bonus(session, librarian_id)
+        xp_awarded += XP_RESCUE_BONUS
+        xp_breakdown.append({
+            "amount": XP_RESCUE_BONUS,
+            "reason": "Rescue bonus (saved from Overdue)",
+        })
 
     # Update streak
     streak_info = await update_streak(session, librarian_id)

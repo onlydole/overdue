@@ -266,13 +266,14 @@ function handleGameEventToast(evt) {
 
     const xpToShow = totalXpFromBreakdown > 0 ? totalXpFromBreakdown : Number(data.xp_awarded || 0);
     if (xpToShow > 0) {
-        queueToast(xpToShow + ' pages (+' + xpToShow + ' XP)', 'xp', 'star');
+        queueToast('+' + xpToShow + ' XP (' + xpToShow + ' pages)', 'xp', 'star');
     }
 
     const bonusLabels = [];
     xpBreakdown.forEach(function(entry) {
         if (!entry || typeof entry.reason !== 'string') return;
         if (entry.reason.indexOf('overdue') >= 0) bonusLabels.push('overdue x2');
+        if (entry.reason.indexOf('Rescue') >= 0) bonusLabels.push('rescue');
         if (entry.reason.indexOf('streak bonus') >= 0) bonusLabels.push('streak');
     });
     if (bonusLabels.length > 0) {

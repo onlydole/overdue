@@ -2,7 +2,7 @@
 <div class="pixel-card bg-pixel-surface border-gold text-center py-3 px-4 min-w-[250px]"
      style="pointer-events: auto; animation: xp-pop 2s ease-out forwards;">
     {% if game_result.xp_awarded > 0 %}
-    <div class="font-pixel text-[10px] text-dewey-pristine mb-1">+{{ game_result.xp_awarded }} XP</div>
+    <div class="font-pixel text-[10px] text-dewey-pristine mb-1">+{{ game_result.xp_awarded }} XP ({{ game_result.xp_awarded }} pages)</div>
     {% endif %}
     {% if game_result.streak_bonus_awarded %}
     <div class="font-pixel text-[9px] text-streak">{{ render_icon('fire', 12) }} Streak Bonus!</div>
