@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ### Fixed
 - Documentation update workflow authentication by adding required `id-token: write` permission for OIDC authentication with Claude Code Action.
 - Documentation update workflow by adding `--allowedTools "Bash(git:*),Bash(gh:*)"` to claude_args configuration. This resolved the "This command requires approval" error that was blocking Claude from creating branches, committing, pushing, and opening PRs (PR #29).
+- Documentation update workflow by adding file manipulation tools (Read, Edit, Write, Glob, Grep) to allowedTools. This resolved the root cause of PR #31's failure where Claude had 3 permission denials and couldn't read code changes or modify documentation files. The original allowedTools from PR #29 only included git/gh bash subcommands (PR #33).
 
 ## [1.0.0] - 2026-03-04
 

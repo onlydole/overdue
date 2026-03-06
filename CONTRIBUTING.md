@@ -85,7 +85,7 @@ After your PR is merged to `main`, an automated workflow checks whether any docu
 - **Visible reasoning:** Claude's analysis and decision-making are written to the GitHub Actions job summary (visible in the workflow run details), explaining what it analyzed and what documentation updates (if any) were made
 - **Opt out:** Add the `skip-docs-check` label to your PR if you want to skip the automated documentation check
 - **Safety guards:** The workflow only runs for merged PRs from repository members and collaborators, and skips bot-authored PRs to prevent loops
-- **Tool permissions:** The workflow uses granular command restrictions, allowing only specific git operations (`git checkout`, `git switch`, `git add`, `git commit`, `git push`) and GitHub CLI commands (`gh pr create`) needed for creating documentation update PRs
+- **Tool permissions:** The workflow uses granular command restrictions, allowing file tools (`Read`, `Edit`, `Write`, `Glob`, `Grep`) for reading code changes and modifying documentation files, and specific git operations (`git checkout`, `git switch`, `git add`, `git commit`, `git push`) and GitHub CLI commands (`gh pr create`) needed for creating documentation update PRs
 
 This automation helps keep documentation in sync with code changes. Check the workflow's job summary page to see Claude's reasoning and analysis. If you get a follow-up documentation PR, review it like any other contribution -- the changes are suggestions, not automatic merges.
 
