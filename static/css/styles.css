@@ -1451,3 +1451,18 @@ body.party-mode .party-toggle.library-barcode::after {
         animation: none !important;
     }
 }
+
+/* ============================================================
+   LIVING DOCUMENT RANK -- sparkle text effect
+   ============================================================ */
+@keyframes rank-sparkle {
+    0%, 100% { color: #f0c543; text-shadow: 0 0 4px rgba(240, 197, 67, 0.3); }
+    25%      { color: #f0e6d3; text-shadow: 0 0 8px rgba(240, 230, 211, 0.5); }
+    50%      { color: #b76ef0; text-shadow: 0 0 6px rgba(183, 110, 240, 0.4); }
+    75%      { color: #5ef0c5; text-shadow: 0 0 8px rgba(94, 240, 197, 0.5); }
+}
+
+.rank-sparkle {
+    animation: rank-sparkle 3s steps(4) infinite;
+    font-weight: bold;
+}
