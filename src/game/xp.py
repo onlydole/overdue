@@ -1,11 +1,16 @@
 """XP calculation, rank thresholds, and leveling."""
 
-from datetime import datetime
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.config.defaults import RANKS, XP_DAILY_STREAK_BONUS, XP_REVIEW_CURRENT, XP_REVIEW_OVERDUE_MULTIPLIER, XP_SHELVE_VOLUME
+from src.config.defaults import (
+    RANKS,
+    XP_DAILY_STREAK_BONUS,
+    XP_RESCUE_BONUS,
+    XP_REVIEW_CURRENT,
+    XP_REVIEW_OVERDUE_MULTIPLIER,
+    XP_SHELVE_VOLUME,
+)
 from src.db.tables import LibrarianRow, XPLedgerRow
 
 
@@ -78,6 +83,13 @@ async def award_review_xp(
         amount = XP_REVIEW_CURRENT
         reason = "Reviewed a current volume"
     return await award_xp(session, librarian_id, amount, reason)
+
+
+async def award_rescue_bonus(session: AsyncSession, librarian_id: int) -> int:
+    """Award rescue bonus XP for saving a volume from Overdue territory."""
+    return await award_xp(
+        session, librarian_id, XP_RESCUE_BONUS, "Rescue bonus (saved from Overdue)"
+    )
 
 
 async def award_streak_bonus(session: AsyncSession, librarian_id: int) -> int:

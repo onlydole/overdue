@@ -21,6 +21,7 @@ DEWEY_DECAY_SECONDS = 10  # how many seconds = one decay unit
 XP_SHELVE_VOLUME = 10
 XP_REVIEW_CURRENT = 5
 XP_REVIEW_OVERDUE_MULTIPLIER = 2  # overdue reviews earn base * multiplier
+XP_RESCUE_BONUS = 20  # bonus for rescuing a volume from Overdue territory
 XP_DAILY_STREAK_BONUS = 15
 XP_SHELF_BONUS = 50  # all volumes on a shelf above DEWEY_GOOD_SHAPE
 

@@ -24,7 +24,7 @@
         <div class="flex items-center gap-4 mb-4">
             <span class="stamp-in font-pixel text-sm text-dewey-pristine inline-flex items-center gap-2">{{ render_icon('checkmark', 14, '#5cdb5c') }} Reviewed!</span>
             {% if game_result and game_result.xp_awarded > 0 %}
-            <span class="xp-pop font-pixel text-sm">+{{ game_result.xp_awarded }} XP</span>
+            <span class="xp-pop font-pixel text-sm">+{{ game_result.xp_awarded }} XP ({{ game_result.xp_awarded }} pages)</span>
             {% endif %}
             {% if game_result and game_result.streak > 0 %}
             <span class="font-pixel text-xs text-streak inline-flex items-center gap-1"><span class="fire-flicker">{{ render_icon('fire', 14) }}</span> {{ game_result.streak }}d streak</span>
