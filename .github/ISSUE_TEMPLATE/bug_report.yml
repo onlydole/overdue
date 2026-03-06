@@ -1,0 +1,75 @@
+name: Bug Report
+description: Something isn't working as expected
+labels: ["kind/bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug report. Please fill out the sections below so we can reproduce and fix the issue.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of Overdue is affected?
+      options:
+        - Game engine (XP, badges, streaks, ranks, Dewey Score)
+        - Frontend (templates, JS, CSS, HTMX)
+        - API (REST endpoints, auth, rate limiting)
+        - Backend (routes, middleware, database)
+        - Icons or avatars
+        - CI/CD (workflows, automation)
+        - Configuration (settings, constants)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the bug.
+      placeholder: "When I review an overdue volume, the XP toast shows +5 instead of +30..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: What should have happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: How can we trigger this bug?
+      placeholder: |
+        1. Navigate to a volume with Dewey Score below 25
+        2. Click "Review"
+        3. Observe the XP toast
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment
+      description: How are you running Overdue?
+      options:
+        - Docker Compose
+        - Local (uvicorn)
+        - Other
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or screenshots
+      description: Paste any error output, browser console logs, or screenshots.
+      render: shell
+    validations:
+      required: false

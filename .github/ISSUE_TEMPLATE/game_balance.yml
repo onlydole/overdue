@@ -1,0 +1,53 @@
+name: Game Balance Proposal
+description: Suggest changes to XP values, rank thresholds, decay rates, or badge criteria
+labels: ["kind/feature", "area/game-engine"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Game balance is what makes Overdue feel right. Use this template to propose changes to the numbers that drive the game loop.
+
+        Current constants are defined in `src/config/defaults.py`.
+
+  - type: dropdown
+    id: mechanic
+    attributes:
+      label: Which mechanic?
+      description: What part of the game balance are you proposing to change?
+      options:
+        - XP awards (pages read per action)
+        - Rank thresholds (pages needed to level up)
+        - Dewey Score decay (how fast knowledge rots)
+        - Badge criteria (unlock conditions)
+        - Streak system (daily bonus, reset rules)
+        - Reading Room moods (score thresholds)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current behavior
+      description: What are the current values and how do they feel?
+      placeholder: |
+        XP_DAILY_STREAK_BONUS is currently 20. This feels too generous
+        relative to the base review XP of 5...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed change
+      description: What should the new values be and why?
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact analysis
+      description: How would this change affect progression speed, leaderboard dynamics, or player motivation?
+    validations:
+      required: false

@@ -1,0 +1,50 @@
+name: Feature Request
+description: Propose new functionality for Overdue
+labels: ["kind/feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea for Overdue? Describe what you'd like and why it matters.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of Overdue would this affect?
+      multiple: true
+      options:
+        - Game engine (XP, badges, streaks, ranks, Dewey Score)
+        - Frontend (templates, JS, CSS, HTMX)
+        - API (REST endpoints, auth)
+        - Backend (routes, middleware, database)
+        - Icons or avatars
+        - CI/CD (workflows, automation)
+        - Configuration (settings, constants)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What would you like?
+      description: A clear description of the feature.
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Why is this useful?
+      description: What problem does this solve or what workflow does it improve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any workarounds or other approaches you've thought about.
+    validations:
+      required: false

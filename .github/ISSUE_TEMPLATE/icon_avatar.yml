@@ -1,0 +1,47 @@
+name: Icon or Avatar Request
+description: Request a new pixel art icon or librarian avatar
+labels: ["kind/feature", "area/icons"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Overdue uses hand-crafted pixel art for all visuals. Use this template to request a new icon (24x24) or avatar (32x32).
+
+        See `src/game/icons/_catalog.py` for existing icons and `src/game/avatars.py` for avatars.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Asset type
+      options:
+        - Icon (24x24 SVG)
+        - Avatar (32x32 SVG)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What should it look like?
+      description: Describe the visual concept. Reference existing icons or avatars for style.
+      placeholder: |
+        A magnifying glass icon for a future search feature,
+        similar in style to the existing "book" and "scroll" icons...
+    validations:
+      required: true
+
+  - type: textarea
+    id: usage
+    attributes:
+      label: Where would it be used?
+      description: Which pages, features, or UI elements would display this asset?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reference
+    attributes:
+      label: Reference images
+      description: Attach any sketches, inspiration images, or pixel art references.
+    validations:
+      required: false
