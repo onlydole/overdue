@@ -357,7 +357,7 @@ Defined in `src/config/defaults.py`:
 | `XP_REVIEW_OVERDUE_MULTIPLIER` | 2x | Multiplier for overdue reviews |
 | `XP_DAILY_STREAK_BONUS` | 15 | Bonus XP for daily streak |
 | `XP_SHELF_BONUS` | 50 | Bonus when all shelf volumes are healthy |
-| Ranks | Page (0) -> Shelver (100) -> Librarian (500) -> Archivist (2000) -> Head Librarian (5000) | Rank thresholds |
+| Ranks | Page (0) -> Shelver (100) -> Librarian (500) -> Archivist (2000) -> Head Librarian (5000) -> Living Document (10000) | Rank thresholds |
 | Dewey decay | 3 pts / 10 sec (demo), 3 pts / 86400 sec (realistic) | Freshness decay rate |
 
 ## Testing

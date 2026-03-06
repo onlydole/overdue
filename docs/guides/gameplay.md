@@ -40,6 +40,7 @@ As you accumulate pages read, you level up through the librarian ranks:
 | Librarian | 500 | Can manage other librarians' volumes |
 | Archivist | 2,000 | Can archive and restore |
 | Head Librarian | 5,000 | Full admin access |
+| Living Document | 10,000 | The ultimate librarian: you've read so many pages you've become self-updating |
 
 ## Badges
 
