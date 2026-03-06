@@ -272,9 +272,10 @@ function handleGameEventToast(evt) {
     const bonusLabels = [];
     xpBreakdown.forEach(function(entry) {
         if (!entry || typeof entry.reason !== 'string') return;
-        if (entry.reason.includes('overdue')) bonusLabels.push('overdue x2');
-        if (entry.reason.includes('Rescue')) bonusLabels.push('rescue');
-        if (entry.reason.includes('streak bonus')) bonusLabels.push('streak');
+        var reason = entry.reason.toLowerCase();
+        if (reason.includes('overdue')) bonusLabels.push('overdue x2');
+        if (reason.includes('rescue')) bonusLabels.push('rescue');
+        if (reason.includes('streak bonus')) bonusLabels.push('streak');
     });
     if (bonusLabels.length > 0) {
         const uniqueBonusLabels = bonusLabels.filter(function(label, index) {
