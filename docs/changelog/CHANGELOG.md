@@ -17,13 +17,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Party mode easter egg: library card barcode on settings page is a hidden clickable toggle (default cursor stays normal, revealing the secret only on hover). Subtle gold glow hint and faster scan animation appear on hover to aid discovery. Click activates party mode with cycling rainbow borders, purple scan line animations, audio, and localStorage persistence.
 - Keyboard accessibility for party mode toggle (`Tab` to focus, `Enter`/`Space` to activate) with `prefers-reduced-motion` support.
 - Safety guards: skips bot-authored PRs and respects `skip-docs-check` label to prevent infinite loops and allow opt-out.
+- Rescue bonus: +20 XP awarded when reviewing volumes in Overdue territory (Dewey Score 0-24), in addition to the existing 2x multiplier. Total XP for overdue reviews increased from 10 to 30 XP (5 base × 2 + 20 rescue bonus).
 
 ### Changed
 - Documentation update workflow triggers on all merged PRs instead of only those touching `docs/` or `src/` paths.
+- XP display labels updated from "+N pages" format to "+N XP (N pages)" format throughout the UI for clarity.
 
 ### Fixed
 - Documentation update workflow authentication by adding required `id-token: write` permission for OIDC authentication with Claude Code Action.
 - Documentation update workflow by adding `--allowedTools "Bash(git:*),Bash(gh:*)"` to claude_args configuration. This resolved the "This command requires approval" error that was blocking Claude from creating branches, committing, pushing, and opening PRs (PR #29).
+- Documentation update workflow by adding file manipulation tools (Read, Edit, Write, Glob, Grep) to allowedTools. This resolved the root cause of PR #31's failure where Claude had 3 permission denials and couldn't read code changes or modify documentation files. The original allowedTools from PR #29 only included git/gh bash subcommands (PR #33).
 
 ## [1.0.0] - 2026-03-04
 
