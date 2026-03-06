@@ -11,7 +11,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
-_No unreleased changes._
+### Added
+- Automated documentation update workflow using GitHub Actions and Claude Code Action to detect documentation drift after PRs are merged to main.
+- Party mode easter egg: library card barcode on settings page is a hidden clickable toggle (default cursor stays normal, revealing the secret only on hover). Subtle gold glow hint and faster scan animation appear on hover to aid discovery. Click activates party mode with cycling rainbow borders, purple scan line animations, audio, and localStorage persistence.
+- Keyboard accessibility for party mode toggle (`Tab` to focus, `Enter`/`Space` to activate) with `prefers-reduced-motion` support.
+- Safety guards: skips bot-authored PRs and respects `skip-docs-check` label to prevent infinite loops and allow opt-out.
+
+### Changed
+- Documentation update workflow triggers on all merged PRs instead of only those touching `docs/` or `src/` paths.
+
+### Fixed
+- Documentation update workflow authentication by adding required `id-token: write` permission for OIDC authentication with Claude Code Action.
 
 ## [1.0.0] - 2026-03-04
 
