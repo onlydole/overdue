@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ## [Unreleased]
 
 ### Added
+- Rescue bonus: reviewing a volume in Overdue territory (Dewey Score 0–24) now awards +20 XP on top of the existing 2x multiplier, for a total of 30 XP per overdue rescue. XP labels across toasts, review partials, and the How to Play page updated to `+N XP (N pages)` format.
 - Automated documentation update workflow using GitHub Actions and Claude Code Action to detect documentation drift after PRs are merged to main.
 - Observability improvements to doc-update workflow: reasoning displayed in GitHub Actions job summary via `display_report: true` for transparent automated documentation decisions. Removed `show_full_output: true` to prevent secrets exposure in logs and `use_sticky_comment: true` which only works in tag mode (PR #26, #27).
 - Party mode easter egg: library card barcode on settings page is a hidden clickable toggle (default cursor stays normal, revealing the secret only on hover). Subtle gold glow hint and faster scan animation appear on hover to aid discovery. Click activates party mode with cycling rainbow borders, purple scan line animations, audio, and localStorage persistence.
