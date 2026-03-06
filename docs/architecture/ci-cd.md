@@ -29,12 +29,11 @@ Automatically detects when merged PRs introduce documentation drift and proposes
 | Category | Tools |
 |---|---|
 | File operations | `Read`, `Edit`, `Write`, `Glob`, `Grep` |
-| Git read commands | `Bash(git diff:*)`, `Bash(git log:*)`, `Bash(git status:*)`, `Bash(git branch:*)` |
-| Git write commands | `Bash(git checkout:*)`, `Bash(git switch:*)`, `Bash(git add:*)`, `Bash(git commit:*)`, `Bash(git push:*)` |
-| GitHub CLI | `Bash(gh pr create:*)` |
-| Directory listing | `Bash(ls:*)` |
+| Shell commands | `Bash` (unrestricted) |
 
-When adding new tools to this list, use the `Bash(command:*)` glob pattern syntax. Missing permissions cause Claude to exhaust its turn limit on denials.
+Bash is allowed without restriction because the workflow runs on an ephemeral GitHub Actions runner with no access to production systems. All changes go through PR review before merging. The security boundary is the GitHub Actions permissions (`contents: write`, `pull-requests: write`), not Bash tool restrictions.
+
+Restricting Bash to individual command patterns (e.g., `Bash(git diff *)`) is fragile — Claude naturally uses arbitrary shell commands (`find`, `cat`, compound commands, env-prefixed commands) that won't match specific patterns. Each denied command wastes a turn, and with `--max-turns 15`, a few denials can cause the workflow to fail without completing its task.
 
 **Safety guards:**
 
@@ -72,7 +71,7 @@ The doc-update workflow scans all files under `docs/` and any `README.md` in the
 
 ### Workflow fails with `error_max_turns` and `permission_denials_count > 0`
 
-Claude tried to use a Bash command that isn't in the `allowedTools` list. Check the workflow logs for which command was attempted, then add the appropriate `Bash(command:*)` pattern to `--allowedTools` in `doc-update.yml`.
+Claude tried to use a tool that isn't in the `allowedTools` list. The CI logs only show the denial count, not which commands were denied, making individual patterns hard to debug. The fix is to allow `Bash` without restriction (see tool permissions above). If you need to restrict Bash, use broad patterns like `Bash(git *)` rather than individual subcommands, and note that the `:*` suffix syntax is deprecated in favor of ` *` (space-star).
 
 ### Workflow fails with a 502 or OIDC error
 
