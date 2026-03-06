@@ -42,7 +42,7 @@
                 <span class="font-pixel text-[10px] text-dewey-pristine">{{ entry.total_xp }} XP</span>
             </div>
             <div class="flex items-center justify-between text-sm">
-                <span class="pixel-label" style="color: {% if entry.rank == 'Head Librarian' %}#f0c543{% elif entry.rank == 'Archivist' %}#b76ef0{% else %}#8b8b9e{% endif %}">{{ entry.rank }}</span>
+                <span class="pixel-label" style="color: {% if entry.rank == 'Living Document' %}#f0c543{% elif entry.rank == 'Head Librarian' %}#f0c543{% elif entry.rank == 'Archivist' %}#b76ef0{% else %}#8b8b9e{% endif %}">{{ entry.rank }}</span>
                 <div class="flex items-center gap-3">
                     <span class="font-pixel text-[10px] text-badge-common">{{ entry.badge_count }} badges</span>
                     {% if entry.current_streak > 0 %}
@@ -97,7 +97,7 @@
                         </div>
                     </td>
                     <td class="px-4 py-4">
-                        <span class="pixel-label" style="color: {% if entry.rank == 'Head Librarian' %}#f0c543{% elif entry.rank == 'Archivist' %}#b76ef0{% else %}#8b8b9e{% endif %}">
+                        <span class="pixel-label" style="color: {% if entry.rank == 'Living Document' %}#f0c543{% elif entry.rank == 'Head Librarian' %}#f0c543{% elif entry.rank == 'Archivist' %}#b76ef0{% else %}#8b8b9e{% endif %}">
                             {{ entry.rank }}
                         </span>
                     </td>
