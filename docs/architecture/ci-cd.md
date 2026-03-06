@@ -31,9 +31,11 @@ Automatically detects when merged PRs introduce documentation drift and proposes
 | File operations | `Read`, `Edit`, `Write`, `Glob`, `Grep` |
 | Shell commands | `Bash` (unrestricted) |
 
-Bash is allowed without restriction because the workflow runs on an ephemeral GitHub Actions runner with no access to production systems. All changes go through PR review before merging. The security boundary is the GitHub Actions permissions (`contents: write`, `pull-requests: write`), not Bash tool restrictions.
+Bash is allowed without restriction. This is a deliberate trade-off between tool-level command restrictions and workflow reliability:
 
-Restricting Bash to individual command patterns (e.g., `Bash(git diff *)`) is fragile — Claude naturally uses arbitrary shell commands (`find`, `cat`, compound commands, env-prefixed commands) that won't match specific patterns. Each denied command wastes a turn, and with `--max-turns 15`, a few denials can cause the workflow to fail without completing its task.
+- **Why not individual patterns:** Restricting Bash to individual command patterns (e.g., `Bash(git diff *)`) is fragile — Claude naturally uses arbitrary shell commands (`find`, `cat`, compound commands, env-prefixed commands) that don't match specific patterns. Each denied command wastes a turn, and with `--max-turns 15`, a few denials can cause the workflow to fail without completing its task. This failure mode occurred repeatedly in PRs #29, #33, and #38.
+- **Residual risk:** Unrestricted Bash means Claude can execute any shell command on the runner, including network calls or reading environment variables. If PR metadata were crafted to manipulate Claude's behavior, this could be exploited.
+- **Mitigations:** The workflow only runs for `OWNER`, `MEMBER`, or `COLLABORATOR` PRs (not external contributors). PR metadata is wrapped in XML tags with explicit instructions to treat it as untrusted data. The runner is ephemeral (disposable VM) with no access to production systems. All changes go through PR review before merging. The `ANTHROPIC_API_KEY` secret is the only sensitive value on the runner and is not exposed to tool output.
 
 **Safety guards:**
 
