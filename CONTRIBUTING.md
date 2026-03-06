@@ -85,7 +85,13 @@ After your PR is merged to `main`, an automated workflow checks whether any docu
 - **Visible reasoning:** Claude's analysis and decision-making are written to the GitHub Actions job summary (visible in the workflow run details), explaining what it analyzed and what documentation updates (if any) were made
 - **Opt out:** Add the `skip-docs-check` label to your PR if you want to skip the automated documentation check
 - **Safety guards:** The workflow only runs for merged PRs from repository members and collaborators, and skips bot-authored PRs to prevent loops
-- **Tool permissions:** The workflow allows file tools (`Read`, `Edit`, `Write`, `Glob`, `Grep`) and unrestricted `Bash` for git operations, GitHub CLI, and filesystem navigation. Bash is unrestricted because individual command patterns caused repeated workflow failures — Claude uses arbitrary shell commands that don't match specific patterns. The runner is an ephemeral VM with no production access, and the workflow only runs for repository owners, members, and collaborators
+- **Tool permissions:** The workflow uses the following tools:
+  - **File operations:** `Read`, `Edit`, `Write`, `Glob`, `Grep` for reading code changes and modifying documentation files
+  - **Shell commands:** `Bash` (unrestricted) for git operations, GitHub CLI, and filesystem navigation
+
+Bash is allowed without restriction because the workflow runs on an ephemeral GitHub Actions runner with no access to production systems. All changes go through PR review before merging. The security boundary is the GitHub Actions permissions (`contents: write`, `pull-requests: write`), not Bash tool restrictions.
+
+Restricting Bash to individual command patterns (e.g., `Bash(git diff *)`) is fragile — Claude naturally uses arbitrary shell commands (`find`, `cat`, compound commands, env-prefixed commands) that won't match specific patterns. Each denied command wastes a turn, and with `--max-turns 15`, a few denials can cause the workflow to fail without completing its task.
 
 This automation helps keep documentation in sync with code changes. Check the workflow's job summary page to see Claude's reasoning and analysis. If you get a follow-up documentation PR, review it like any other contribution -- the changes are suggestions, not automatic merges.
 
