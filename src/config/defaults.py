@@ -33,6 +33,7 @@ RANKS: list[tuple[str, int]] = [
     ("Librarian", 500),
     ("Archivist", 2000),
     ("Head Librarian", 5000),
+    ("Living Document", 10000),
 ]
 
 # ---------------------------------------------------------------------------
