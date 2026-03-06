@@ -27,7 +27,7 @@ Every action in the library earns you "pages read" -- your experience points. Ov
 | Review a current volume | +5 XP (5 pages) |
 | Review an overdue volume | +10 XP (10 pages, 2x multiplier) |
 | Rescue bonus (for overdue review) | +20 XP (20 pages) |
-| Daily streak bonus | +15 XP/day (15 pages) |
+| Daily streak bonus | +20 XP/day (20 pages) |
 | All volumes on a shelf above Dewey 75 | +50 XP (50 pages, shelf bonus) |
 
 ## Ranks
@@ -70,7 +70,7 @@ Badges are achievements you unlock by hitting milestones. They come in two tiers
 
 ## Streaks
 
-Review at least one volume each day to keep your streak alive. Every day you maintain it, you earn +15 bonus pages. Miss a day and the counter resets to zero. Streaks show up on the leaderboard, so everyone knows who's been putting in the work.
+Review at least one volume each day to keep your streak alive. Every day you maintain it, you earn +20 bonus pages. Miss a day and the counter resets to zero. Streaks show up on the leaderboard, so everyone knows who's been putting in the work.
 
 Hit 7 days for the Streak Freak! badge. Hit 30 and you earn the rare Marathon Reader.
 
