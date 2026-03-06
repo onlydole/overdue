@@ -22,8 +22,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Documentation update workflow triggers on all merged PRs instead of only those touching `docs/` or `src/` paths.
 
 ### Fixed
-- Documentation update workflow tool permissions by narrowing `--allowedTools` from broad `Bash(git:*),Bash(gh:*)` to specific subcommands required for branch creation, commits, pushes, and PR creation (PR #29).
 - Documentation update workflow authentication by adding required `id-token: write` permission for OIDC authentication with Claude Code Action.
+- Documentation update workflow by adding `--allowedTools "Bash(git:*),Bash(gh:*)"` to claude_args configuration. This resolved the "This command requires approval" error that was blocking Claude from creating branches, committing, pushing, and opening PRs (PR #29).
 
 ## [1.0.0] - 2026-03-04
 
