@@ -13,7 +13,7 @@ This isn't a to-do app with a theme. It's a game that happens to make you smarte
 - **Dewey Score decay** -- Every volume starts at 100 and rots toward 0. Review it to reset the clock. Ignore it and watch it crumble.
 - **XP and ranks** -- Earn pages read for every action. Rise from Page (0 XP) through Shelver, Librarian, Archivist, and Head Librarian to Living Document (10,000 XP) -- the ultimate rank.
 - **11 badges across two tiers** -- From "First Shelve" (Common) to "Marathon Reader" (Rare, 30-day streak). Collect them all for the Completionist badge.
-- **Streaks** -- Review daily for +15 bonus pages. Miss a day and your streak resets. The pressure is real.
+- **Streaks** -- Review daily for +20 bonus pages. Miss a day and your streak resets. The pressure is real.
 - **Reading Room mood** -- The library's ambient atmosphere shifts from "Quiet Study" (golden glow) to "Closed for Renovation" (crisis mode) based on your collective Dewey Scores.
 - **AI bot players** -- Casual, diligent, and obsessive bots populate the leaderboard and keep things competitive while you sleep.
 - **Pixel art everything** -- 26 hand-crafted SVG icons, 8 heroic librarian avatars, custom dark parchment palette. Zero emoji.
