@@ -76,6 +76,18 @@ chore: bump dependencies
 
 That's it. We'll review and get back to you.
 
+## Automated Documentation Updates
+
+After your PR is merged to `main`, an automated workflow checks whether any documentation needs updating based on your changes. Here's how it works:
+
+- **Automatic checks:** If your PR modifies files in `src/` or `docs/`, Claude Code Action analyzes the changes and determines if any documentation is out of sync
+- **Follow-up PRs:** When updates are needed, the workflow opens a new PR with the proposed documentation changes for review
+- **Visible reasoning:** Claude posts a comment on your merged PR explaining what it analyzed and what documentation updates (if any) were made. The full analysis is also available in the workflow logs
+- **Opt out:** Add the `skip-docs-check` label to your PR if you want to skip the automated documentation check
+- **Safety guards:** The workflow only runs for merged PRs from repository members and collaborators, and skips bot-authored PRs to prevent loops
+
+This automation helps keep documentation in sync with code changes. The posted comment gives you transparency into Claude's decision-making without needing to dig through CI logs. If you get a follow-up documentation PR, review it like any other contribution -- the changes are suggestions, not automatic merges.
+
 ## Reporting Issues
 
 Found a bug or have an idea? [Open an issue](https://github.com/onlydole/overdue/issues/new). Include:
