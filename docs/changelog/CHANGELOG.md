@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ### Changed
 - Documentation update workflow triggers on all merged PRs instead of only those touching `docs/` or `src/` paths.
 - XP display labels updated from "+N pages" format to "+N XP (N pages)" format throughout the UI for clarity.
+- Daily streak bonus increased from +15 XP to +20 XP per day (PR #42).
 
 ### Fixed
 - Documentation update workflow authentication by adding required `id-token: write` permission for OIDC authentication with Claude Code Action.
