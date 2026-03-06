@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Documentation update workflow triggers on all merged PRs instead of only those touching `docs/` or `src/` paths.
 
 ### Fixed
+- Documentation update workflow tool permissions by narrowing `--allowedTools` from broad `Bash(git:*),Bash(gh:*)` to specific subcommands required for branch creation, commits, pushes, and PR creation (PR #29).
 - Documentation update workflow authentication by adding required `id-token: write` permission for OIDC authentication with Claude Code Action.
 
 ## [1.0.0] - 2026-03-04
