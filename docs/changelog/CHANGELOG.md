@@ -19,7 +19,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Party mode easter egg: library card barcode on settings page is a hidden clickable toggle (default cursor stays normal, revealing the secret only on hover). Subtle gold glow hint and faster scan animation appear on hover to aid discovery. Click activates party mode with cycling rainbow borders, purple scan line animations, audio, and localStorage persistence.
 - Keyboard accessibility for party mode toggle (`Tab` to focus, `Enter`/`Space` to activate) with `prefers-reduced-motion` support.
 - Safety guards: skips bot-authored PRs and respects `skip-docs-check` label to prevent infinite loops and allow opt-out.
-- Rescue bonus: +20 XP awarded when reviewing volumes in Overdue territory (Dewey Score 0-24), in addition to the existing 2x multiplier. Total XP for overdue reviews increased from 10 to 30 XP (5 base × 2 + 20 rescue bonus).
 
 ### Changed
 - Documentation update workflow triggers on all merged PRs instead of only those touching `docs/` or `src/` paths.
