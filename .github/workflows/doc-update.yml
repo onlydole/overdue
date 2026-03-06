@@ -64,6 +64,8 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: "--max-turns 15"
+          show_full_output: true
+          use_sticky_comment: true
           prompt: |
             ## Task: Documentation Update Check
 
