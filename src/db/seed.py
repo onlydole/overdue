@@ -1,5 +1,6 @@
 """Demo data seeder for the Overdue knowledge library."""
 
+import asyncio
 import bcrypt
 import os
 import random
@@ -45,7 +46,8 @@ async def seed_demo_data(session: AsyncSession) -> None:
     # --- Librarians at varying XP levels ---
     # Password comes from OVERDUE_DEMO_PASSWORD env var or is randomly generated
     demo_password = _get_demo_password()
-    hashed = bcrypt.hashpw(demo_password.encode(), bcrypt.gensalt()).decode()
+    loop = asyncio.get_running_loop()
+    hashed = (await loop.run_in_executor(None, bcrypt.hashpw, demo_password.encode(), bcrypt.gensalt())).decode()
     librarians = [
         LibrarianRow(
             username="archie",

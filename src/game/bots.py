@@ -6,6 +6,7 @@ its XP range, volume count, review frequency, streak behaviour, and
 badge collection.
 """
 
+import asyncio
 import bcrypt
 import random
 from datetime import datetime, timedelta
@@ -283,7 +284,8 @@ async def create_bot(
 
     # -- hashed password (bots cannot log in) ------------------------------
     dummy_password = f"bot-no-login-{random.randint(100000, 999999)}"
-    hashed_password = bcrypt.hashpw(dummy_password.encode(), bcrypt.gensalt()).decode()
+    loop = asyncio.get_running_loop()
+    hashed_password = (await loop.run_in_executor(None, bcrypt.hashpw, dummy_password.encode(), bcrypt.gensalt())).decode()
 
     # -- create the librarian row ------------------------------------------
     bot = LibrarianRow(

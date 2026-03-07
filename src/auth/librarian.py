@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 import bcrypt
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.concurrency import run_in_threadpool
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -51,10 +52,13 @@ async def register(
     if existing_email.scalar_one_or_none():
         raise HTTPException(status_code=409, detail="That email is already registered.")
 
+    hashed_password = await run_in_threadpool(
+        lambda: bcrypt.hashpw(body.password.encode(), bcrypt.gensalt()).decode()
+    )
     librarian = LibrarianRow(
         username=body.username,
         email=body.email,
-        hashed_password=bcrypt.hashpw(body.password.encode(), bcrypt.gensalt()).decode(),
+        hashed_password=hashed_password,
     )
     session.add(librarian)
     await session.commit()
@@ -73,7 +77,9 @@ async def login(
     )
     librarian = result.scalar_one_or_none()
 
-    if not librarian or not bcrypt.checkpw(body.password.encode(), librarian.hashed_password.encode()):
+    if not librarian or not await run_in_threadpool(
+        bcrypt.checkpw, body.password.encode(), librarian.hashed_password.encode()
+    ):
         raise HTTPException(
             status_code=401,
             detail="You'll need a library card to access the stacks.",

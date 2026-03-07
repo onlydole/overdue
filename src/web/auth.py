@@ -4,6 +4,7 @@ import bcrypt
 import re
 
 from fastapi import APIRouter, Depends, Request
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -147,10 +148,13 @@ async def register_submit(
             "selected_avatar": avatar_id,
         })
 
+    hashed_password = await run_in_threadpool(
+        lambda: bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    )
     librarian = LibrarianRow(
         username=username,
         email=email,
-        hashed_password=bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode(),
+        hashed_password=hashed_password,
         avatar_id=avatar_id,
     )
     session.add(librarian)

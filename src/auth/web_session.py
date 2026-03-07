@@ -2,6 +2,7 @@
 
 import bcrypt
 from fastapi import Request
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import RedirectResponse
 import jwt
 from jwt.exceptions import PyJWTError as JWTError
@@ -64,7 +65,9 @@ async def login_librarian(
     )
     librarian = result.scalar_one_or_none()
 
-    if not librarian or not bcrypt.checkpw(password.encode(), librarian.hashed_password.encode()):
+    if not librarian or not await run_in_threadpool(
+        bcrypt.checkpw, password.encode(), librarian.hashed_password.encode()
+    ):
         return None
 
     token = create_library_card(
