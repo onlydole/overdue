@@ -1,0 +1,20 @@
+tasks:
+  setup-ssh-signing:
+    name: Configure SSH commit signing
+    description: Write SSH signing key from environment secret and configure git
+    triggeredBy:
+      - postEnvironmentStart
+    command: |
+      if [ -z "$SSH_SIGNING_KEY" ]; then
+        echo "SSH_SIGNING_KEY not set, skipping signing setup"
+        exit 0
+      fi
+      mkdir -p ~/.ssh
+      chmod 700 ~/.ssh
+      printf '%s' "$SSH_SIGNING_KEY" > ~/.ssh/signing_key
+      chmod 600 ~/.ssh/signing_key
+      git config --global gpg.format ssh
+      git config --global user.signingkey ~/.ssh/signing_key
+      git config --global commit.gpgsign true
+      git config --global user.email "117500+onlydole@users.noreply.github.com"
+      echo "SSH signing configured"
