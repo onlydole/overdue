@@ -1,10 +1,10 @@
 """Web session utilities for cookie-based browser auth."""
 
 import bcrypt
+import jwt
 from fastapi import Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import RedirectResponse
-import jwt
 from jwt.exceptions import PyJWTError as JWTError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -65,9 +65,17 @@ async def login_librarian(
     )
     librarian = result.scalar_one_or_none()
 
-    if not librarian or not await run_in_threadpool(
-        bcrypt.checkpw, password.encode(), librarian.hashed_password.encode()
-    ):
+    if not librarian:
+        return None
+
+    try:
+        valid = await run_in_threadpool(
+            bcrypt.checkpw, password.encode(), librarian.hashed_password.encode()
+        )
+    except ValueError:
+        return None
+
+    if not valid:
         return None
 
     token = create_library_card(

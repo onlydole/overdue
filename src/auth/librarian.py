@@ -21,7 +21,7 @@ from src.models.librarian import LibrarianCreate, LibrarianLogin, LibrarianRespo
 router = APIRouter()
 
 PASSWORD_PATTERN = re.compile(
-    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,72}$"
 )
 
 
@@ -35,7 +35,7 @@ async def register(
     if not PASSWORD_PATTERN.match(body.password):
         raise HTTPException(
             status_code=422,
-            detail="Password must be at least 8 characters with uppercase, lowercase, digit, and special character.",
+            detail="Password must be 8–72 characters with uppercase, lowercase, digit, and special character.",
         )
 
     # Check for existing username
@@ -77,9 +77,16 @@ async def login(
     )
     librarian = result.scalar_one_or_none()
 
-    if not librarian or not await run_in_threadpool(
-        bcrypt.checkpw, body.password.encode(), librarian.hashed_password.encode()
-    ):
+    valid = False
+    if librarian:
+        try:
+            valid = await run_in_threadpool(
+                bcrypt.checkpw, body.password.encode(), librarian.hashed_password.encode()
+            )
+        except ValueError:
+            valid = False
+
+    if not valid:
         raise HTTPException(
             status_code=401,
             detail="You'll need a library card to access the stacks.",

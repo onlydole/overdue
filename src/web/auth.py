@@ -1,8 +1,8 @@
 """Web authentication routes (login, register, logout)."""
 
-import bcrypt
 import re
 
+import bcrypt
 from fastapi import APIRouter, Depends, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import RedirectResponse
@@ -18,7 +18,7 @@ from src.web.templates import templates
 router = APIRouter()
 
 PASSWORD_PATTERN = re.compile(
-    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+    r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,72}$"
 )
 
 
@@ -104,7 +104,7 @@ async def register_submit(
     if not email or "@" not in email:
         errors.append("A valid email is required.")
     if not PASSWORD_PATTERN.match(password):
-        errors.append("Password must be 8+ chars with uppercase, lowercase, digit, and special character (@$!%*?&).")
+        errors.append("Password must be 8–72 chars with uppercase, lowercase, digit, and special character (@$!%*?&).")
     if password != confirm:
         errors.append("Passwords do not match.")
 

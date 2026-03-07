@@ -7,9 +7,10 @@ badge collection.
 """
 
 import asyncio
-import bcrypt
 import random
 from datetime import datetime, timedelta
+
+import bcrypt
 
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession

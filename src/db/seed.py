@@ -1,12 +1,13 @@
 """Demo data seeder for the Overdue knowledge library."""
 
 import asyncio
-import bcrypt
 import os
 import random
 import secrets
 import string
 from datetime import datetime, timedelta
+
+import bcrypt
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
