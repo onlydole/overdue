@@ -1,18 +1,16 @@
 """Web session utilities for cookie-based browser auth."""
 
+import bcrypt
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 import jwt
 from jwt.exceptions import PyJWTError as JWTError
-from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.library_card import ALGORITHM, create_library_card
 from src.config.settings import settings
 from src.db.tables import LibrarianRow
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 async def get_current_librarian_optional(
@@ -66,7 +64,7 @@ async def login_librarian(
     )
     librarian = result.scalar_one_or_none()
 
-    if not librarian or not pwd_context.verify(password, librarian.hashed_password):
+    if not librarian or not bcrypt.checkpw(password.encode(), librarian.hashed_password.encode()):
         return None
 
     token = create_library_card(

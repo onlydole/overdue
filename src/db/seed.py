@@ -1,12 +1,12 @@
 """Demo data seeder for the Overdue knowledge library."""
 
+import bcrypt
 import os
 import random
 import secrets
 import string
 from datetime import datetime, timedelta
 
-from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,9 +20,6 @@ from src.db.tables import (
     XPLedgerRow,
     volume_bookmarks,
 )
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 def _generate_demo_password() -> str:
     """Generate a random password meeting complexity requirements."""
@@ -48,7 +45,7 @@ async def seed_demo_data(session: AsyncSession) -> None:
     # --- Librarians at varying XP levels ---
     # Password comes from OVERDUE_DEMO_PASSWORD env var or is randomly generated
     demo_password = _get_demo_password()
-    hashed = pwd_context.hash(demo_password)
+    hashed = bcrypt.hashpw(demo_password.encode(), bcrypt.gensalt()).decode()
     librarians = [
         LibrarianRow(
             username="archie",
