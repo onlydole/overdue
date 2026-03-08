@@ -1,0 +1,46 @@
+name: Archive Traffic Data
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    env:
+      REPO_NAME: ${{ github.repository }}
+
+    steps:
+      - name: Fetch traffic data
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p traffic
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          DATE=$(date -u +"%Y-%m-%d")
+
+          for endpoint in clones views; do
+            gh api "repos/${REPO_NAME}/traffic/${endpoint}" \
+              | jq --arg ts "$TIMESTAMP" '. + {fetched_at: $ts}' \
+              > "traffic/${endpoint}_${DATE}.json"
+          done
+
+          gh api "repos/${REPO_NAME}/traffic/popular/referrers" \
+            | jq --arg ts "$TIMESTAMP" '{referrers: ., fetched_at: $ts}' \
+            > "traffic/referrers_${DATE}.json"
+
+          gh api "repos/${REPO_NAME}/traffic/popular/paths" \
+            | jq --arg ts "$TIMESTAMP" '{paths: ., fetched_at: $ts}' \
+            > "traffic/paths_${DATE}.json"
+
+      - name: Upload traffic snapshot
+        uses: actions/upload-artifact@v7
+        with:
+          name: traffic-${{ github.run_id }}
+          path: traffic/
+          retention-days: 90
