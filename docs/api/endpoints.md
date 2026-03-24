@@ -50,15 +50,6 @@ Refresh a library card. Requires a valid (non-expired) library card.
 
 **Response:** New library card with a fresh expiry.
 
-### `GET /api/librarians/me/xp`
-Get the authenticated librarian's XP summary, rank, and recent awards. Requires library card.
-
-### `GET /api/librarians/me/badges`
-Get the authenticated librarian's earned badges. Requires library card.
-
-### `GET /api/librarians/me/streak`
-Get the authenticated librarian's review streak info. Requires library card.
-
 ### `GET /api/librarians/leaderboard`
 Get the top librarians ranked by pages read.
 

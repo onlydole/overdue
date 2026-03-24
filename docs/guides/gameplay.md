@@ -106,6 +106,7 @@ Navigate the library at speed with keyboard shortcuts (desktop browsers):
 | Volume detail | `Enter` | Review / next volume / done (priority order) |
 | Volume detail | `Escape` / `ArrowLeft` | Back to shelf |
 | Volume detail | `ArrowRight` | Next volume |
+| Shelves listing | `Enter` | Open the most overdue shelf |
 | Shelf detail | `Enter` | Open the most overdue volume for review |
 | Shelf detail | `Escape` / `ArrowLeft` | Back to shelves list |
 
