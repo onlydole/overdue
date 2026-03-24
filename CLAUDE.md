@@ -13,7 +13,10 @@ Overdue is a retro pixel art-themed gamified knowledge library application. User
 - **Styling**: Tailwind CSS with a custom dark parchment palette
 - **Database**: SQLAlchemy async with aiosqlite (SQLite by default)
 - **Validation**: Pydantic v2 for request/response models
+- **Auth**: PyJWT (HS256) with HMAC-safe signing key derivation
+- **CLI**: Typer with subcommands for auth, shelves, volumes, bots, seed, stats
 - **Game layer**: XP engine, badge system, streaks, mood/dust decay, AI bots, pixel art avatars and icons
+- **Deployment**: Docker (Python 3.12-slim) with docker-compose, non-root user, healthcheck
 
 ## Key Conventions
 
@@ -45,6 +48,9 @@ All decorative visuals are custom-built pixel art SVGs. This is a hard rule:
 - **Shared palette**: The system uses a consistent set of colors (GOLD, FLAME, GREEN, BLUE, PURPLE, PARCHMENT, INK) defined directly in `src/game/avatars.py` and `src/game/icons/_catalog.py`.
 - **Static asset build**: `scripts/build_icons.py` pre-renders all icons and avatars to `static/icons/` as bare SVGs. Bare exports default to parchment (#f0e6d3) for visibility in `<img>` tags. Generates base icons plus tinted variants (`--green`, `--gold`) and prunes stale tints. Run after any icon or avatar changes.
 - **Rendering pipeline**: SVG path strings (from catalog) -> wrapped in `<svg>` element with viewBox and styling -> wrapped in `Markup()` -> registered as Jinja2 global -> called in templates. Icons use static `<img>` tags by default; avatars always render inline.
+- **Tinted icon variants**: Only specific icon/color combinations get static tinted SVGs:
+  - Green (`#5cdb5c`): `checkmark`, `play`
+  - Gold (`#f0c543`): `book-open`, `books`, `chart`, `crown`, `fire`, `gamepad`, `house`, `award`
 
 ### Typography
 
@@ -69,19 +75,37 @@ All decorative visuals are custom-built pixel art SVGs. This is a hard rule:
 overdue/
   src/
     main.py                 # FastAPI app, lifespan, middleware
-    api/                    # REST API endpoints (volumes, librarians, shelves, catalog)
+    api/                    # REST API endpoints
       router.py             # API router aggregation
       volumes.py            # Volume CRUD endpoints
-      librarians.py         # Registration, login, leaderboard
+      shelves.py            # Shelf CRUD endpoints
+      catalog.py            # Search and autocomplete
+      reading_room.py       # Health snapshot, overdue report
+      bulletins.py          # Webhook subscriptions
     auth/                   # Authentication & authorization
-      jwt.py                # Library card (JWT) creation/verification
+      library_card.py       # Library card (JWT) creation/verification via PyJWT
+      web_session.py        # Session-based browser auth (cookie)
+      librarian.py          # Registration, login, refresh, leaderboard routes
       dependencies.py       # FastAPI dependency injection for auth
+      circulation.py        # Role-based access control (Page -> Head Librarian)
+    cli/                    # Typer CLI
+      main.py               # Entry point (overdue command)
+      helpers.py            # Shared CLI helper utilities
+      commands/
+        auth.py             # User management (create/remove)
+        shelves.py          # Shelf management (list/create)
+        volumes.py          # Volume management (list/create)
+        bots.py             # Bot management (add/simulate/remove)
+        seed.py             # Demo data seeding
+        stats.py            # Statistics display
     config/                 # Settings and constants
-      settings.py           # Pydantic Settings with OVERDUE_ prefix
-      defaults.py           # Game balance constants (XP rates, decay, ranks)
+      settings.py           # Pydantic Settings with OVERDUE_ prefix, signing_secret_key
+      defaults.py           # Game balance constants (XP rates, decay, ranks, moods)
+      quiet_hours.py        # Rate limiting middleware
     errors/                 # Exception handling
       incidents.py          # Custom exception classes (library-themed)
       handlers.py           # FastAPI exception handlers
+      codes.py              # Error codes
     game/                   # Game mechanics layer
       xp.py                 # XP (pages read) calculations
       badges.py             # Badge unlock logic and definitions
@@ -97,36 +121,74 @@ overdue/
     models/                 # Pydantic & SQLAlchemy models
       volume.py             # Volume request/response schemas
       librarian.py          # Librarian schemas
+      shelf.py              # Shelf schemas
+      bulletin.py           # Bulletin (webhook) schemas
+      catalog.py            # Search schemas
+      game.py               # Game-related schemas
     db/                     # Database layer
       engine.py             # Async engine and session factory
       tables.py             # SQLAlchemy ORM table definitions
       seed.py               # Demo data seeding (shelves, volumes, bots)
     web/                    # Web dashboard routes and template config
-      router.py             # Web route aggregation
+      router.py             # Web router aggregation
       templates.py          # Jinja2 Templates instance with globals (render_avatar, render_icon)
+      auth.py               # Login/register/logout web routes
       actions.py            # Form action handlers
+      dashboard.py          # Reading room dashboard
       shelves.py            # Shelf browsing routes
-      settings.py           # User settings routes
+      volumes.py            # Volume browsing routes
+      profile.py            # Librarian profile page
+      settings.py           # Library card settings (edit username, email, role, avatar)
+      leaderboard.py        # Leaderboard page
+      how_to_play.py        # How to play guide
+      my_library.py         # Personal library view
+  scripts/
+    build_icons.py          # Pre-render icons + avatars to static/icons/ as SVG files
   templates/                # Jinja2 HTML templates
     base.html               # Base layout (fonts, nav, footer)
-    partials/               # Reusable template fragments (review_result, etc.)
-    profile.html            # Librarian profile page
+    dashboard.html          # Reading room dashboard
+    login.html              # Login page
+    register.html           # Registration page
     shelves.html            # Shelf listing
     shelf_detail.html       # Single shelf with volumes
+    shelf_create.html       # New shelf form
     volume_detail.html      # Volume view with review action
     volume_create.html      # New volume form
-    settings.html           # User settings page
+    profile.html            # Librarian profile page
+    settings.html           # Library card editor (avatar carousel, editable fields)
+    leaderboard.html        # Leaderboard page
+    how_to_play.html        # How to play guide
+    my_library.html         # Personal library view
+    404.html                # Not found error page
+    500.html                # Server error page
+    partials/               # Reusable template fragments
+      activity_feed.html    # Reading room activity feed
+      badge_grid.html       # Badge display grid
+      dewey_gauge.html      # Dewey Score gauge
+      game_feedback.html    # XP/badge feedback after actions
+      reading_room_live.html # Live-updating Reading Room partial
+      review_history_page.html # Paginated review history partial
+      review_result.html    # Review action result
+      streak_counter.html   # Streak display
+      volume_card.html      # Volume card component
   static/
-    css/styles.css          # Tailwind-generated CSS
+    css/
+      styles.css            # Library card styles + pixel art foundations + mood backdrop
+      tailwind.css          # Built Tailwind CSS (generated by npm run css:build)
     js/
       htmx.min.js           # HTMX library
       alpine.min.js         # Alpine.js for small UI state
       app.js                # Custom JS (minimal)
+      gauges.js             # Visual gauge rendering
+    icons/                  # Pre-rendered SVG assets (generated by scripts/build_icons.py)
   tests/                    # Test suite (pytest)
+    conftest.py             # Pytest fixtures
+    test_avatars.py         # Avatar rendering tests
+    test_icons.py           # Icon rendering tests
   docs/                     # Guides and API reference
-    api/                    # Endpoint docs, auth, errors, rate limiting
-    guides/                 # Installation, quickstart, gameplay, bots, config
-    architecture/           # Architecture overview
+    api/                    # endpoints.md, authentication.md, errors.md, rate-limiting.md
+    guides/                 # installation.md, quickstart.md, gameplay.md, bots.md, configuration.md
+    architecture/           # overview.md
     changelog/              # CHANGELOG.md
 ```
 
@@ -163,6 +225,24 @@ When a librarian performs an action (e.g., reviewing a volume), the flow is:
 3. Engine awards XP, checks badge unlocks, updates streak
 4. Engine returns a result dict with XP gained, badges earned, etc.
 5. Route renders the result (HTML partial for web, JSON for API)
+
+### Authentication Flow
+
+1. Librarian registers or logs in via web form or API
+2. Server issues a JWT library card signed with `settings.signing_secret_key` (HS256)
+3. Web sessions store the token in a cookie via Starlette `SessionMiddleware`
+4. API clients pass the token in the `Authorization: Bearer <token>` header
+5. `signing_secret_key` is a `cached_property` that ensures >= 32 bytes for HS256 safety (short keys are hashed via SHA-256)
+
+### Settings Page (Library Card Editor)
+
+The settings page (`/settings`) renders a pixel art library card UI:
+
+1. `GET /settings` loads the current librarian's card data (username, email, role, avatar)
+2. Avatar selection uses an Alpine.js carousel with prev/next arrows
+3. `POST /settings/card` validates and saves all editable fields with uniqueness checks
+4. On success, a fresh JWT is issued to reflect any username/role changes
+5. Errors are rendered inline on the card form
 
 ### Adding a New Pixel Art Icon
 
@@ -209,12 +289,90 @@ Pages with interactive actions support keyboard shortcuts. Each page defines its
 - Separate multiple hints with a visible `|` divider (`text-pixel-border`) -- never run hints together as unseparated text
 - Volume detail embeds hints inside buttons (`opacity-60 text-[10px] border-l border-black/20 pl-3`)
 
+### Tiered Loading Indicator
+
+Navigation loading feedback uses a three-tier system instead of an always-visible overlay:
+
+1. **Tier 1 (0-300ms):** No indicator. The page-flip CSS transition provides sufficient feedback.
+2. **Tier 2 (300ms+):** Thin pixel art progress bar fixed to top of viewport (green-to-gold gradient, 3px tall, segmented).
+3. **Tier 3 (2s+):** Full "Consulting the shelves..." overlay (rare, only for genuinely slow loads).
+
+**Key details:**
+- `<main>` has no `hx-indicator` -- the overlay is JS-controlled via `loading-overlay-hidden`/`loading-overlay-visible` classes
+- The `isBoostNavigation()` filter excludes POST requests (review button), polling (`hx-trigger="every ..."`), and targeted partial swaps
+- Inline HTMX indicators (`.htmx-indicator` / `.htmx-hide-on-request` on buttons) are unaffected -- they work via `htmx-request` class on the element itself
+- Progress bar uses a logarithmic curve (fast start, caps at 85%, snaps to 100% on completion)
+
+### Dewey Gauge Layout
+
+Circular Dewey Score gauges use a specific layout:
+
+- **Score number**: Large (`0.85rem`), centered inside the `.gauge-inner` circle
+- **Status stamp**: Positioned **to the left** of the circle (not inside or below), via `position: absolute; top: 50%; right: calc(100% + 6px); transform: translateY(-50%) rotate(-3deg)`
+- The stamp is appended to the `.dewey-gauge` element (not `.gauge-inner`) so it sits outside the inner circle
+- Bar gauges (`dewey-gauge-bar`) do not show stamps
+
+### Importing External SVG Icons
+
+When replacing or adding icons from external SVG sources (e.g., Noun Project):
+
+1. Extract the `<path d="...">` data from the source SVG
+2. Note the source `viewBox` dimensions (commonly 1200x1200)
+3. Store the path data as a Python string constant (e.g., `_BOOKS_ARTWORK_PATH`) in `_catalog.py`
+4. Scale to 24x24 viewBox: `transform="scale(0.02)"` for 1200x1200 sources (24/1200 = 0.02)
+5. Preserve `fill-rule="evenodd"` if the source SVG uses it
+6. Use `fill="currentColor"` for CSS tinting support
+7. Register in `ICON_CATALOG` using an f-string: `f'<path d="{_PATH}" fill="currentColor" fill-rule="evenodd" transform="scale(0.02)"/>'`
+8. Run `python scripts/build_icons.py` to regenerate static SVGs
+
+### Mood Backdrop
+
+The library's ambient background effect is driven by the `MoodMiddleware` in `src/web/mood_middleware.py`:
+
+1. Middleware queries all volume `last_reviewed_at` timestamps
+2. Computes average Dewey Score -> mood ambiance (`soft_pages`, `gentle_hum`, `restless`, `urgent`, `closed`)
+3. Stores ambiance in `request.state.mood_ambiance`
+4. `base.html` reads it via `get_mood_ambiance(request)` and sets `data-mood` on `<body>`
+5. CSS in `styles.css` activates gradient, vignette, and particle effects per mood
+
+## Database Schema
+
+| Table | Key Columns | Purpose |
+|---|---|---|
+| `librarians` | id, username, email, hashed_password, role, total_xp, is_bot, avatar_id | Authenticated users |
+| `volumes` | id, title, content, shelf_id, author_id, last_reviewed_at, spine_seed | Knowledge entries |
+| `shelves` | id, name, description, created_by | Volume categories |
+| `reviews` | id, volume_id, librarian_id, reviewed_at, dewey_score_before | Review records |
+| `xp_ledger` | id, librarian_id, amount, reason, created_at | XP award history |
+| `badges` | id, librarian_id, badge_name, earned_at | Earned achievements |
+| `streaks` | id, librarian_id, current_streak, longest_streak, last_review_date | Streak tracking |
+| `bulletins` | id, url, events, secret, librarian_id, active | Webhook subscriptions |
+| `volume_bookmarks` | volume_id, bookmark | Many-to-many tags |
+
+## Game Balance Constants
+
+Defined in `src/config/defaults.py`:
+
+| Constant | Value | Description |
+|---|---|---|
+| `XP_SHELVE_VOLUME` | 10 | XP for creating a volume |
+| `XP_REVIEW_CURRENT` | 5 | XP for reviewing a current volume |
+| `XP_REVIEW_OVERDUE_MULTIPLIER` | 2x | Multiplier for overdue reviews |
+| `XP_RESCUE_BONUS` | 20 | Rescue bonus for reviewing overdue volumes (Dewey Score 0-24) |
+| `XP_DAILY_STREAK_BONUS` | 20 | Bonus XP for daily streak |
+| `XP_SHELF_BONUS` | 50 | Bonus when all shelf volumes are healthy |
+| Ranks | Page (0) -> Shelver (100) -> Librarian (500) -> Archivist (2000) -> Head Librarian (5000) -> Living Document (10000) | Rank thresholds |
+| Dewey decay | 3 pts / 10 sec (demo), 3 pts / 86400 sec (realistic) | Freshness decay rate |
+
 ## Testing
 
 - **Test runner**: `pytest`
 - **Linting**: `ruff check src/`
 - **Formatting**: `ruff format src/`
+- **Type checking**: `mypy` (strict mode)
 - Run the full check: `pytest && ruff check src/`
+- **CSS build**: `npm run css:build` (rebuild after Tailwind class changes)
+- **CSS watch**: `npm run css:watch` (auto-rebuild during development)
 
 ## Commit Conventions
 
@@ -241,3 +399,22 @@ Bots are managed via CLI commands and simulate library activity:
 - Bot code lives in `src/game/bots.py`
 - See [docs/guides/bots.md](docs/guides/bots.md) for CLI usage
 
+## Environment Variables
+
+All settings are configurable via environment variables prefixed with `OVERDUE_`:
+
+| Variable | Default | Description |
+|---|---|---|
+| `OVERDUE_SECRET_KEY` | (insecure default) | JWT signing secret -- **set in production** |
+| `OVERDUE_DATABASE_URL` | `sqlite+aiosqlite:///./overdue.db` | Database connection string |
+| `OVERDUE_DEBUG` | `false` | Enable debug mode |
+| `OVERDUE_TOKEN_EXPIRY_MINUTES` | `60` | JWT token lifetime |
+| `OVERDUE_TOKEN_REFRESH_WINDOW_MINUTES` | `15` | Token refresh window |
+| `OVERDUE_ALLOWED_ORIGINS` | `["*"]` | CORS allowed origins |
+| `OVERDUE_HOST` | `0.0.0.0` | Server bind host |
+| `OVERDUE_PORT` | `8000` | Server bind port |
+| `OVERDUE_WEBHOOK_SECRET` | (empty) | Bulletin verification secret |
+| `OVERDUE_DEWEY_DECAY_SECONDS` | `10` | Seconds per decay unit (86400 for daily) |
+| `OVERDUE_STREAK_COOLDOWN_SECONDS` | `5` | Seconds between reviews for streak (86400 for daily) |
+| `OVERDUE_SEARCH_MIN_SCORE` | `0.3` | Minimum catalog search relevance score |
+| `OVERDUE_MAX_VOLUME_SIZE_KB` | `512` | Maximum volume content size |
