@@ -48,7 +48,7 @@ The Overdue CLI is built with [Typer](https://typer.tiangolo.com/) and registere
 
 | Command | Description |
 |---|---|
-| `overdue bots create` | Create bot librarians (casual, diligent, obsessive) |
+| `overdue bots add` | Add bot librarians (casual, diligent, obsessive) |
 | `overdue bots simulate` | Run a round of simulated bot activity |
 | `overdue bots remove` | Remove all bot librarians and their data |
 
@@ -168,7 +168,7 @@ All API routes are mounted under `/api/`. Authentication uses JWT bearer tokens 
 | `GET` | `/api/volumes` | Bearer | List volumes (filterable) |
 | `POST` | `/api/volumes` | Bearer | Create a new volume |
 | `GET` | `/api/volumes/{id}` | Bearer | Get a single volume |
-| `PUT` | `/api/volumes/{id}` | Bearer | Update a volume |
+| `PATCH` | `/api/volumes/{id}` | Bearer | Update a volume |
 | `DELETE` | `/api/volumes/{id}` | Bearer | Delete a volume |
 | `POST` | `/api/volumes/{id}/review` | Bearer | Review a volume (triggers game engine) |
 
