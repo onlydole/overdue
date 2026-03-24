@@ -159,6 +159,9 @@ All API routes are mounted under `/api/`. Authentication uses JWT bearer tokens 
 | `POST` | `/api/librarians/register` | None | Register a new librarian |
 | `POST` | `/api/librarians/login` | None | Authenticate and receive a library card (JWT) |
 | `POST` | `/api/librarians/refresh` | Bearer | Refresh an expiring library card |
+| `GET` | `/api/librarians/me/xp` | Bearer | XP summary, rank, and recent awards |
+| `GET` | `/api/librarians/me/badges` | Bearer | Earned badges |
+| `GET` | `/api/librarians/me/streak` | Bearer | Current review streak info |
 | `GET` | `/api/librarians/leaderboard` | None | Top librarians ranked by pages read |
 
 ### Volumes (`/api/volumes`)
@@ -193,6 +196,7 @@ All API routes are mounted under `/api/`. Authentication uses JWT bearer tokens 
 |---|---|---|---|
 | `GET` | `/api/reading-room/health` | None | Library health snapshot (used by Docker healthcheck) |
 | `GET` | `/api/reading-room/overdue` | Bearer | Report of overdue volumes |
+| `GET` | `/api/reading-room/last-recalc` | None | Timestamp of the last background Dewey Score recalculation |
 
 ### Bulletins (`/api/bulletins`)
 
