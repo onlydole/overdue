@@ -45,6 +45,20 @@ Get the authenticated librarian's earned badges. Requires library card.
 ### `GET /api/librarians/me/streak`
 Get the authenticated librarian's review streak info. Requires library card.
 
+### `POST /api/librarians/refresh`
+Refresh an expiring library card. Requires a valid library card that is within the refresh window.
+
+**Response:** New library card with a fresh expiry.
+
+### `GET /api/librarians/me/xp`
+Get the authenticated librarian's XP summary, rank, and recent awards. Requires library card.
+
+### `GET /api/librarians/me/badges`
+Get the authenticated librarian's earned badges. Requires library card.
+
+### `GET /api/librarians/me/streak`
+Get the authenticated librarian's review streak info. Requires library card.
+
 ### `GET /api/librarians/leaderboard`
 Get the top librarians ranked by pages read.
 
@@ -131,7 +145,7 @@ Delete a shelf and all its volumes.
 
 ## Catalog
 
-### `GET /api/catalog/suggest`
+### `GET /api/catalog/autocomplete`
 Get autocomplete suggestions from volume titles.
 
 **Query parameters:**
@@ -161,6 +175,9 @@ Get the library's overall health status.
 Get a report of volumes needing review.
 
 **Response:** Lists of overdue volumes and volumes needing attention with their Dewey Scores.
+
+### `GET /api/reading-room/last-recalc`
+Get the timestamp of the last background Dewey Score recalculation.
 
 ## Bulletins
 
