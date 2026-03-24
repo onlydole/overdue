@@ -31,7 +31,7 @@ All errors in Overdue are called "incidents" and follow a consistent format:
 | TS-009 | 404 | Bulletin not found | "That bulletin subscription was not found." |
 | TS-010 | 502 | Webhook delivery failed | "The bulletin could not be delivered to the subscriber." |
 | TS-011 | 413 | Volume too large | "The volume content exceeds the maximum allowed size." |
-| TS-012 | 410 | Deprecated feature used | "A deprecated feature or config option was used." |
+| TS-012 | 400 | Deprecated feature used | "'{feature}' is deprecated. Use '{alternative}' instead." |
 
 ## Rate limit errors (TS-007)
 

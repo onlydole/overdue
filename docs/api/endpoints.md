@@ -46,7 +46,7 @@ Get the authenticated librarian's earned badges. Requires library card.
 Get the authenticated librarian's review streak info. Requires library card.
 
 ### `POST /api/librarians/refresh`
-Refresh an expiring library card. Requires a valid library card that is within the refresh window.
+Refresh a library card. Requires a valid (non-expired) library card.
 
 **Response:** New library card with a fresh expiry.
 
