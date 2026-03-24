@@ -9,7 +9,7 @@ Overdue uses JWT tokens ("library cards") for authentication. All write operatio
 
 ## Overview
 
-Library cards are issued when a librarian logs in and expire after 24 hours. Include the token in the `Authorization` header as a Bearer token.
+Library cards are issued when a librarian logs in and expire after 1 hour (60 minutes). Include the token in the `Authorization` header as a Bearer token.
 
 ## Registration
 
@@ -45,7 +45,7 @@ curl -X POST http://localhost:8000/api/librarians/login \
 {
   "access_token": "eyJhbGciOiJIUzI1NiIs...",
   "token_type": "bearer",
-  "expires_in": 86400
+  "expires_in": 3600
 }
 ```
 
@@ -63,7 +63,7 @@ curl -X POST http://localhost:8000/api/volumes/ \
 ## Token details
 
 - **Algorithm:** HS256
-- **Expiry:** 24 hours (configurable via `OVERDUE_TOKEN_EXPIRY_MINUTES`)
+- **Expiry:** 60 minutes (configurable via `OVERDUE_TOKEN_EXPIRY_MINUTES`)
 - **Payload:** librarian ID, username, role
 
 ## Refreshing your library card

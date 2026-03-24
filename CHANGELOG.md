@@ -6,7 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
-_No unreleased changes._
+### Added
+- Rescue bonus: reviewing a volume in Overdue territory (Dewey Score 0–24) now awards +20 XP on top of the existing 2x multiplier, for a total of 30 XP per overdue rescue. XP labels across toasts, review partials, and the How to Play page updated to `+N XP (N pages)` format.
+- Automated documentation update workflow using GitHub Actions and Claude Code Action to detect documentation drift after PRs are merged to main.
+- Observability improvements to doc-update workflow: reasoning displayed in GitHub Actions job summary via `display_report: true` for transparent automated documentation decisions. Removed `show_full_output: true` to prevent secrets exposure in logs and `use_sticky_comment: true` which only works in tag mode (PR #26, #27).
+- CI/CD architecture documentation at `docs/architecture/ci-cd.md` covering the doc-update workflow's configuration, tool permissions, safety guards, and troubleshooting (PR #40).
+- Party mode easter egg: library card barcode on settings page is a hidden clickable toggle (default cursor stays normal, revealing the secret only on hover). Subtle gold glow hint and faster scan animation appear on hover to aid discovery. Click activates party mode with cycling rainbow borders, purple scan line animations, audio, and localStorage persistence.
+- Keyboard accessibility for party mode toggle (`Tab` to focus, `Enter`/`Space` to activate) with `prefers-reduced-motion` support.
+- Safety guards: skips bot-authored PRs and respects `skip-docs-check` label to prevent infinite loops and allow opt-out.
+
+### Changed
+- Documentation update workflow triggers on all merged PRs instead of only those touching `docs/` or `src/` paths.
+- XP display labels updated from "+N pages" format to "+N XP (N pages)" format throughout the UI for clarity.
+- Daily streak bonus increased from +15 XP to +20 XP per day (PR #42).
+
+### Fixed
+- Documentation update workflow authentication by adding required `id-token: write` permission for OIDC authentication with Claude Code Action.
+- Documentation update workflow by adding `--allowedTools "Bash(git:*),Bash(gh:*)"` to claude_args configuration. This resolved the "This command requires approval" error that was blocking Claude from creating branches, committing, pushing, and opening PRs (PR #29).
+- Documentation update workflow by adding file manipulation tools (Read, Edit, Write, Glob, Grep) to allowedTools. This resolved the root cause of PR #31's failure where Claude had 3 permission denials and couldn't read code changes or modify documentation files. The original allowedTools from PR #29 only included git/gh bash subcommands (PR #33).
+- Documentation update workflow by replacing individual `Bash(git diff *)`, `Bash(git log *)`, etc. patterns with unrestricted `Bash` in `--allowedTools`. Individual patterns caused repeated failures (PRs #29, #33, #38) because Claude uses arbitrary shell commands that don't match specific patterns. Unrestricted Bash is safe on ephemeral GHA runners with author-association guards (PR #40).
 
 ## [1.0.0] - 2026-03-04
 

@@ -50,7 +50,7 @@ All decorative visuals are custom-built pixel art SVGs. This is a hard rule:
 - **Rendering pipeline**: SVG path strings (from catalog) -> wrapped in `<svg>` element with viewBox and styling -> wrapped in `Markup()` -> registered as Jinja2 global -> called in templates. Icons use static `<img>` tags by default; avatars always render inline.
 - **Tinted icon variants**: Only specific icon/color combinations get static tinted SVGs:
   - Green (`#5cdb5c`): `checkmark`, `play`
-  - Gold (`#f0c543`): `book-open`, `books`, `chart`, `crown`, `fire`, `gamepad`, `house`, `trophy`
+  - Gold (`#f0c543`): `book-open`, `books`, `chart`, `crown`, `fire`, `gamepad`, `house`, `award`
 
 ### Typography
 
@@ -90,11 +90,12 @@ overdue/
       circulation.py        # Role-based access control (Page -> Head Librarian)
     cli/                    # Typer CLI
       main.py               # Entry point (overdue command)
+      helpers.py            # Shared CLI helper utilities
       commands/
         auth.py             # User management (create/remove)
         shelves.py          # Shelf management (list/create)
         volumes.py          # Volume management (list/create)
-        bots.py             # Bot management (create/simulate/remove)
+        bots.py             # Bot management (add/simulate/remove)
         seed.py             # Demo data seeding
         stats.py            # Statistics display
     config/                 # Settings and constants
@@ -165,6 +166,8 @@ overdue/
       badge_grid.html       # Badge display grid
       dewey_gauge.html      # Dewey Score gauge
       game_feedback.html    # XP/badge feedback after actions
+      reading_room_live.html # Live-updating Reading Room partial
+      review_history_page.html # Paginated review history partial
       review_result.html    # Review action result
       streak_counter.html   # Streak display
       volume_card.html      # Volume card component
