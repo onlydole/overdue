@@ -31,6 +31,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Documentation update workflow by adding file manipulation tools (Read, Edit, Write, Glob, Grep) to allowedTools. This resolved the root cause of PR #31's failure where Claude had 3 permission denials and couldn't read code changes or modify documentation files. The original allowedTools from PR #29 only included git/gh bash subcommands (PR #33).
 - Documentation update workflow by replacing individual `Bash(git diff *)`, `Bash(git log *)`, etc. patterns with unrestricted `Bash` in `--allowedTools`. Individual patterns caused repeated failures (PRs #29, #33, #38) because Claude uses arbitrary shell commands that don't match specific patterns. Unrestricted Bash is safe on ephemeral GHA runners with author-association guards (PR #40).
 
+### Security
+- Bumped picomatch from 2.3.1 to 2.3.2 and 4.0.3 to 4.0.4, fixing multiple security vulnerabilities including CVE-2026-33671 and CVE-2026-33672. This resolves exceptions when glob patterns contain constructor and other security-relevant issues.
+
 ## [1.0.0] - 2026-03-04
 
 ### Added
