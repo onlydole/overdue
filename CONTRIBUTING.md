@@ -76,19 +76,6 @@ chore: bump dependencies
 
 That's it. We'll review and get back to you.
 
-## Automated Documentation Updates
-
-After your PR is merged to `main`, an automated workflow checks whether any documentation needs updating based on your changes. Here's how it works:
-
-- **Automatic checks:** If your PR modifies files in `src/` or `docs/`, Claude Code Action analyzes the changes and determines if any documentation is out of sync
-- **Follow-up PRs:** When updates are needed, the workflow opens a new PR with the proposed documentation changes for review
-- **Visible reasoning:** Claude's analysis and decision-making are written to the GitHub Actions job summary (visible in the workflow run details), explaining what it analyzed and what documentation updates (if any) were made
-- **Opt out:** Add the `skip-docs-check` label to your PR if you want to skip the automated documentation check
-- **Safety guards:** The workflow only runs for merged PRs from repository members and collaborators, and skips bot-authored PRs to prevent loops
-- **Tool permissions:** The workflow allows file tools (`Read`, `Edit`, `Write`, `Glob`, `Grep`) and unrestricted `Bash` for git operations, GitHub CLI, and filesystem navigation. Bash is unrestricted because individual command patterns caused repeated workflow failures — Claude uses arbitrary shell commands that don't match specific patterns. The runner is an ephemeral VM with no production access, and the workflow only runs for repository owners, members, and collaborators
-
-This automation helps keep documentation in sync with code changes. Check the workflow's job summary page to see Claude's reasoning and analysis. If you get a follow-up documentation PR, review it like any other contribution -- the changes are suggestions, not automatic merges.
-
 ## Reporting Issues
 
 Found a bug or have an idea? [Open an issue](https://github.com/onlydole/overdue/issues/new). Include:
