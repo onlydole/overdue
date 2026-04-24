@@ -98,7 +98,7 @@ async def my_library(
         earned = user["total_xp"] - current_threshold
         progress = int((earned / total_needed) * 100) if total_needed > 0 else 100
 
-    return templates.TemplateResponse("my_library.html", {
+    return templates.TemplateResponse(request, "my_library.html", {
         "request": request,
         "current_user": user,
         "my_shelves": shelf_data,

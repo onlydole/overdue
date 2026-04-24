@@ -31,7 +31,7 @@ async def volume_detail(
     )
     volume = result.scalar_one_or_none()
     if not volume:
-        return templates.TemplateResponse("404.html", {
+        return templates.TemplateResponse(request, "404.html", {
             "request": request,
             "current_user": current_user,
         }, status_code=404)
@@ -59,7 +59,7 @@ async def volume_detail(
     )
     total_reviews = count_result.scalar() or 0
 
-    return templates.TemplateResponse("volume_detail.html", {
+    return templates.TemplateResponse(request, "volume_detail.html", {
         "request": request,
         "current_user": current_user,
         "volume": volume,
@@ -92,7 +92,7 @@ async def volume_reviews_page(
     has_more = len(reviews) > REVIEWS_PER_PAGE
     reviews = reviews[:REVIEWS_PER_PAGE]
 
-    return templates.TemplateResponse("partials/review_history_page.html", {
+    return templates.TemplateResponse(request, "partials/review_history_page.html", {
         "request": request,
         "reviews": reviews,
         "volume_id": volume_id,

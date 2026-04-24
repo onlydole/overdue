@@ -46,7 +46,7 @@ async def browse_shelves(
             "average_dewey": round(avg_dewey, 1),
         })
 
-    return templates.TemplateResponse("shelves.html", {
+    return templates.TemplateResponse(request, "shelves.html", {
         "request": request,
         "current_user": current_user,
         "shelves": shelf_data,
@@ -63,7 +63,7 @@ async def shelf_detail(
     current_user = await get_current_librarian_optional(request, session)
     shelf = await session.get(ShelfRow, shelf_id)
     if not shelf:
-        return templates.TemplateResponse("404.html", {
+        return templates.TemplateResponse(request, "404.html", {
             "request": request,
             "current_user": current_user,
         }, status_code=404)
@@ -87,7 +87,7 @@ async def shelf_detail(
             "spine_seed": v.spine_seed if v.spine_seed else sum(ord(c) for c in v.title),
         })
 
-    return templates.TemplateResponse("shelf_detail.html", {
+    return templates.TemplateResponse(request, "shelf_detail.html", {
         "request": request,
         "current_user": current_user,
         "shelf": shelf,

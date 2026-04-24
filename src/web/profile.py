@@ -24,7 +24,7 @@ async def librarian_profile(
     current_user = await get_current_librarian_optional(request, session)
     librarian = await session.get(LibrarianRow, librarian_id)
     if not librarian:
-        return templates.TemplateResponse("dashboard.html", {
+        return templates.TemplateResponse(request, "dashboard.html", {
             "request": request,
             "current_user": current_user,
             "error": "Librarian not found",
@@ -53,7 +53,7 @@ async def librarian_profile(
 
     avatar_id = librarian.avatar_id or "avatar_01"
 
-    return templates.TemplateResponse("profile.html", {
+    return templates.TemplateResponse(request, "profile.html", {
         "request": request,
         "current_user": current_user,
         "librarian": librarian,

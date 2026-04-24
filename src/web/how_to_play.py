@@ -17,7 +17,7 @@ async def how_to_play(
 ):
     """Render the How to Play page."""
     current_user = await get_current_librarian_optional(request, session)
-    return templates.TemplateResponse("how_to_play.html", {
+    return templates.TemplateResponse(request, "how_to_play.html", {
         "request": request,
         "current_user": current_user,
     })

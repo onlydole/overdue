@@ -83,7 +83,7 @@ async def reading_room(
     """Render the Reading Room dashboard."""
     current_user = await get_current_librarian_optional(request, session)
     ctx = await _build_reading_room_context(session)
-    return templates.TemplateResponse("dashboard.html", {
+    return templates.TemplateResponse(request, "dashboard.html", {
         "request": request,
         "current_user": current_user,
         **ctx,
@@ -97,7 +97,7 @@ async def reading_room_live(
 ):
     """Return the live-updating partial for the Reading Room."""
     ctx = await _build_reading_room_context(session)
-    return templates.TemplateResponse("partials/reading_room_live.html", {
+    return templates.TemplateResponse(request, "partials/reading_room_live.html", {
         "request": request,
         **ctx,
     })
