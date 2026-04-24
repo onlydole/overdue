@@ -49,7 +49,7 @@ async def leaderboard(
             "librarian_id": lib.id,
         })
 
-    return templates.TemplateResponse("leaderboard.html", {
+    return templates.TemplateResponse(request, "leaderboard.html", {
         "request": request,
         "current_user": current_user,
         "entries": entries,

@@ -127,14 +127,24 @@ from src.web.templates import templates as _templates
 async def not_found_handler(request: Request, exc: StarletteHTTPException):
     if request.url.path.startswith("/api"):
         return JSONResponse(status_code=404, content={"detail": str(exc.detail)})
-    return _templates.TemplateResponse("404.html", {"request": request, "current_user": None}, status_code=404)
+    return _templates.TemplateResponse(
+        request,
+        "404.html",
+        {"request": request, "current_user": None},
+        status_code=404,
+    )
 
 
 @app.exception_handler(500)
 async def server_error_handler(request: Request, exc: Exception):
     if request.url.path.startswith("/api"):
         return JSONResponse(status_code=500, content={"detail": "Internal server error"})
-    return _templates.TemplateResponse("500.html", {"request": request, "current_user": None}, status_code=500)
+    return _templates.TemplateResponse(
+        request,
+        "500.html",
+        {"request": request, "current_user": None},
+        status_code=500,
+    )
 
 
 # Simple in-memory rate limiting (quiet hours)

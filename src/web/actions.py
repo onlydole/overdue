@@ -48,7 +48,7 @@ async def shelf_create_page(
     user = await get_current_librarian_required(request, session)
     if isinstance(user, RedirectResponse):
         return user
-    return templates.TemplateResponse("shelf_create.html", {
+    return templates.TemplateResponse(request, "shelf_create.html", {
         "request": request,
         "current_user": user,
     })
@@ -69,7 +69,7 @@ async def shelf_create_submit(
     description = form.get("description", "").strip()
 
     if not name:
-        return templates.TemplateResponse("shelf_create.html", {
+        return templates.TemplateResponse(request, "shelf_create.html", {
             "request": request,
             "current_user": user,
             "error": "Shelf name is required.",
@@ -78,7 +78,7 @@ async def shelf_create_submit(
     # Check duplicate
     existing = await session.execute(select(ShelfRow).where(ShelfRow.name == name))
     if existing.scalar_one_or_none():
-        return templates.TemplateResponse("shelf_create.html", {
+        return templates.TemplateResponse(request, "shelf_create.html", {
             "request": request,
             "current_user": user,
             "error": "A shelf with that name already exists.",
@@ -111,7 +111,7 @@ async def volume_create_page(
     shelves_result = await session.execute(select(ShelfRow))
     shelves = shelves_result.scalars().all()
 
-    return templates.TemplateResponse("volume_create.html", {
+    return templates.TemplateResponse(request, "volume_create.html", {
         "request": request,
         "current_user": user,
         "shelves": shelves,
@@ -153,7 +153,7 @@ async def volume_create_submit(
             selected_shelf = int(shelf_id) if shelf_id else None
         except (ValueError, TypeError):
             selected_shelf = None
-        return templates.TemplateResponse("volume_create.html", {
+        return templates.TemplateResponse(request, "volume_create.html", {
             "request": request,
             "current_user": user,
             "shelves": shelves,
@@ -167,7 +167,7 @@ async def volume_create_submit(
     # Check content size
     content_size_kb = len(content.encode("utf-8")) / 1024
     if content_size_kb > settings.max_volume_size_kb:
-        return templates.TemplateResponse("volume_create.html", {
+        return templates.TemplateResponse(request, "volume_create.html", {
             "request": request,
             "current_user": user,
             "shelves": shelves,
@@ -300,7 +300,7 @@ async def review_volume_web(
             if candidates:
                 next_volume = candidates[0]
 
-        response = templates.TemplateResponse("partials/review_result.html", {
+        response = templates.TemplateResponse(request, "partials/review_result.html", {
             "request": request,
             "current_user": user,
             "volume": volume,

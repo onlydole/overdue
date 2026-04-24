@@ -31,7 +31,7 @@ async def login_page(
     user = await get_current_librarian_optional(request, session)
     if user:
         return RedirectResponse(url="/", status_code=302)
-    return templates.TemplateResponse("login.html", {
+    return templates.TemplateResponse(request, "login.html", {
         "request": request,
         "current_user": None,
     })
@@ -48,7 +48,7 @@ async def login_submit(
     password = form.get("password", "")
 
     if not username or not password:
-        return templates.TemplateResponse("login.html", {
+        return templates.TemplateResponse(request, "login.html", {
             "request": request,
             "current_user": None,
             "error": "Username and password are required.",
@@ -56,7 +56,7 @@ async def login_submit(
 
     result = await login_librarian(request, session, username, password)
     if not result:
-        return templates.TemplateResponse("login.html", {
+        return templates.TemplateResponse(request, "login.html", {
             "request": request,
             "current_user": None,
             "error": "Invalid username or password.",
@@ -74,7 +74,7 @@ async def register_page(
     user = await get_current_librarian_optional(request, session)
     if user:
         return RedirectResponse(url="/", status_code=302)
-    return templates.TemplateResponse("register.html", {
+    return templates.TemplateResponse(request, "register.html", {
         "request": request,
         "current_user": None,
         "avatar_choices": get_avatar_choices(),
@@ -109,7 +109,7 @@ async def register_submit(
         errors.append("Passwords do not match.")
 
     if errors:
-        return templates.TemplateResponse("register.html", {
+        return templates.TemplateResponse(request, "register.html", {
             "request": request,
             "current_user": None,
             "errors": errors,
@@ -124,7 +124,7 @@ async def register_submit(
         select(LibrarianRow).where(LibrarianRow.username == username)
     )
     if existing.scalar_one_or_none():
-        return templates.TemplateResponse("register.html", {
+        return templates.TemplateResponse(request, "register.html", {
             "request": request,
             "current_user": None,
             "errors": ["That username is already taken."],
@@ -138,7 +138,7 @@ async def register_submit(
         select(LibrarianRow).where(LibrarianRow.email == email)
     )
     if existing_email.scalar_one_or_none():
-        return templates.TemplateResponse("register.html", {
+        return templates.TemplateResponse(request, "register.html", {
             "request": request,
             "current_user": None,
             "errors": ["That email is already registered."],

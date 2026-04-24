@@ -45,7 +45,7 @@ async def settings_page(
         "expires_on": (librarian.created_at + timedelta(days=365 * 3)).strftime("%Y-%m-%d"),
         "renewed_on": renewed_on,
     }
-    return templates.TemplateResponse("settings.html", {
+    return templates.TemplateResponse(request, "settings.html", {
         "request": request,
         "current_user": user,
         "avatar_choices": get_avatar_choices(),
@@ -121,7 +121,7 @@ async def update_avatar(
             "expires_on": (librarian.created_at + timedelta(days=365 * 3)).strftime("%Y-%m-%d"),
             "renewed_on": renewed_on,
         }
-        return templates.TemplateResponse("settings.html", {
+        return templates.TemplateResponse(request, "settings.html", {
             "request": request,
             "current_user": user,
             "avatar_choices": get_avatar_choices(),
