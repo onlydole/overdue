@@ -16,7 +16,7 @@ freshness:
 
 ## Prerequisites
 
-- Python 3.14 or higher
+- Python 3.12 or higher
 - pip (or your preferred Python package manager)
 - Node.js and npm (for Tailwind CSS builds, optional)
 

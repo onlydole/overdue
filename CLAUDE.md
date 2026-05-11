@@ -8,7 +8,7 @@ Overdue is a retro pixel art-themed gamified knowledge library application. User
 
 ### Architecture
 
-- **Backend**: FastAPI (Python 3.14+), async throughout
+- **Backend**: FastAPI (Python 3.12+), async throughout
 - **Frontend**: Jinja2 templates + HTMX for interactivity, minimal vanilla JS (Alpine.js for small UI state)
 - **Styling**: Tailwind CSS with a custom dark parchment palette
 - **Database**: SQLAlchemy async with aiosqlite (SQLite by default)
@@ -16,7 +16,7 @@ Overdue is a retro pixel art-themed gamified knowledge library application. User
 - **Auth**: PyJWT (HS256) with HMAC-safe signing key derivation
 - **CLI**: Typer with subcommands for auth, shelves, volumes, bots, seed, stats
 - **Game layer**: XP engine, badge system, streaks, mood/dust decay, AI bots, pixel art avatars and icons
-- **Deployment**: Docker (Python 3.14-slim) with docker-compose, non-root user, healthcheck
+- **Deployment**: Docker (Python 3.14-slim image) with docker-compose, non-root user, healthcheck
 
 ## Key Conventions
 
