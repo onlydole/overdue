@@ -1,6 +1,8 @@
 ---
 title: Changelog
 category: changelog
+freshness:
+  exclude: true
 ---
 
 # Changelog

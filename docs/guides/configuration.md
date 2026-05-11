@@ -1,6 +1,12 @@
 ---
 title: Configuration
 category: guides
+freshness:
+  ttl_days: 180
+  sources:
+    - "src/config/settings.py"
+    - "src/config/defaults.py"
+    - "src/config/quiet_hours.py"
 ---
 
 # Configuration

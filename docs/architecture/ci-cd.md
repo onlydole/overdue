@@ -1,6 +1,11 @@
 ---
 title: CI/CD and Automation
 category: architecture
+freshness:
+  ttl_days: 365
+  sources:
+    - ".github/workflows/*.yml"
+    - ".github/scripts/*.py"
 ---
 
 # CI/CD and Automation

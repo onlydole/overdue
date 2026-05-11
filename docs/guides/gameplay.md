@@ -1,6 +1,15 @@
 ---
 title: Gameplay Guide
 category: guides
+freshness:
+  ttl_days: 180
+  sources:
+    - "src/game/xp.py"
+    - "src/game/badges.py"
+    - "src/game/streaks.py"
+    - "src/game/mood.py"
+    - "src/game/engine.py"
+    - "src/config/defaults.py"
 ---
 
 # Gameplay Guide
