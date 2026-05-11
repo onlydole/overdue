@@ -75,7 +75,7 @@ Scores every doc page on a 0--100 scale on every PR and gates the merge against 
 2. Runs `.github/scripts/freshness.py` to score each page from three deterministic signals (git age delta, frontmatter TTL, symbol drift)
 3. Adds a `git worktree` for the PR base ref and scores the baseline so the comment formatter can show per-page deltas
 4. Pages in the 35--64 gray zone are routed to a conditional [Claude Code Action](https://github.com/anthropics/claude-code-action) step that classifies each as `STILL_ACCURATE`, `DRIFTED`, or `NEEDS_HUMAN_REVIEW`
-5. `marocchino/sticky-pull-request-comment@v2` posts (or updates) a single PR comment with the median delta and per-page drops
+5. `marocchino/sticky-pull-request-comment@v3` posts (or updates) a single PR comment with the median delta and per-page drops
 6. The SLO gate fails the job when the median drops below 75 or any `critical: true` page drops below 60
 
 **Tool permissions for the semantic check:** `Read`, `Glob`, `Grep` only -- the step reads source files and docs and does not write anything.
