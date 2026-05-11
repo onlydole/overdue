@@ -40,7 +40,6 @@ on:
       - '.github/scripts/format_pr_comment.py'
       - '.github/freshness-allowlist.txt'
       - '.github/workflows/freshness.yml'
-      - '.github/workflows/freshness-stub.yml'
   push:
     branches: [main]
   workflow_dispatch: {}
