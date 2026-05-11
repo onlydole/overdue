@@ -55,13 +55,14 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - name: Checkout (full history needed for git age signal)
+      # fetch-depth: 0 — git age signal needs full history
+      - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Install uv and Python
+      - name: Install uv
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
@@ -73,7 +74,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --extra dev
 
-      - name: Compute freshness (current ref)
+      - name: Compute freshness
         id: fresh
         run: |
           set -euo pipefail
@@ -95,7 +96,7 @@ jobs:
           path: freshness.current.json
           retention-days: 30
 
-      - name: Compute baseline freshness from base ref
+      - name: Compute baseline freshness
         if: github.event_name == 'pull_request'
         env:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
@@ -121,7 +122,7 @@ jobs:
           count=$(grep -c . /tmp/gray.txt 2>/dev/null || echo 0)
           echo "count=$count" >> "$GITHUB_OUTPUT"
 
-      - name: Claude semantic check (gray zone only)
+      - name: Claude semantic check
         if: steps.gray.outputs.count != '0'
         uses: anthropics/claude-code-action@dde2242db6af13460b916652159b6ba19a598f30 # v1.0.120
         with:
