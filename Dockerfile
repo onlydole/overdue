@@ -1,8 +1,9 @@
-FROM python:3.12-slim AS base
+FROM python:3.12.13-slim AS base
 
 # Prevent stale .pyc bytecode and ensure real-time log output
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    OVERDUE_DATABASE_URL=sqlite+aiosqlite:////app/data/overdue.db
 
 WORKDIR /app
 
