@@ -1,6 +1,15 @@
 ---
 title: Architecture Overview
 category: architecture
+freshness:
+  ttl_days: 365
+  sources:
+    - "src/main.py"
+    - "src/db/*.py"
+    - "src/game/*.py"
+    - "src/web/*.py"
+    - "src/api/*.py"
+    - "src/auth/*.py"
 ---
 
 # Architecture Overview

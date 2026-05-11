@@ -1,6 +1,16 @@
 ---
 title: API Endpoints
 category: api
+freshness:
+  ttl_days: 90
+  sources:
+    - "src/api/router.py"
+    - "src/api/volumes.py"
+    - "src/api/shelves.py"
+    - "src/api/catalog.py"
+    - "src/api/reading_room.py"
+    - "src/api/bulletins.py"
+    - "src/auth/librarian.py"
 ---
 
 # API Endpoints

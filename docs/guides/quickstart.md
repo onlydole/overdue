@@ -1,6 +1,14 @@
 ---
 title: Quick Start
 category: guides
+critical: true
+freshness:
+  ttl_days: 90
+  sources:
+    - "docker-compose.yml"
+    - "src/main.py"
+    - "src/cli/main.py"
+    - "src/db/seed.py"
 ---
 
 # Quick Start

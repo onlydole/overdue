@@ -3,6 +3,7 @@
 > Your knowledge is fading. Fight back.
 
 [![Ask Dosu](https://img.shields.io/badge/Ask%20Dosu-our%20archivist-f0c543?style=flat&labelColor=0f0e17)](https://app.dosu.dev/04283041-db40-47f2-9553-9b7452d3ac02/ask)
+[![Docs Freshness](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fonlydole%2Foverdue%2Fgh-pages%2Ffreshness-badge.json)](.github/workflows/freshness.yml)
 
 Overdue is a gamified knowledge library where every fact you capture starts decaying the moment you shelve it. You're a **librarian** in a pixel art world -- shelving **volumes** of knowledge, watching their **Dewey Scores** crumble as dust settles, and racing to review them before they're lost. Earn XP ("pages read"), climb ranks from Page to Head Librarian, unlock badges, and keep your streak alive. Neglect your stacks and the Reading Room descends into chaos.
 
@@ -131,6 +132,16 @@ docs/           # Guides, API reference, architecture, changelog
 - [Authentication](docs/api/authentication.md)
 - [Architecture](docs/architecture/overview.md)
 - [Changelog](CHANGELOG.md)
+
+## Documentation Freshness
+
+Every page under `docs/` gets a 0--100 score from three deterministic signals: how old the doc is relative to the source files it describes, whether it's past the `ttl_days` it declared in frontmatter, and whether the backticked symbols it references still exist in those source files. The CI workflow posts a sticky comment with per-page deltas on every PR, routes any 35--64 gray-zone page to Claude for a semantic STILL_ACCURATE / DRIFTED / NEEDS_HUMAN_REVIEW call, and fails the build when the median drops below 75 or any `critical: true` page below 60. The badge above is regenerated on every push to `main`.
+
+Recompute locally:
+
+```bash
+uv run python .github/scripts/freshness.py
+```
 
 ## Contributing
 

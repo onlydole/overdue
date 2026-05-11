@@ -1,6 +1,15 @@
 ---
 title: Installation
 category: guides
+critical: true
+freshness:
+  ttl_days: 90
+  sources:
+    - "Dockerfile"
+    - "docker-compose.yml"
+    - "pyproject.toml"
+    - "src/main.py"
+    - "src/cli/main.py"
 ---
 
 # Installation
