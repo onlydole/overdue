@@ -29,14 +29,18 @@ on:
     paths:
       - 'docs/**'
       - 'src/**'
+      - 'scripts/**'
       - 'Dockerfile'
       - 'docker-compose.yml'
       - 'pyproject.toml'
       - 'uv.lock'
+      - 'CONTRIBUTING.md'
+      - 'TOOLS.md'
       - '.github/scripts/freshness.py'
       - '.github/scripts/format_pr_comment.py'
       - '.github/freshness-allowlist.txt'
       - '.github/workflows/freshness.yml'
+      - '.github/workflows/freshness-stub.yml'
   push:
     branches: [main]
   workflow_dispatch: {}
