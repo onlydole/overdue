@@ -89,8 +89,13 @@ jobs:
           set -euo pipefail
           git fetch --no-tags --depth=1 origin "$BASE_REF"
           git worktree add --force /tmp/freshness-base "origin/$BASE_REF"
-          (cd /tmp/freshness-base && uv run python .github/scripts/freshness.py)
-          cp /tmp/freshness-base/freshness.json freshness.main.json
+          if [ -f /tmp/freshness-base/.github/scripts/freshness.py ]; then
+            (cd /tmp/freshness-base && uv run python .github/scripts/freshness.py)
+            cp /tmp/freshness-base/freshness.json freshness.main.json
+          else
+            echo "::notice::freshness.py not present on $BASE_REF; using empty baseline"
+            echo "[]" > freshness.main.json
+          fi
           git worktree remove --force /tmp/freshness-base
 
       - name: Identify gray-zone pages
