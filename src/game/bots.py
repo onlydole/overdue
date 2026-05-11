@@ -9,21 +9,19 @@ badge collection.
 import random
 from datetime import datetime, timedelta
 
-from passlib.context import CryptContext
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.auth.passwords import hash_password
 from src.db.tables import (
-    LibrarianRow,
-    VolumeRow,
-    ShelfRow,
-    ReviewRow,
-    XPLedgerRow,
     BadgeRow,
+    LibrarianRow,
+    ReviewRow,
+    ShelfRow,
     StreakRow,
+    VolumeRow,
+    XPLedgerRow,
 )
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # ---------------------------------------------------------------------------
 # Rank thresholds (mirrored from src.config.defaults for self-containment)
@@ -285,7 +283,7 @@ async def create_bot(
 
     # -- hashed password (bots cannot log in) ------------------------------
     dummy_password = f"bot-no-login-{random.randint(100000, 999999)}"
-    hashed_password = pwd_context.hash(dummy_password)
+    hashed_password = hash_password(dummy_password)
 
     # -- create the librarian row ------------------------------------------
     bot = LibrarianRow(

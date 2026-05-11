@@ -1,21 +1,21 @@
 """Web authentication routes (login, register, logout)."""
 
 import re
+from typing import cast
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
-from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.auth.passwords import hash_password
 from src.auth.web_session import get_current_librarian_optional, login_librarian, logout_librarian
 from src.db.engine import get_session
 from src.db.tables import LibrarianRow
-from src.game.avatars import get_avatar_choices, AVATAR_CATALOG
+from src.game.avatars import AVATAR_CATALOG, get_avatar_choices
 from src.web.templates import templates
 
 router = APIRouter()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 PASSWORD_PATTERN = re.compile(
     r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
@@ -151,7 +151,7 @@ async def register_submit(
     librarian = LibrarianRow(
         username=username,
         email=email,
-        hashed_password=pwd_context.hash(password),
+        hashed_password=hash_password(cast(str, password)),
         avatar_id=avatar_id,
     )
     session.add(librarian)
