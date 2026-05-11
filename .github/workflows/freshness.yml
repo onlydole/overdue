@@ -1,14 +1,26 @@
 # Documentation Freshness
 #
-# Computes a per-page freshness score from three deterministic signals
-# (git age delta, frontmatter TTL, symbol drift) and gates merges on:
-#   - median below 75 across all non-excluded pages
-#   - any critical: true page below 60
+# Scores every doc page on a 0-100 scale from three deterministic signals
+# (git age delta, frontmatter TTL, symbol drift), posts a sticky PR comment
+# with per-page deltas, and fails the build on SLO breach:
+#   - median across non-excluded pages < 75
+#   - any critical: true page < 60
 #
-# When pages fall into the 35-64 gray zone, Claude reviews the doc against
-# its declared sources and reports STILL_ACCURATE / DRIFTED / NEEDS_HUMAN_REVIEW.
+# Pages in the 35-64 gray zone are routed to a conditional Claude semantic
+# check that reports STILL_ACCURATE / DRIFTED / NEEDS_HUMAN_REVIEW per page.
 #
-# Required secret: ANTHROPIC_API_KEY (only consumed when the gray-zone count is > 0)
+# Required secret: ANTHROPIC_API_KEY (only consumed when the gray-zone count > 0)
+#
+# Security choices:
+#   - Top-level permissions: {} denies the default GITHUB_TOKEN scope. Jobs
+#     opt in to only what they need.
+#   - Third-party actions are pinned to a commit SHA with the tag in a
+#     trailing comment so Dependabot can pick up upgrades and a reviewer
+#     can read intent at a glance.
+#   - Untrusted PR base ref is routed through env before reaching any shell.
+#     fetch-depth: 0 is required for the git age signal but otherwise we
+#     run as a fork-safe PR job (no secrets needed for the deterministic
+#     path; Claude step gates on the gray-zone count being non-zero).
 
 name: Documentation Freshness
 
@@ -20,6 +32,7 @@ on:
       - 'Dockerfile'
       - 'docker-compose.yml'
       - 'pyproject.toml'
+      - 'uv.lock'
       - '.github/scripts/freshness.py'
       - '.github/scripts/format_pr_comment.py'
       - '.github/freshness-allowlist.txt'
@@ -28,33 +41,34 @@ on:
     branches: [main]
   workflow_dispatch: {}
 
+permissions: {}
+
 concurrency:
   group: docs-freshness-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
-
-permissions:
-  contents: read
-  pull-requests: write
 
 jobs:
   freshness:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Checkout (full history needed for git age signal)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+          python-version: "3.12"
 
       - name: Install dependencies
         run: uv sync --extra dev
@@ -75,7 +89,7 @@ jobs:
           PY
 
       - name: Upload freshness report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: freshness-report
           path: freshness.current.json
@@ -93,7 +107,7 @@ jobs:
             (cd /tmp/freshness-base && uv run python .github/scripts/freshness.py)
             cp /tmp/freshness-base/freshness.json freshness.main.json
           else
-            echo "::notice::freshness.py not present on $BASE_REF; using empty baseline"
+            echo "::notice::freshness.py not on $BASE_REF; using empty baseline"
             echo "[]" > freshness.main.json
           fi
           git worktree remove --force /tmp/freshness-base
@@ -109,19 +123,23 @@ jobs:
 
       - name: Claude semantic check (gray zone only)
         if: steps.gray.outputs.count != '0'
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@dde2242db6af13460b916652159b6ba19a598f30 # v1.0.120
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          claude_args: --max-turns 8 --allowedTools "Read,Glob,Grep"
+          claude_args: |
+            --max-turns 8
+            --allowedTools "Read,Glob,Grep"
+            --model claude-sonnet-4-6
           prompt: |
-            Read each page listed in /tmp/gray.txt and the source files in
-            its frontmatter sources. For each, decide whether the documented
-            behavior still matches the code. Respond with STILL_ACCURATE,
-            DRIFTED, or NEEDS_HUMAN_REVIEW and a one-line reason.
+            Read each page listed in /tmp/gray.txt and the source files in its
+            frontmatter `sources` block. For each, decide whether the
+            documented behavior still matches the code. Respond with one of
+            STILL_ACCURATE, DRIFTED, or NEEDS_HUMAN_REVIEW and a one-line reason.
 
       - name: Build PR comment body
         if: github.event_name == 'pull_request'
         run: |
+          set -euo pipefail
           uv run python .github/scripts/format_pr_comment.py \
             --current freshness.current.json \
             --baseline freshness.main.json \
@@ -130,13 +148,14 @@ jobs:
 
       - name: Post sticky PR comment
         if: github.event_name == 'pull_request'
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@0ea0beb66eb9baf113663a64ec522f60e49231c0 # v3.0.4
         with:
           header: docs-freshness
           path: /tmp/comment.md
 
       - name: SLO gate
         run: |
+          set -euo pipefail
           python <<'PY'
           import json, statistics, sys
           data = json.load(open('freshness.current.json'))

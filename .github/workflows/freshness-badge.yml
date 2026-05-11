@@ -5,6 +5,17 @@
 # img.shields.io at this file.
 #
 # Color thresholds: green >=85, yellow 65-84, red <65.
+#
+# Security choices:
+#   - Top-level permissions: {} denies the default GITHUB_TOKEN scope; the
+#     publish job opts into contents: write because it pushes a single file
+#     to the gh-pages branch.
+#   - Third-party actions are pinned to a commit SHA with the tag in a
+#     trailing comment.
+#   - The gh-pages branch is created on first run via a temp init+push
+#     rather than maintaining a parallel worktree of the source repo.
+#   - No untrusted input (PR title/body/branch) is referenced; this is a
+#     push-to-main job with no fork PR surface.
 
 name: Update Docs Freshness Badge
 
@@ -17,38 +28,40 @@ on:
       - 'Dockerfile'
       - 'docker-compose.yml'
       - 'pyproject.toml'
+      - 'uv.lock'
       - '.github/scripts/freshness.py'
       - '.github/scripts/build_badge.py'
       - '.github/freshness-allowlist.txt'
       - '.github/workflows/freshness-badge.yml'
   workflow_dispatch: {}
 
+permissions: {}
+
 concurrency:
   group: docs-freshness-badge
   cancel-in-progress: false
-
-permissions:
-  contents: write
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Checkout (full history needed for git age signal)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+          python-version: "3.12"
 
       - name: Install dependencies
         run: uv sync --extra dev
@@ -90,7 +103,7 @@ jobs:
 
           if git log -1 --oneline >/dev/null 2>&1; then
             if git diff --cached --quiet; then
-              echo "No badge changes; nothing to push"
+              echo "::notice::Badge unchanged; skipping push"
               exit 0
             fi
             git commit -m "chore: update docs freshness badge to $BADGE_MESSAGE"
