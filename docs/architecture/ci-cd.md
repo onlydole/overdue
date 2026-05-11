@@ -63,6 +63,54 @@ Bash is allowed without restriction. This is a deliberate trade-off between tool
 | `contents: write` permission | Allows creating branches and committing changes |
 | `pull-requests: write` permission | Allows opening follow-up PRs |
 
+### Documentation Freshness (`freshness.yml`)
+
+Scores every doc page on a 0--100 scale on every PR and gates the merge against an SLO.
+
+**Trigger:** Runs on PRs touching `docs/`, `src/`, the freshness script, the allowlist, or this workflow file. Also runs on `push` to `main` to refresh the baseline artifact.
+
+**How it works:**
+
+1. Checks out the PR ref with full history (`fetch-depth: 0`)
+2. Runs `.github/scripts/freshness.py` to score each page from three deterministic signals (git age delta, frontmatter TTL, symbol drift)
+3. Adds a `git worktree` for the PR base ref and scores the baseline so the comment formatter can show per-page deltas
+4. Pages in the 35--64 gray zone are routed to a conditional [Claude Code Action](https://github.com/anthropics/claude-code-action) step that classifies each as `STILL_ACCURATE`, `DRIFTED`, or `NEEDS_HUMAN_REVIEW`
+5. `marocchino/sticky-pull-request-comment@v2` posts (or updates) a single PR comment with the median delta and per-page drops
+6. The SLO gate fails the job when the median drops below 75 or any `critical: true` page drops below 60
+
+**Tool permissions for the semantic check:** `Read`, `Glob`, `Grep` only -- the step reads source files and docs and does not write anything.
+
+**Required repository configuration:**
+
+| Setting | Purpose |
+|---|---|
+| `ANTHROPIC_API_KEY` secret | Authenticates the gray-zone semantic check |
+| `contents: read` permission | Reads the repo |
+| `pull-requests: write` permission | Posts the sticky PR comment |
+
+**Required status check setup:**
+
+To make merges actually wait on the freshness gate, mark this workflow as a required status check on the protected branch.
+
+1. Settings -> Branches -> Add rule (or edit the existing rule for `main`)
+2. Enable **Require status checks to pass before merging**
+3. Search for and select **freshness** (the job ID from this workflow)
+4. Save
+
+Authors will still see the comment with the median delta on every PR even without protection rules, but only the required-status-check setup blocks merges on a failing SLO.
+
+**Local check:**
+
+Run the pipeline against the working tree before pushing:
+
+```bash
+uv run python .github/scripts/freshness.py
+jq '[.[] | .score] | (add / length)' freshness.json    # mean
+jq '[.[] | select(.score < 75)]' freshness.json         # below-floor pages
+```
+
+The generated `freshness.json` is gitignored.
+
 ## Documentation structure
 
 The doc-update workflow scans all files under `docs/` and any `README.md` in the repository root. Documentation that references code behavior, configuration values, or game mechanics is most likely to need updates when those areas change.
