@@ -190,6 +190,13 @@ class TestRender:
         out = formatter.render(formatter.compute_diff(cur, base))
         assert "No pages dropped" in out
 
+    def test_singular_noun_for_one_drop(self, formatter):
+        cur = [_page("a.md", 80, missing=["fooBar"])]
+        base = [_page("a.md", 100)]
+        out = formatter.render(formatter.compute_diff(cur, base))
+        assert "1 page dropped:" in out
+        assert "1 pages dropped" not in out
+
 
 class TestCLI:
     def test_main_reads_files_and_prints_to_stdout(

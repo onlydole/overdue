@@ -83,7 +83,8 @@ def render(diff: dict[str, Any]) -> str:
         lines.append("No pages dropped.")
         return "\n".join(lines) + "\n"
 
-    lines.append(f"{len(drops)} pages dropped:")
+    noun = "page" if len(drops) == 1 else "pages"
+    lines.append(f"{len(drops)} {noun} dropped:")
     max_path = max(len(d["path"]) for d in drops)
     path_col = max_path + 7
     for d in drops:
