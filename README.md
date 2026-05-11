@@ -56,13 +56,13 @@ uvicorn src.main:app --reload
 
 | Layer | Tech |
 |---|---|
-| Backend | FastAPI (Python 3.12+), fully async |
+| Backend | FastAPI (Python 3.14+), fully async |
 | Frontend | Jinja2 + HTMX, Alpine.js for small UI state |
 | Styling | Tailwind CSS with custom dark parchment palette |
 | Database | SQLAlchemy async + aiosqlite (SQLite default) |
 | Auth | PyJWT (HS256) with HMAC-safe key derivation |
 | CLI | Typer with subcommands for everything |
-| Deployment | Docker (Python 3.12-slim), non-root, healthcheck |
+| Deployment | Docker (Python 3.14-slim), non-root, healthcheck |
 
 ## API Quick Reference
 
