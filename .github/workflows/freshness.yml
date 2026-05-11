@@ -3,8 +3,8 @@
 # Scores every doc page on a 0-100 scale from three deterministic signals
 # (git age delta, frontmatter TTL, symbol drift), posts a sticky PR comment
 # with per-page deltas, and fails the build on SLO breach:
-#   - median across non-excluded pages < 75
-#   - any critical: true page < 60
+#   - median across non-excluded pages < 75 (strict: median is a soft signal)
+#   - any critical: true page <= 60 (inclusive: hard floor, hitting it counts)
 #
 # Pages in the 35-64 gray zone are routed to a conditional Claude semantic
 # check that reports STILL_ACCURATE / DRIFTED / NEEDS_HUMAN_REVIEW per page.
@@ -126,8 +126,11 @@ jobs:
           count=$(jq '[.[] | select(.score >= 35 and .score < 65)] | length' freshness.current.json)
           echo "count=$count" >> "$GITHUB_OUTPUT"
 
+      # Soft signal: a Claude flake or auth hiccup must not block the
+      # deterministic per-page comment and SLO gate.
       - name: Claude semantic check
         if: steps.gray.outputs.count != '0'
+        continue-on-error: true
         uses: anthropics/claude-code-action@dde2242db6af13460b916652159b6ba19a598f30 # v1.0.120
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -174,8 +177,8 @@ jobs:
               print(f'::error::Median freshness {int(median)} below SLO floor 75')
               failed = True
           for r in data:
-              if r.get('critical') and r['score'] < 60:
-                  print(f'::error::Critical page {r["path"]} score {r["score"]} below floor 60')
+              if r.get('critical') and r['score'] <= 60:
+                  print(f'::error::Critical page {r["path"]} score {r["score"]} at or below floor 60')
                   failed = True
           if failed:
               sys.exit(1)
