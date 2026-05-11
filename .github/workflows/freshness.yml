@@ -119,7 +119,7 @@ jobs:
           set -euo pipefail
           jq -r '.[] | select(.score >= 35 and .score < 65) | .path' \
             freshness.current.json > /tmp/gray.txt
-          count=$(grep -c . /tmp/gray.txt 2>/dev/null || echo 0)
+          count=$(jq '[.[] | select(.score >= 35 and .score < 65)] | length' freshness.current.json)
           echo "count=$count" >> "$GITHUB_OUTPUT"
 
       - name: Claude semantic check
