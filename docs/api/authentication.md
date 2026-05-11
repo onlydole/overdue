@@ -1,6 +1,15 @@
 ---
 title: Authentication
 category: api
+critical: true
+freshness:
+  ttl_days: 90
+  sources:
+    - "src/auth/library_card.py"
+    - "src/auth/web_session.py"
+    - "src/auth/librarian.py"
+    - "src/auth/dependencies.py"
+    - "src/auth/circulation.py"
 ---
 
 # Authentication

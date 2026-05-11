@@ -1,0 +1,31 @@
+# Documentation freshness allowlist.
+# One pattern per line, fnmatch globs. Lines starting with '#' are comments.
+# Filters tokens that pass the camel-case-or-period candidate check but are
+# not real symbols (filenames, framework attributes, library names, CSS values).
+
+# Filename references in backticks
+*.md
+*.html
+*.py
+*.css
+*.js
+*.json
+*.yml
+*.yaml
+*.toml
+
+# CSS values
+currentColor
+
+# Library / package names referenced in narrative prose
+PyJWT
+
+# Keyboard arrow keys
+Arrow*
+
+# GitHub Actions input keys referenced in docs
+allowedTools
+
+# FastAPI / Starlette request attribute paths
+request.state
+request.session

@@ -1,6 +1,12 @@
 ---
 title: Error Reference
 category: api
+freshness:
+  ttl_days: 90
+  sources:
+    - "src/errors/codes.py"
+    - "src/errors/handlers.py"
+    - "src/errors/incidents.py"
 ---
 
 # Error Reference

@@ -1,6 +1,10 @@
 ---
 title: Rate Limiting
 category: api
+freshness:
+  ttl_days: 90
+  sources:
+    - "src/config/quiet_hours.py"
 ---
 
 # Rate Limiting (Quiet Hours)

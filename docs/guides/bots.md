@@ -1,6 +1,11 @@
 ---
 title: AI Bot Players
 category: guides
+freshness:
+  ttl_days: 180
+  sources:
+    - "src/game/bots.py"
+    - "src/cli/commands/bots.py"
 ---
 
 # AI Bot Players
