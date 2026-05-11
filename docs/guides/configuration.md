@@ -7,6 +7,7 @@ freshness:
     - "src/config/settings.py"
     - "src/config/defaults.py"
     - "src/config/quiet_hours.py"
+    - "src/web/mood_middleware.py"
 ---
 
 # Configuration

@@ -1,3 +1,15 @@
+---
+title: Contributing
+freshness:
+  ttl_days: 180
+  sources:
+    - "pyproject.toml"
+    - "Dockerfile"
+    - "docker-compose.yml"
+    - "src/main.py"
+    - "src/cli/main.py"
+---
+
 # Contributing to Overdue
 
 Thanks for wanting to help out! Whether you're fixing a typo, adding a feature, or reporting a bug, every contribution makes the library a better place.

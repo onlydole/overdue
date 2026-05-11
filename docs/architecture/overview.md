@@ -10,6 +10,11 @@ freshness:
     - "src/web/*.py"
     - "src/api/*.py"
     - "src/auth/*.py"
+    - "src/cli/*.py"
+    - "src/cli/commands/*.py"
+    - "src/config/*.py"
+    - "src/errors/*.py"
+    - "src/models/*.py"
 ---
 
 # Architecture Overview

@@ -1,3 +1,15 @@
+---
+title: Developer & Agent Tooling Reference
+freshness:
+  ttl_days: 180
+  sources:
+    - "pyproject.toml"
+    - "src/cli/main.py"
+    - "src/cli/commands/*.py"
+    - "scripts/*.py"
+    - ".github/scripts/*.py"
+---
+
 # TOOLS.md -- Overdue Developer & Agent Tooling Reference
 
 This document catalogs every tool, command, and script available for developing, testing, deploying, and operating the Overdue application. It is designed for both human contributors and AI agents.

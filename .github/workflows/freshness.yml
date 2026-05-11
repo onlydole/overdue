@@ -29,14 +29,18 @@ on:
     paths:
       - 'docs/**'
       - 'src/**'
+      - 'scripts/**'
       - 'Dockerfile'
       - 'docker-compose.yml'
       - 'pyproject.toml'
       - 'uv.lock'
+      - 'CONTRIBUTING.md'
+      - 'TOOLS.md'
       - '.github/scripts/freshness.py'
       - '.github/scripts/format_pr_comment.py'
       - '.github/freshness-allowlist.txt'
       - '.github/workflows/freshness.yml'
+      - '.github/workflows/freshness-stub.yml'
   push:
     branches: [main]
   workflow_dispatch: {}
@@ -54,6 +58,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      id-token: write  # claude-code-action authenticates to the Anthropic API via OIDC
     steps:
       # fetch-depth: 0 — git age signal needs full history
       - name: Checkout

@@ -6,6 +6,8 @@ freshness:
   sources:
     - ".github/workflows/*.yml"
     - ".github/scripts/*.py"
+    - ".github/dependabot.yml"
+    - ".github/freshness-allowlist.txt"
 ---
 
 # CI/CD and Automation
