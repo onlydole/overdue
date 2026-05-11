@@ -2,13 +2,14 @@
 
 import re
 from datetime import datetime, timedelta
+from typing import cast
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from passlib.context import CryptContext
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.library_card import create_library_card, verify_library_card
+from src.auth.passwords import hash_password, verify_password
 from src.config.settings import settings
 from src.db.engine import get_session
 from src.db.tables import BadgeRow, LibrarianRow, StreakRow
@@ -18,7 +19,6 @@ from src.game.xp import get_next_rank, get_rank, get_recent_awards
 from src.models.librarian import LibrarianCreate, LibrarianLogin, LibrarianResponse, LibraryCard
 
 router = APIRouter()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 PASSWORD_PATTERN = re.compile(
     r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
@@ -55,7 +55,7 @@ async def register(
     librarian = LibrarianRow(
         username=body.username,
         email=body.email,
-        hashed_password=pwd_context.hash(body.password),
+        hashed_password=hash_password(body.password),
     )
     session.add(librarian)
     await session.commit()
@@ -74,7 +74,7 @@ async def login(
     )
     librarian = result.scalar_one_or_none()
 
-    if not librarian or not pwd_context.verify(body.password, librarian.hashed_password):
+    if not librarian or not verify_password(body.password, cast(str, librarian.hashed_password)):
         raise HTTPException(
             status_code=401,
             detail="You'll need a library card to access the stacks.",

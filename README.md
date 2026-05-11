@@ -62,7 +62,7 @@ uvicorn src.main:app --reload
 | Database | SQLAlchemy async + aiosqlite (SQLite default) |
 | Auth | PyJWT (HS256) with HMAC-safe key derivation |
 | CLI | Typer with subcommands for everything |
-| Deployment | Docker (Python 3.12-slim), non-root, healthcheck |
+| Deployment | Docker (Python 3.14-slim image), non-root, healthcheck |
 
 ## API Quick Reference
 

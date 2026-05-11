@@ -29,10 +29,13 @@ on:
     paths:
       - 'docs/**'
       - 'src/**'
+      - 'scripts/**'
       - 'Dockerfile'
       - 'docker-compose.yml'
       - 'pyproject.toml'
       - 'uv.lock'
+      - 'CONTRIBUTING.md'
+      - 'TOOLS.md'
       - '.github/scripts/freshness.py'
       - '.github/scripts/format_pr_comment.py'
       - '.github/freshness-allowlist.txt'
