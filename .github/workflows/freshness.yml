@@ -54,6 +54,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      id-token: write  # claude-code-action authenticates to the Anthropic API via OIDC
     steps:
       # fetch-depth: 0 — git age signal needs full history
       - name: Checkout
