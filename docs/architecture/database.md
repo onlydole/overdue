@@ -40,7 +40,7 @@ The relationship metadata lives directly on the ORM classes; see the `relationsh
 
 ## Migrations
 
-Schema lives entirely in `tables.py`; there is no Alembic migration history. On startup the engine calls `metadata.create_all`, which is safe for the alpha because no schema has ever been removed -- only additive changes have shipped. Adding a destructive change means introducing migrations; that work is not yet planned.
+Schema lives entirely in `tables.py`; there is no Alembic migration history. On startup the engine creates all tables from the declarative metadata, which is safe for the alpha because no schema has ever been removed -- only additive changes have shipped. Adding a destructive change means introducing migrations; that work is not yet planned.
 
 ## Seeding
 
