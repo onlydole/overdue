@@ -27,7 +27,6 @@ dependencies = [
     "pydantic[email]>=2.13.4",
     "pydantic-settings>=2.14.1",
     "PyJWT>=2.12.1",
-    "passlib[bcrypt]>=1.7.4",
     "bcrypt>=5.0.0,<5.1.0",
     "typer>=0.25.1",
     "rich>=15.0.0",
