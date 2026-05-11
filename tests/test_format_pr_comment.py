@@ -109,13 +109,14 @@ class TestRender:
         cur = [_page("a.md", 80)]
         base = [_page("a.md", 90)]
         out = formatter.render(formatter.compute_diff(cur, base))
-        assert out.splitlines()[0] == "Documentation freshness: 80 -> 90 (-10)"
+        # baseline -> current, matching the per-page drop lines
+        assert out.splitlines()[0] == "Documentation freshness: 90 -> 80 (-10)"
 
     def test_header_format_with_positive_delta(self, formatter):
         cur = [_page("a.md", 95)]
         base = [_page("a.md", 80)]
         out = formatter.render(formatter.compute_diff(cur, base))
-        assert out.splitlines()[0] == "Documentation freshness: 95 -> 80 (+15)"
+        assert out.splitlines()[0] == "Documentation freshness: 80 -> 95 (+15)"
 
     def test_header_format_with_zero_delta(self, formatter):
         cur = [_page("a.md", 90)]
@@ -206,5 +207,5 @@ class TestCLI:
         )
         out = capsys.readouterr().out
         assert rc == 0
-        assert "Documentation freshness: 80 -> 95 (-15)" in out
+        assert "Documentation freshness: 95 -> 80 (-15)" in out
         assert "(signature drift on fooBar)" in out

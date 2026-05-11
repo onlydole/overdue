@@ -74,8 +74,8 @@ def render(diff: dict[str, Any]) -> str:
     delta = diff["delta"]
     sign = "+" if delta >= 0 else ""
     lines = [
-        f"Documentation freshness: {diff['current_median']} -> "
-        f"{diff['baseline_median']} ({sign}{delta})",
+        f"Documentation freshness: {diff['baseline_median']} -> "
+        f"{diff['current_median']} ({sign}{delta})",
         "",
     ]
     drops = diff["drops"]

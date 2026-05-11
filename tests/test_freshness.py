@@ -173,6 +173,78 @@ class TestScoreFormula:
         )
 
 
+class TestDottedSymbols:
+    def test_simple_token_present(self, freshness):
+        assert freshness.compute_missing({"getUser"}, {"getUser"}) == set()
+
+    def test_simple_token_missing(self, freshness):
+        assert freshness.compute_missing({"getUser"}, set()) == {"getUser"}
+
+    def test_dotted_present_when_all_components_live(self, freshness):
+        assert freshness.compute_missing(
+            {"MyClass.my_method"}, {"MyClass", "my_method"}
+        ) == set()
+
+    def test_dotted_missing_when_only_some_components_live(self, freshness):
+        assert freshness.compute_missing(
+            {"MyClass.my_method"}, {"MyClass"}
+        ) == {"MyClass.my_method"}
+
+    def test_three_part_dotted(self, freshness):
+        assert freshness.compute_missing(
+            {"users.api.create"}, {"users", "api", "create"}
+        ) == set()
+
+
+class TestFrontmatterDefensive:
+    def test_invalid_yaml_returns_empty(self, freshness):
+        raw = "---\ntitle: [unclosed\n---\n# doc\n"
+        assert freshness.parse_frontmatter(raw) == {}
+
+    def test_yaml_scalar_returns_empty(self, freshness):
+        raw = "---\njust a string\n---\n# doc\n"
+        assert freshness.parse_frontmatter(raw) == {}
+
+    def test_is_excluded_with_null_freshness(self, freshness):
+        assert freshness.is_excluded({"freshness": None}) is False
+
+    def test_is_excluded_with_scalar_freshness(self, freshness):
+        assert freshness.is_excluded({"freshness": "weird"}) is False
+
+    def test_is_excluded_with_list_freshness(self, freshness):
+        assert freshness.is_excluded({"freshness": []}) is False
+
+
+class TestLastTouchedFallback:
+    def test_falls_back_when_git_subprocess_fails(
+        self, freshness, tmp_path, monkeypatch
+    ):
+        import subprocess as sp
+
+        def boom(*a, **kw):
+            raise sp.CalledProcessError(128, ["git", "log"])
+
+        monkeypatch.setattr(freshness.subprocess, "check_output", boom)
+        p = tmp_path / "x.md"
+        p.write_text("hi")
+        result = freshness.last_touched(p)
+        from datetime import datetime
+        assert isinstance(result, datetime)
+
+    def test_falls_back_when_git_not_installed(
+        self, freshness, tmp_path, monkeypatch
+    ):
+        def boom(*a, **kw):
+            raise FileNotFoundError("git not on PATH")
+
+        monkeypatch.setattr(freshness.subprocess, "check_output", boom)
+        p = tmp_path / "x.md"
+        p.write_text("hi")
+        result = freshness.last_touched(p)
+        from datetime import datetime
+        assert isinstance(result, datetime)
+
+
 class TestScoreIntegration:
     def test_excluded_doc_returns_none(self, freshness, tmp_path, monkeypatch):
         monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)

@@ -41,12 +41,16 @@ CAMEL_TRANSITION_RE = re.compile(r"[a-z][A-Z]")
 
 
 def last_touched(path: Path) -> datetime:
-    """Last commit time, falling back to mtime for new/untracked files."""
-    iso = subprocess.check_output(
-        ["git", "log", "-1", "--follow", "--format=%cI", "--", str(path)],
-        cwd=REPO_ROOT,
-        text=True,
-    ).strip()
+    """Last commit time, falling back to mtime for new/untracked files
+    or when git itself is unavailable (non-repo cwd, missing binary)."""
+    try:
+        iso = subprocess.check_output(
+            ["git", "log", "-1", "--follow", "--format=%cI", "--", str(path)],
+            cwd=REPO_ROOT,
+            text=True,
+        ).strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        iso = ""
     if iso:
         return datetime.fromisoformat(iso)
     if path.exists():
@@ -86,12 +90,28 @@ def parse_frontmatter(raw: str) -> dict[str, Any]:
     fm_match = re.match(r"^---\n(.*?)\n---\n", raw, re.DOTALL)
     if not fm_match:
         return {}
-    parsed = yaml.safe_load(fm_match.group(1))
+    try:
+        parsed = yaml.safe_load(fm_match.group(1))
+    except yaml.YAMLError:
+        return {}
     return parsed if isinstance(parsed, dict) else {}
 
 
 def is_excluded(front: dict[str, Any]) -> bool:
-    return bool(front.get("freshness", {}).get("exclude"))
+    freshness = front.get("freshness")
+    if not isinstance(freshness, dict):
+        return False
+    return bool(freshness.get("exclude"))
+
+
+def compute_missing(referenced: set[str], live: set[str]) -> set[str]:
+    """A token is missing iff neither the whole token nor every one of its
+    dot-separated components is present in the live symbol set. This lets
+    `MyClass.my_method` pass when both `MyClass` and `my_method` are defined."""
+    return {
+        t for t in referenced
+        if t not in live and not all(part and part in live for part in t.split("."))
+    }
 
 
 def compute_score(
@@ -136,7 +156,7 @@ def score(doc: Path, allowlist: list[str] | None = None) -> dict[str, Any] | Non
     youngest_source_age = min((days(last_touched(s)) for s in sources), default=doc_age)
 
     referenced = extract_referenced_symbols(raw)
-    missing = referenced - _live_symbols(sources)
+    missing = compute_missing(referenced, _live_symbols(sources))
     missing = apply_allowlist(missing, allowlist)
 
     ttl = freshness.get("ttl_days")
