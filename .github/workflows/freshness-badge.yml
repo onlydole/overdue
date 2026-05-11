@@ -1,0 +1,100 @@
+# Update Docs Freshness Badge
+#
+# On every push to main, recomputes the freshness median and publishes a
+# Shields.io endpoint badge JSON to the gh-pages branch. The README points
+# img.shields.io at this file.
+#
+# Color thresholds: green >=85, yellow 65-84, red <65.
+
+name: Update Docs Freshness Badge
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'src/**'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'pyproject.toml'
+      - '.github/scripts/freshness.py'
+      - '.github/scripts/build_badge.py'
+      - '.github/freshness-allowlist.txt'
+      - '.github/workflows/freshness-badge.yml'
+  workflow_dispatch: {}
+
+concurrency:
+  group: docs-freshness-badge
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Compute freshness and build badge
+        id: build
+        run: |
+          set -euo pipefail
+          uv run python .github/scripts/freshness.py
+          uv run python .github/scripts/build_badge.py \
+            --input freshness.json \
+            --output freshness-badge.json
+          cat freshness-badge.json
+          MESSAGE=$(python -c "import json; print(json.load(open('freshness-badge.json'))['message'])")
+          echo "message=$MESSAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Publish badge to gh-pages
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BADGE_MESSAGE: ${{ steps.build.outputs.message }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          WORK=$(mktemp -d)
+          cp "$GITHUB_WORKSPACE/freshness-badge.json" "$WORK/freshness-badge.new.json"
+          cd "$WORK"
+
+          git init --quiet --initial-branch=gh-pages
+          git config user.name onlydole
+          git config user.email 117500+onlydole@users.noreply.github.com
+          git remote add origin "https://x-access-token:$GH_TOKEN@github.com/$REPO.git"
+
+          if git fetch --quiet --depth=1 origin gh-pages 2>/dev/null; then
+            git reset --hard FETCH_HEAD
+          fi
+
+          mv freshness-badge.new.json freshness-badge.json
+          git add freshness-badge.json
+
+          if git log -1 --oneline >/dev/null 2>&1; then
+            if git diff --cached --quiet; then
+              echo "No badge changes; nothing to push"
+              exit 0
+            fi
+            git commit -m "chore: update docs freshness badge to $BADGE_MESSAGE"
+          else
+            git commit -m "chore: initialize gh-pages with docs freshness badge ($BADGE_MESSAGE)"
+          fi
+          git push origin gh-pages
