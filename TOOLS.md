@@ -318,9 +318,12 @@ Install dev dependencies: `pip install -e ".[dev]"`
 ### Dependabot (`.github/dependabot.yml`)
 
 Automated dependency updates configured for:
-- **pip**: Weekly updates, prefix `chore(deps):`
-- **docker**: Weekly updates, prefix `chore(deps):`
-- **github-actions**: Weekly updates, prefix `chore(deps):`
+- **pip (uv)**: Weekly updates, prefix `chore(deps):`, minor/patch grouped as `uv-minor-patch`
+- **npm**: Weekly updates, prefix `chore(deps):`, minor/patch grouped as `npm-minor-patch`
+- **docker**: Weekly updates, prefix `chore(deps):`, minor/patch grouped as `docker-minor-patch`
+- **github-actions**: Weekly updates, prefix `chore(deps):`, minor/patch grouped as `github-actions-minor-patch`
+
+Minor and patch version updates are grouped by ecosystem to reduce PR noise; major updates remain as individual PRs for careful review.
 
 ## Jinja2 Template Globals & Filters
 
