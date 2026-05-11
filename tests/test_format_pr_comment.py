@@ -49,7 +49,7 @@ class TestReasonFor:
     def test_signature_drift_named_after_new_missing_symbol(self, formatter):
         cur = _page("a.md", 70, missing=["createUser"])
         base = _page("a.md", 90, missing=[])
-        assert formatter.reason_for(cur, base) == "signature drift on createUser"
+        assert formatter.reason_for(cur, base) == "signature drift on `createUser`"
 
     def test_ttl_exceeded(self, formatter):
         cur = _page("a.md", 70, doc_age_days=104, source_age_days=104, ttl_days=90)
@@ -95,107 +95,93 @@ class TestComputeDelta:
         diff = formatter.compute_diff(cur, base)
         assert diff["drops"] == []
 
-    def test_medians_use_statistics_median(self, formatter):
-        cur = [_page("a.md", 80), _page("b.md", 90), _page("c.md", 70)]
-        base = [_page("a.md", 90), _page("b.md", 90), _page("c.md", 90)]
+    def test_mean_and_median_both_returned(self, formatter):
+        cur = [_page("a.md", 60, critical=True), _page("b.md", 100), _page("c.md", 100)]
+        base = [_page("a.md", 100, critical=True), _page("b.md", 100), _page("c.md", 100)]
         diff = formatter.compute_diff(cur, base)
-        assert diff["current_median"] == 80
-        assert diff["baseline_median"] == 90
-        assert diff["delta"] == -10
+        # 1 page at 60 + 2 at 100 -> mean 87, median 100
+        assert diff["current_mean"] == 87
+        assert diff["current_median"] == 100
+        assert diff["delta_mean"] == -13
+
+    def test_critical_breach_reported(self, formatter):
+        cur = [
+            _page("a.md", 60, critical=True),
+            _page("b.md", 100, critical=True),
+            _page("c.md", 30),  # not critical, no breach
+        ]
+        diff = formatter.compute_diff(cur, [])
+        assert diff["breaches"] == [{"path": "a.md", "score": 60}]
 
 
 class TestRender:
-    def test_header_format_with_negative_delta(self, formatter):
-        cur = [_page("a.md", 80)]
-        base = [_page("a.md", 90)]
+    def test_headline_uses_mean(self, formatter):
+        # 1 drop from 100 -> 60 across 11 pages: mean goes 100 -> 96
+        cur = [_page("a.md", 60, missing=["x"])] + [_page(f"p{i}.md", 100) for i in range(10)]
+        base = [_page("a.md", 100)] + [_page(f"p{i}.md", 100) for i in range(10)]
         out = formatter.render(formatter.compute_diff(cur, base))
-        # baseline -> current, matching the per-page drop lines
-        assert out.splitlines()[0] == "Documentation freshness: 90 -> 80 (-10)"
+        assert "## 📚 Documentation freshness — 100 → 96 (-4)" in out.splitlines()[0]
 
-    def test_header_format_with_positive_delta(self, formatter):
+    def test_headline_positive_delta_shows_plus(self, formatter):
         cur = [_page("a.md", 95)]
         base = [_page("a.md", 80)]
         out = formatter.render(formatter.compute_diff(cur, base))
-        assert out.splitlines()[0] == "Documentation freshness: 80 -> 95 (+15)"
+        assert "→ 95 (+15)" in out
 
-    def test_header_format_with_zero_delta(self, formatter):
+    def test_headline_zero_delta_shows_plus_zero(self, formatter):
         cur = [_page("a.md", 90)]
         base = [_page("a.md", 90)]
         out = formatter.render(formatter.compute_diff(cur, base))
-        assert out.splitlines()[0] == "Documentation freshness: 90 -> 90 (+0)"
+        assert "→ 90 (+0)" in out
 
-    def test_drop_lines_match_post_format(self, formatter):
-        cur = [
-            _page(
-                "docs/api/users.md",
-                71,
-                doc_age_days=60,
-                source_age_days=60,
-                missing=["createUser"],
-            ),
-            _page(
-                "docs/guides/auth.md",
-                78,
-                doc_age_days=104,
-                source_age_days=104,
-                ttl_days=90,
-            ),
-            _page(
-                "docs/quickstart.md",
-                79,
-                doc_age_days=30,
-                source_age_days=2,
-            ),
-        ]
-        base = [
-            _page(
-                "docs/api/users.md",
-                92,
-                doc_age_days=60,
-                source_age_days=60,
-                missing=[],
-            ),
-            _page(
-                "docs/guides/auth.md",
-                88,
-                doc_age_days=80,
-                source_age_days=80,
-                ttl_days=90,
-            ),
-            _page(
-                "docs/quickstart.md",
-                85,
-                doc_age_days=30,
-                source_age_days=50,
-            ),
-        ]
+    def test_drop_table_format(self, formatter):
+        cur = [_page("docs/api/users.md", 71, missing=["createUser"])]
+        base = [_page("docs/api/users.md", 92)]
         out = formatter.render(formatter.compute_diff(cur, base))
-        assert "3 pages dropped:" in out
-        assert (
-            "  docs/api/users.md         92 -> 71  (signature drift on createUser)"
-            in out
-        )
-        assert (
-            "  docs/guides/auth.md       88 -> 78  (TTL exceeded by 14 days)"
-            in out
-        )
-        assert (
-            "  docs/quickstart.md        85 -> 79  (referenced source files were edited)"
-            in out
-        )
+        assert "| Page | Before → After | Reason |" in out
+        assert "|---|---|---|" in out
+        assert "`docs/api/users.md`" in out
+        assert "92 → 71" in out
+        assert "signature drift on `createUser`" in out
 
-    def test_no_drops_emits_friendly_line(self, formatter):
+    def test_no_drops_shows_check_mark(self, formatter):
         cur = [_page("a.md", 90)]
         base = [_page("a.md", 90)]
         out = formatter.render(formatter.compute_diff(cur, base))
-        assert "No pages dropped" in out
+        assert "✅ No pages dropped." in out
 
     def test_singular_noun_for_one_drop(self, formatter):
         cur = [_page("a.md", 80, missing=["fooBar"])]
         base = [_page("a.md", 100)]
         out = formatter.render(formatter.compute_diff(cur, base))
-        assert "1 page dropped:" in out
+        assert "1 page dropped" in out
         assert "1 pages dropped" not in out
+
+    def test_slo_breach_callout_when_critical_at_floor(self, formatter):
+        cur = [_page("docs/api/auth.md", 60, critical=True, missing=["x"])]
+        base = [_page("docs/api/auth.md", 100, critical=True)]
+        out = formatter.render(formatter.compute_diff(cur, base))
+        assert "🚨 **SLO breach**" in out
+        assert "`docs/api/auth.md` (score 60)" in out
+
+    def test_no_breach_section_when_none(self, formatter):
+        cur = [_page("a.md", 70)]
+        base = [_page("a.md", 100)]
+        out = formatter.render(formatter.compute_diff(cur, base))
+        assert "SLO breach" not in out
+
+    def test_critical_drop_uses_red_emoji(self, formatter):
+        cur = [_page("a.md", 60, critical=True, missing=["x"])]
+        base = [_page("a.md", 100, critical=True)]
+        out = formatter.render(formatter.compute_diff(cur, base))
+        assert "🔴" in out
+
+    def test_footer_lists_median_and_page_count(self, formatter):
+        cur = [_page("a.md", 60, missing=["x"]), _page("b.md", 100)]
+        base = [_page("a.md", 100), _page("b.md", 100)]
+        out = formatter.render(formatter.compute_diff(cur, base))
+        assert "2 pages scored" in out
+        assert "median" in out
 
 
 class TestCLI:
@@ -214,5 +200,5 @@ class TestCLI:
         )
         out = capsys.readouterr().out
         assert rc == 0
-        assert "Documentation freshness: 95 -> 80 (-15)" in out
-        assert "(signature drift on fooBar)" in out
+        assert "95 → 80 (-15)" in out
+        assert "signature drift on `fooBar`" in out
