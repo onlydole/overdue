@@ -173,6 +173,58 @@ class TestScoreFormula:
         )
 
 
+class TestDiscovery:
+    def test_walks_docs_dir(self, freshness, tmp_path, monkeypatch):
+        monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
+        monkeypatch.setattr(freshness, "DOCS_DIR", tmp_path / "docs")
+        (tmp_path / "docs").mkdir()
+        (tmp_path / "docs" / "a.md").write_text("# a")
+        (tmp_path / "docs" / "sub").mkdir()
+        (tmp_path / "docs" / "sub" / "b.md").write_text("# b")
+        found = freshness.discover_docs()
+        assert {p.name for p in found} == {"a.md", "b.md"}
+
+    def test_picks_up_root_md_with_freshness_frontmatter(
+        self, freshness, tmp_path, monkeypatch
+    ):
+        monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
+        monkeypatch.setattr(freshness, "DOCS_DIR", tmp_path / "docs")
+        (tmp_path / "docs").mkdir()
+        (tmp_path / "docs" / "page.md").write_text("# page")
+        (tmp_path / "CLAUDE.md").write_text(
+            "---\nfreshness:\n  ttl_days: 365\n  sources:\n    - 'src/main.py'\n---\n# guide\n"
+        )
+        found = freshness.discover_docs()
+        assert {p.name for p in found} == {"page.md", "CLAUDE.md"}
+
+    def test_skips_root_md_without_freshness_frontmatter(
+        self, freshness, tmp_path, monkeypatch
+    ):
+        monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
+        monkeypatch.setattr(freshness, "DOCS_DIR", tmp_path / "docs")
+        (tmp_path / "docs").mkdir()
+        (tmp_path / "README.md").write_text("# Overdue\n\nA readme without frontmatter.\n")
+        (tmp_path / "CONTRIBUTING.md").write_text(
+            "---\ntitle: Contributing\n---\n# Contributing\n"
+        )
+        found = freshness.discover_docs()
+        # neither root file opts in (no freshness: block)
+        assert found == []
+
+    def test_no_duplicates_when_doc_lives_under_docs_root(
+        self, freshness, tmp_path, monkeypatch
+    ):
+        # If DOCS_DIR happens to equal REPO_ROOT, a root file with frontmatter
+        # should not be returned twice.
+        monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
+        monkeypatch.setattr(freshness, "DOCS_DIR", tmp_path)
+        (tmp_path / "CLAUDE.md").write_text(
+            "---\nfreshness:\n  ttl_days: 90\n---\n"
+        )
+        found = freshness.discover_docs()
+        assert len(found) == 1
+
+
 class TestDottedSymbols:
     def test_simple_token_present(self, freshness):
         assert freshness.compute_missing({"getUser"}, {"getUser"}) == set()

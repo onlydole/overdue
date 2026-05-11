@@ -13,6 +13,8 @@
 *.yml
 *.yaml
 *.toml
+*.svg
+*.png
 
 # CSS values
 currentColor

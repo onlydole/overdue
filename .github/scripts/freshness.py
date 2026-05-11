@@ -177,10 +177,23 @@ def score(doc: Path, allowlist: list[str] | None = None) -> dict[str, Any] | Non
     }
 
 
+def discover_docs() -> list[Path]:
+    """Every .md under DOCS_DIR plus any *.md at REPO_ROOT that opts in via
+    a `freshness:` frontmatter block. Root files without that block are
+    skipped (README.md and similar shouldn't be silently scored)."""
+    found: set[Path] = set()
+    if DOCS_DIR.exists():
+        found.update(DOCS_DIR.rglob("*.md"))
+    for p in REPO_ROOT.glob("*.md"):
+        if "freshness" in parse_frontmatter(p.read_text(errors="ignore")):
+            found.add(p.resolve())
+    return sorted(found)
+
+
 def main() -> int:
     allowlist = load_allowlist()
     report: list[dict[str, Any]] = []
-    for p in sorted(DOCS_DIR.rglob("*.md")):
+    for p in discover_docs():
         result = score(p, allowlist)
         if result is not None:
             report.append(result)
