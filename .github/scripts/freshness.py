@@ -158,6 +158,8 @@ def score(
     freshness = front.get("freshness", {}) if isinstance(front.get("freshness"), dict) else {}
 
     declared_sources = freshness.get("sources") or []
+    if isinstance(declared_sources, str):
+        declared_sources = [declared_sources]
     sources: list[Path] = []
     for pattern in declared_sources:
         sources.extend(REPO_ROOT.glob(pattern))
@@ -175,12 +177,18 @@ def score(
     # via `sources: ['src/foo.py']` where foo.py has since been renamed is a
     # broken config, not a day-one page — its drift signal should still fire.
     bootstrapped = bool(bootstrap and not declared_sources)
+    missing: set[str]
     if bootstrapped:
-        missing: set[str] = set()
+        missing = set()
     else:
         referenced = extract_referenced_symbols(raw)
-        missing = compute_missing(referenced, _live_symbols(sources))
-        missing = apply_allowlist(missing, allowlist)
+        if not referenced:
+            # Perf shortcut: nothing to look up, so don't bother reading
+            # and parsing the source files.
+            missing = set()
+        else:
+            missing = compute_missing(referenced, _live_symbols(sources))
+            missing = apply_allowlist(missing, allowlist)
 
     ttl = freshness.get("ttl_days")
     return {

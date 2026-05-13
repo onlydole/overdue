@@ -442,6 +442,55 @@ class TestBootstrap:
         assert bootstrapped[0]["score"] == 100
         assert bootstrapped[0]["bootstrapped"] is True
 
+    def test_score_accepts_sources_as_single_string(
+        self, freshness, tmp_path, monkeypatch
+    ):
+        # YAML allows scalars where a list is expected: `sources: 'src/api.py'`
+        # rather than `sources: ['src/api.py']`. Normalize to [str] so the
+        # glob loop doesn't iterate over individual characters of the string.
+        monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
+        monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
+        (tmp_path / "src").mkdir()
+        (tmp_path / "src" / "api.py").write_text("def realFn():\n    pass\n")
+        doc = tmp_path / "x.md"
+        doc.write_text(
+            "---\nfreshness:\n  sources: 'src/api.py'\n---\n"
+            "Uses `realFn` and `missingFn`.\n"
+        )
+        result = freshness.score(doc, allowlist=[])
+        assert result is not None
+        assert result["source_count"] == 1
+        assert "missingFn" in result["missing_symbols"]
+        assert "realFn" not in result["missing_symbols"]
+
+    def test_score_skips_live_symbols_when_no_inline_references(
+        self, freshness, tmp_path, monkeypatch
+    ):
+        # Perf: when a doc has no backticked candidate symbols, the script
+        # shouldn't read or parse the referenced source files at all.
+        monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
+        monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
+
+        calls: list[list] = []
+
+        def spy(sources):
+            calls.append(sources)
+            return set()
+
+        monkeypatch.setattr(freshness, "_live_symbols", spy)
+        (tmp_path / "src").mkdir()
+        (tmp_path / "src" / "api.py").write_text("def realFn(): pass\n")
+        doc = tmp_path / "x.md"
+        doc.write_text(
+            "---\nfreshness:\n  sources: ['src/api.py']\n---\n"
+            "A doc with no backticks at all.\n"
+        )
+        result = freshness.score(doc, allowlist=[])
+        assert result is not None
+        assert result["score"] == 100
+        assert result["missing_symbols"] == []
+        assert calls == []  # _live_symbols was never invoked
+
     def test_bootstrap_does_not_mask_stale_sources_declaration(
         self, freshness, tmp_path, monkeypatch
     ):
