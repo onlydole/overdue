@@ -335,6 +335,108 @@ class TestScoreIntegration:
         assert result["missing_symbols"] == ["getUser"]
 
 
+class TestLiveSymbolsPython:
+    def test_extracts_def_and_class(self, freshness):
+        text = "def alpha():\n    pass\n\nclass Beta:\n    pass\n"
+        assert freshness._live_symbols_python(text) == {"alpha", "Beta"}
+
+    def test_no_matches_returns_empty(self, freshness):
+        assert freshness._live_symbols_python("# comment\n") == set()
+
+
+class TestLiveSymbolsTypeScript:
+    def test_extracts_function_class_interface_type_method(self, freshness):
+        ts_source = """
+        export function getUser(id: string): User {
+            return null as any;
+        }
+
+        export class SessionStore {
+            save(token: string): void {}
+            invalidate(): void {}
+        }
+
+        export interface User {
+            id: string;
+            name: string;
+        }
+
+        export type AuthMode = "oauth" | "saml";
+        """
+        result = freshness._live_symbols_typescript(ts_source)
+        assert {"getUser", "SessionStore", "save", "invalidate", "User", "AuthMode"} <= result
+
+    def test_imports_only_returns_empty(self, freshness):
+        ts = (
+            "import { foo } from './bar';\n"
+            "import * as baz from 'qux';\n"
+            "const local = 1;\n"
+        )
+        # Imports and const declarations aren't captured by the query — only
+        # function/class/interface/type-alias/method nodes contribute.
+        assert freshness._live_symbols_typescript(ts) == set()
+
+    def test_empty_or_comment_only_returns_empty(self, freshness):
+        assert freshness._live_symbols_typescript("") == set()
+        assert freshness._live_symbols_typescript("// just a comment\n") == set()
+
+
+class TestLiveSymbolsDispatch:
+    def test_dispatches_python_and_typescript(self, freshness, tmp_path):
+        py = tmp_path / "a.py"
+        py.write_text("def alpha():\n    pass\n\nclass Beta:\n    pass\n")
+        ts = tmp_path / "b.ts"
+        ts.write_text("export function gamma() {}\nexport class Delta {}\n")
+        assert freshness._live_symbols([py, ts]) == {"alpha", "Beta", "gamma", "Delta"}
+
+    def test_dispatches_mts_and_cts_as_typescript(self, freshness, tmp_path):
+        mts = tmp_path / "a.mts"
+        mts.write_text("export function fromMts() {}\n")
+        cts = tmp_path / "b.cts"
+        cts.write_text("export class FromCts {}\n")
+        assert freshness._live_symbols([mts, cts]) == {"fromMts", "FromCts"}
+
+    def test_skips_unknown_extensions(self, freshness, tmp_path):
+        go = tmp_path / "a.go"
+        go.write_text("func MyFunction() {}\n")
+        rs = tmp_path / "b.rs"
+        rs.write_text("fn another() {}\n")
+        # Until per-language extractors are wired up, unknown suffixes
+        # contribute nothing rather than crashing or guessing.
+        assert freshness._live_symbols([go, rs]) == set()
+
+    def test_skips_directories(self, freshness, tmp_path):
+        # Glob resolution can include directories; the dispatcher should
+        # silently skip them rather than crash on `read_text()`.
+        d = tmp_path / "subdir"
+        d.mkdir()
+        assert freshness._live_symbols([d]) == set()
+
+
+class TestScoreIntegrationTypeScript:
+    def test_score_runs_drift_against_typescript_source(
+        self, freshness, tmp_path, monkeypatch
+    ):
+        monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
+        monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
+        (tmp_path / "src").mkdir()
+        (tmp_path / "src" / "api.ts").write_text(
+            "export function getUser(id: string): User { return null as any; }\n"
+            "export interface User { id: string; }\n"
+        )
+        doc = tmp_path / "x.md"
+        doc.write_text(
+            "---\nfreshness:\n  sources:\n    - 'src/api.ts'\n---\n"
+            "Uses `getUser` and `missingFn`.\n"
+        )
+        result = freshness.score(doc, allowlist=[])
+        assert result is not None
+        assert result["source_count"] == 1
+        assert result["score"] == 90  # one missing -> 10 drift penalty
+        assert "missingFn" in result["missing_symbols"]
+        assert "getUser" not in result["missing_symbols"]
+
+
 class TestBootstrap:
     def test_bootstrapped_field_defaults_false(
         self, freshness, tmp_path, monkeypatch

@@ -14,6 +14,10 @@ Refinements over the post's minimal script:
   - `--bootstrap` (or FRESHNESS_BOOTSTRAP=1) skips the drift signal for pages
     that don't yet declare a `freshness.sources` block, so day-one adopters
     aren't penalized for pages they haven't mapped. Age and TTL still apply.
+  - `_live_symbols` dispatches by file extension. Python uses regex; .ts /
+    .mts / .cts use tree-sitter-typescript. Unknown extensions contribute
+    nothing — those pages behave as if the source had no recognizable
+    definitions until a per-language extractor is added.
 
 Known gap: age delta uses absolute timestamps. A long-lived feature branch
 accumulates age penalty even when code and docs moved together within the
@@ -132,14 +136,81 @@ def compute_score(
 
 
 def _live_symbols(sources: list[Path]) -> set[str]:
-    """Python-only via regex. Swap for tree-sitter or LSP for polyglot repos."""
+    """Dispatch to per-language extractors based on file extension. Sources
+    in languages we haven't taught the script yet contribute nothing to the
+    live symbol set — those pages effectively behave as if the source had
+    no recognizable definitions until the extractor is wired up."""
     symbols: set[str] = set()
     for s in sources:
         if not s.is_file():
             continue
-        text = s.read_text()
-        symbols.update(re.findall(r"def\s+([A-Za-z_][A-Za-z0-9_]*)", text))
-        symbols.update(re.findall(r"class\s+([A-Za-z_][A-Za-z0-9_]*)", text))
+        if s.suffix == ".py":
+            symbols.update(_live_symbols_python(s.read_text()))
+        elif s.suffix in {".ts", ".mts", ".cts"}:
+            symbols.update(_live_symbols_typescript(s.read_text()))
+    return symbols
+
+
+def _live_symbols_python(text: str) -> set[str]:
+    """Top-level `def` and `class` names via regex. Misses nested functions
+    and dynamic registrations, but covers the public API surface for the
+    typical Python project."""
+    symbols: set[str] = set()
+    symbols.update(re.findall(r"def\s+([A-Za-z_][A-Za-z0-9_]*)", text))
+    symbols.update(re.findall(r"class\s+([A-Za-z_][A-Za-z0-9_]*)", text))
+    return symbols
+
+
+# Tree-sitter query covering the TypeScript declarations a docs page is
+# most likely to reference: top-level functions, classes (plus their
+# methods), interfaces, and type aliases. Extend this string to capture
+# more node kinds if your docs reference enums, namespaces, or const
+# declarations.
+_TS_QUERY_SOURCE = """
+(function_declaration name: (identifier) @name)
+(class_declaration name: (type_identifier) @name)
+(interface_declaration name: (type_identifier) @name)
+(type_alias_declaration name: (type_identifier) @name)
+(method_definition name: (property_identifier) @name)
+"""
+
+# Compiled lazily on first TS call so importing this module doesn't pay
+# the tree-sitter load cost for Python-only repos.
+_TS_LANGUAGE: Any = None
+_TS_QUERY: Any = None
+
+
+def _live_symbols_typescript(text: str) -> set[str]:
+    """Walk the TypeScript AST via tree-sitter and collect names of every
+    top-level declaration that contributes to the API surface. Requires
+    tree-sitter-typescript (already in this repo's `dev` extra)."""
+    global _TS_LANGUAGE, _TS_QUERY
+    if _TS_QUERY is None:
+        try:
+            from tree_sitter import Language, Query
+            from tree_sitter_typescript import language_typescript
+        except ImportError as e:
+            raise ImportError(
+                "TypeScript source files require tree-sitter and "
+                "tree-sitter-typescript. Install with `uv sync --extra dev` "
+                "or `pip install tree-sitter tree-sitter-typescript`."
+            ) from e
+        _TS_LANGUAGE = Language(language_typescript())
+        _TS_QUERY = Query(_TS_LANGUAGE, _TS_QUERY_SOURCE)
+
+    from tree_sitter import Parser, QueryCursor
+
+    parser = Parser(_TS_LANGUAGE)
+    tree = parser.parse(text.encode("utf-8"))
+    cursor = QueryCursor(_TS_QUERY)
+    captures = cursor.captures(tree.root_node)
+
+    symbols: set[str] = set()
+    # tree-sitter ≥ 0.25 surfaces captures as dict[str, list[Node]] via
+    # QueryCursor.captures. The dict key is the capture name (`@name`).
+    for nodes in captures.values():
+        for node in nodes:
+            symbols.add(node.text.decode("utf-8"))
     return symbols
 
 
