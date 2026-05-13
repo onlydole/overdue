@@ -162,16 +162,21 @@ def _live_symbols_python(text: str) -> set[str]:
 
 
 # Tree-sitter query covering the TypeScript declarations a docs page is
-# most likely to reference: top-level functions, classes (plus their
-# methods), interfaces, and type aliases. Extend this string to capture
-# more node kinds if your docs reference enums, namespaces, or const
-# declarations.
+# most likely to reference. Over-capture is deliberately preferred: a
+# symbol named in source but never exported is still "alive" from the
+# drift-detection POV — we only want to flag references that resolve to
+# nothing. Extend this string if your docs reference namespaces or
+# decorators.
 _TS_QUERY_SOURCE = """
 (function_declaration name: (identifier) @name)
 (class_declaration name: (type_identifier) @name)
 (interface_declaration name: (type_identifier) @name)
 (type_alias_declaration name: (type_identifier) @name)
+(enum_declaration name: (identifier) @name)
 (method_definition name: (property_identifier) @name)
+(method_signature name: (property_identifier) @name)
+(lexical_declaration (variable_declarator name: (identifier) @name))
+(variable_declaration (variable_declarator name: (identifier) @name))
 """
 
 # Compiled lazily on first TS call so importing this module doesn't pay

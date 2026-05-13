@@ -367,14 +367,31 @@ class TestLiveSymbolsTypeScript:
         assert {"getUser", "SessionStore", "save", "invalidate", "User", "AuthMode"} <= result
 
     def test_imports_only_returns_empty(self, freshness):
-        ts = (
-            "import { foo } from './bar';\n"
-            "import * as baz from 'qux';\n"
-            "const local = 1;\n"
-        )
-        # Imports and const declarations aren't captured by the query — only
-        # function/class/interface/type-alias/method nodes contribute.
+        ts = "import { foo } from './bar';\nimport * as baz from 'qux';\n"
         assert freshness._live_symbols_typescript(ts) == set()
+
+    def test_extracts_arrow_function_const_and_enum_and_method_signature(
+        self, freshness
+    ):
+        # Modern TS API shapes the docs are likely to reference: arrow
+        # functions assigned to `const`, `enum` declarations, and the
+        # method signatures inside interfaces.
+        ts_source = """
+        export const getUserId = (id: string): number => 42;
+        export let computeChecksum = (data: Uint8Array): string => "";
+        var legacyCounter = 0;
+        export enum AuthScope {
+            Read,
+            Write,
+        }
+        export interface Repo {
+            save(item: unknown): Promise<void>;
+            close(): void;
+        }
+        """
+        result = freshness._live_symbols_typescript(ts_source)
+        assert {"getUserId", "computeChecksum", "legacyCounter", "AuthScope",
+                "save", "close"} <= result
 
     def test_empty_or_comment_only_returns_empty(self, freshness):
         assert freshness._live_symbols_typescript("") == set()
