@@ -21,6 +21,12 @@ currentColor
 
 # Library / package names referenced in narrative prose
 PyJWT
+PyYAML
+
+# Frontmatter field references (`freshness.sources`, `freshness.ttl_days`,
+# `freshness.exclude`) are config keys, not source symbols. Match any
+# dotted reference under the `freshness.` namespace.
+freshness.*
 
 # Keyboard arrow keys
 Arrow*
