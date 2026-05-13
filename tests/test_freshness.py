@@ -442,6 +442,62 @@ class TestBootstrap:
         assert bootstrapped[0]["score"] == 100
         assert bootstrapped[0]["bootstrapped"] is True
 
+    def test_bootstrap_does_not_mask_stale_sources_declaration(
+        self, freshness, tmp_path, monkeypatch
+    ):
+        # A page declares `sources: ['src/missing.py']` but the file has
+        # since been renamed or deleted. This is a broken config, NOT a
+        # day-one page. Bootstrap must not mask it: drift signal should
+        # still fire so the author notices their stale path.
+        monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
+        monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
+        doc = tmp_path / "x.md"
+        doc.write_text(
+            "---\nfreshness:\n  sources:\n    - 'src/missing.py'\n---\n"
+            "References `getUser` and `MyClass`.\n"
+        )
+        result = freshness.score(doc, allowlist=[], bootstrap=True)
+        assert result is not None
+        assert result["bootstrapped"] is False
+        assert result["source_count"] == 0
+        assert result["score"] == 80  # 2 missing symbols -> 20 drift penalty
+
+    def test_bootstrap_skips_drift_when_sources_is_explicit_empty_list(
+        self, freshness, tmp_path, monkeypatch
+    ):
+        # Explicit `sources: []` is treated as "I have no sources to declare
+        # yet" — same bootstrap treatment as omitting the key entirely.
+        monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
+        monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
+        doc = tmp_path / "x.md"
+        doc.write_text(
+            "---\nfreshness:\n  sources: []\n---\n"
+            "References `getUser`, `MyClass`, `apiClient`, `users.create`.\n"
+        )
+        result = freshness.score(doc, allowlist=[], bootstrap=True)
+        assert result is not None
+        assert result["bootstrapped"] is True
+        assert result["score"] == 100
+        assert result["missing_symbols"] == []
+
+    def test_bootstrap_skips_drift_when_freshness_has_only_ttl(
+        self, freshness, tmp_path, monkeypatch
+    ):
+        # A `freshness:` block with `ttl_days` but no `sources` key is
+        # still a "no sources declared" page and should be bootstrapped.
+        # TTL still applies separately.
+        monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
+        monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
+        doc = tmp_path / "x.md"
+        doc.write_text(
+            "---\nfreshness:\n  ttl_days: 365\n---\n"
+            "References `getUser` and `MyClass`.\n"
+        )
+        result = freshness.score(doc, allowlist=[], bootstrap=True)
+        assert result is not None
+        assert result["bootstrapped"] is True
+        assert result["score"] == 100  # doc_age=0, no drift, no TTL breach
+
     def test_main_reads_env_var(self, freshness, tmp_path, monkeypatch):
         monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
         monkeypatch.setattr(freshness, "DOCS_DIR", tmp_path / "docs")

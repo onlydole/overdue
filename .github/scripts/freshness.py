@@ -157,8 +157,9 @@ def score(
         return None
     freshness = front.get("freshness", {}) if isinstance(front.get("freshness"), dict) else {}
 
+    declared_sources = freshness.get("sources") or []
     sources: list[Path] = []
-    for pattern in freshness.get("sources", []):
+    for pattern in declared_sources:
         sources.extend(REPO_ROOT.glob(pattern))
 
     doc_age = days(last_touched(doc))
@@ -166,9 +167,14 @@ def score(
 
     # Bootstrap mode: pages that haven't been mapped to a sources block yet
     # opt out of the drift signal entirely. Age and TTL still apply. The
-    # intent is a clean day-one baseline that doesn't punish pages whose
+    # intent is a clean day-one baseline that doesn't penalize pages whose
     # author hasn't gotten around to declaring `freshness.sources` yet.
-    bootstrapped = bool(bootstrap and not sources)
+    #
+    # We key off whether `sources` was *declared* (key present and non-empty)
+    # rather than whether the globs resolved to files. A page that opted in
+    # via `sources: ['src/foo.py']` where foo.py has since been renamed is a
+    # broken config, not a day-one page — its drift signal should still fire.
+    bootstrapped = bool(bootstrap and not declared_sources)
     if bootstrapped:
         missing: set[str] = set()
     else:
