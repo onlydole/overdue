@@ -333,3 +333,129 @@ class TestScoreIntegration:
         result = freshness.score(doc, allowlist=["PyJWT"])
         assert result is not None
         assert result["missing_symbols"] == ["getUser"]
+
+
+class TestBootstrap:
+    def test_bootstrapped_field_defaults_false(
+        self, freshness, tmp_path, monkeypatch
+    ):
+        monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
+        monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
+        doc = tmp_path / "x.md"
+        doc.write_text("# Hi\n")
+        result = freshness.score(doc, allowlist=[])
+        assert result is not None
+        assert result["bootstrapped"] is False
+
+    def test_bootstrap_skips_drift_when_page_has_no_sources(
+        self, freshness, tmp_path, monkeypatch
+    ):
+        # A page with several backticked candidates but no `freshness.sources`
+        # block: without bootstrap the drift penalty caps the score at 60,
+        # with bootstrap drift is skipped entirely and the score is 100.
+        monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
+        monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
+        doc = tmp_path / "x.md"
+        doc.write_text(
+            "References `getUser`, `MyClass`, `users.create`, `apiClient` here.\n"
+        )
+
+        without = freshness.score(doc, allowlist=[], bootstrap=False)
+        assert without is not None
+        assert without["bootstrapped"] is False
+        assert without["score"] == 60
+        assert len(without["missing_symbols"]) == 4
+
+        with_bootstrap = freshness.score(doc, allowlist=[], bootstrap=True)
+        assert with_bootstrap is not None
+        assert with_bootstrap["bootstrapped"] is True
+        assert with_bootstrap["score"] == 100
+        assert with_bootstrap["missing_symbols"] == []
+
+    def test_bootstrap_still_applies_drift_when_sources_declared(
+        self, freshness, tmp_path, monkeypatch
+    ):
+        # A page that opted in via `freshness.sources` is no longer in
+        # bootstrap territory: drift detection runs against the declared
+        # sources, and a missing symbol counts.
+        monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
+        monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
+        (tmp_path / "src").mkdir()
+        (tmp_path / "src" / "api.py").write_text("def realFn():\n    pass\n")
+        doc = tmp_path / "x.md"
+        doc.write_text(
+            "---\nfreshness:\n  sources:\n    - 'src/api.py'\n---\n"
+            "References `realFn` and `missingFn`.\n"
+        )
+        result = freshness.score(doc, allowlist=[], bootstrap=True)
+        assert result is not None
+        assert result["bootstrapped"] is False
+        assert "missingFn" in result["missing_symbols"]
+        assert "realFn" not in result["missing_symbols"]
+        assert result["score"] == 90  # one missing symbol = -10
+
+    def test_bootstrap_still_applies_ttl_for_unmapped_page(
+        self, freshness, tmp_path, monkeypatch
+    ):
+        # Even in bootstrap mode, a `ttl_days` contract still bites. The
+        # author opted into a soft deadline by declaring it; we honour that.
+        monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
+
+        from datetime import timedelta
+
+        old = freshness.NOW - timedelta(days=120)
+        monkeypatch.setattr(freshness, "last_touched", lambda p: old)
+        doc = tmp_path / "x.md"
+        doc.write_text(
+            "---\nfreshness:\n  ttl_days: 90\n---\n"
+            "References `getUser` here.\n"
+        )
+        result = freshness.score(doc, allowlist=[], bootstrap=True)
+        assert result is not None
+        assert result["bootstrapped"] is True
+        # 120 days, 30 past TTL of 90 => ttl_penalty = 60 => score 40
+        assert result["ttl_days"] == 90
+        assert result["score"] == 40
+
+    def test_main_argparse_accepts_flag(self, freshness, tmp_path, monkeypatch):
+        # End-to-end through main(): page with no sources gets a 100 under
+        # --bootstrap and a sub-100 under default settings.
+        monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
+        monkeypatch.setattr(freshness, "DOCS_DIR", tmp_path / "docs")
+        monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
+        (tmp_path / "docs").mkdir()
+        (tmp_path / "docs" / "x.md").write_text(
+            "References `getUser`, `MyClass`, `users.create`, `apiClient`.\n"
+        )
+
+        import json as _json
+
+        rc = freshness.main([])
+        assert rc == 0
+        baseline = _json.loads((tmp_path / "freshness.json").read_text())
+        assert baseline[0]["score"] == 60
+        assert baseline[0]["bootstrapped"] is False
+
+        rc = freshness.main(["--bootstrap"])
+        assert rc == 0
+        bootstrapped = _json.loads((tmp_path / "freshness.json").read_text())
+        assert bootstrapped[0]["score"] == 100
+        assert bootstrapped[0]["bootstrapped"] is True
+
+    def test_main_reads_env_var(self, freshness, tmp_path, monkeypatch):
+        monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
+        monkeypatch.setattr(freshness, "DOCS_DIR", tmp_path / "docs")
+        monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
+        monkeypatch.setenv("FRESHNESS_BOOTSTRAP", "1")
+        (tmp_path / "docs").mkdir()
+        (tmp_path / "docs" / "x.md").write_text(
+            "References `getUser`, `MyClass`, `users.create`, `apiClient`.\n"
+        )
+
+        import json as _json
+
+        rc = freshness.main([])
+        assert rc == 0
+        report = _json.loads((tmp_path / "freshness.json").read_text())
+        assert report[0]["score"] == 100
+        assert report[0]["bootstrapped"] is True
