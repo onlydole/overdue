@@ -11,6 +11,9 @@ Refinements over the post's minimal script:
   - Allowlist at .github/freshness-allowlist.txt filters remaining noise via
     fnmatch globs (one pattern per line, '#' comments allowed).
   - Pages with `freshness: { exclude: true }` are dropped from the report.
+  - `--bootstrap` (or FRESHNESS_BOOTSTRAP=1) skips the drift signal for pages
+    that don't yet declare a `freshness.sources` block, so day-one adopters
+    aren't penalized for pages they haven't mapped. Age and TTL still apply.
 
 Known gap: age delta uses absolute timestamps. A long-lived feature branch
 accumulates age penalty even when code and docs moved together within the
@@ -20,6 +23,7 @@ as a follow-up.
 
 from __future__ import annotations
 
+import argparse
 import fnmatch
 import json
 import os
@@ -139,7 +143,12 @@ def _live_symbols(sources: list[Path]) -> set[str]:
     return symbols
 
 
-def score(doc: Path, allowlist: list[str] | None = None) -> dict[str, Any] | None:
+def score(
+    doc: Path,
+    allowlist: list[str] | None = None,
+    *,
+    bootstrap: bool = False,
+) -> dict[str, Any] | None:
     if allowlist is None:
         allowlist = load_allowlist()
     raw = doc.read_text()
@@ -148,16 +157,38 @@ def score(doc: Path, allowlist: list[str] | None = None) -> dict[str, Any] | Non
         return None
     freshness = front.get("freshness", {}) if isinstance(front.get("freshness"), dict) else {}
 
+    declared_sources = freshness.get("sources") or []
+    if isinstance(declared_sources, str):
+        declared_sources = [declared_sources]
     sources: list[Path] = []
-    for pattern in freshness.get("sources", []):
+    for pattern in declared_sources:
         sources.extend(REPO_ROOT.glob(pattern))
 
     doc_age = days(last_touched(doc))
     youngest_source_age = min((days(last_touched(s)) for s in sources), default=doc_age)
 
-    referenced = extract_referenced_symbols(raw)
-    missing = compute_missing(referenced, _live_symbols(sources))
-    missing = apply_allowlist(missing, allowlist)
+    # Bootstrap mode: pages that haven't been mapped to a sources block yet
+    # opt out of the drift signal entirely. Age and TTL still apply. The
+    # intent is a clean day-one baseline that doesn't penalize pages whose
+    # author hasn't gotten around to declaring `freshness.sources` yet.
+    #
+    # We key off whether `sources` was *declared* (key present and non-empty)
+    # rather than whether the globs resolved to files. A page that opted in
+    # via `sources: ['src/foo.py']` where foo.py has since been renamed is a
+    # broken config, not a day-one page — its drift signal should still fire.
+    bootstrapped = bool(bootstrap and not declared_sources)
+    missing: set[str]
+    if bootstrapped:
+        missing = set()
+    else:
+        referenced = extract_referenced_symbols(raw)
+        if not referenced:
+            # Perf shortcut: nothing to look up, so don't bother reading
+            # and parsing the source files.
+            missing = set()
+        else:
+            missing = compute_missing(referenced, _live_symbols(sources))
+            missing = apply_allowlist(missing, allowlist)
 
     ttl = freshness.get("ttl_days")
     return {
@@ -174,6 +205,7 @@ def score(doc: Path, allowlist: list[str] | None = None) -> dict[str, Any] | Non
         "critical": bool(front.get("critical", False)),
         "missing_symbols": sorted(missing),
         "source_count": len(sources),
+        "bootstrapped": bootstrapped,
     }
 
 
@@ -190,16 +222,40 @@ def discover_docs() -> list[Path]:
     return sorted(found)
 
 
-def main() -> int:
+def _env_truthy(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Documentation freshness scorer.",
+    )
+    parser.add_argument(
+        "--bootstrap",
+        action="store_true",
+        default=_env_truthy("FRESHNESS_BOOTSTRAP"),
+        help=(
+            "Skip the drift signal for pages without a `freshness.sources` "
+            "block. Useful during initial adoption: pages you haven't mapped "
+            "yet won't take a drift penalty just because their inline-code "
+            "references aren't found in any source. Also reads "
+            "FRESHNESS_BOOTSTRAP=1 from the environment."
+        ),
+    )
+    args = parser.parse_args(argv)
+
     allowlist = load_allowlist()
     report: list[dict[str, Any]] = []
     for p in discover_docs():
-        result = score(p, allowlist)
+        result = score(p, allowlist, bootstrap=args.bootstrap)
         if result is not None:
             report.append(result)
     out = REPO_ROOT / "freshness.json"
     out.write_text(json.dumps(report, indent=2))
-    print(f"Wrote {len(report)} pages to {out}")
+
+    bootstrapped = sum(1 for r in report if r.get("bootstrapped"))
+    suffix = f" ({bootstrapped} bootstrapped, drift skipped)" if bootstrapped else ""
+    print(f"Wrote {len(report)} pages to {out}{suffix}")
     return 0
 
 

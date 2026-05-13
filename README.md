@@ -143,6 +143,16 @@ Recompute locally:
 uv run python .github/scripts/freshness.py
 ```
 
+### Bootstrap Mode
+
+During initial adoption, use `--bootstrap` (or set `FRESHNESS_BOOTSTRAP=1`) to skip the drift signal for pages that don't yet declare a `freshness.sources` block. Day-one adopters won't be penalized for pages they haven't mapped yet -- instead of a sea of 60s caused by inline-code false positives, unmapped pages get an honest baseline score. Age and TTL checks still apply.
+
+```bash
+uv run python .github/scripts/freshness.py --bootstrap
+```
+
+The distinction is whether a page has *declared* sources (key present and non-empty), not whether the globs resolved to files. A page with a stale or broken `sources: ['src/missing.py']` (file renamed or deleted) still gets drift scoring -- bootstrap is for unmapped pages, not for masking broken configs. The `freshness.json` output includes a `"bootstrapped": true` field for pages that were scored in bootstrap mode, and the CLI reports how many pages were bootstrapped.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
