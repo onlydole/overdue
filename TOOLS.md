@@ -310,10 +310,33 @@ docker compose down
 | `pytest-cov` | Coverage reporting |
 | `ruff` | Linter and formatter |
 | `mypy` | Static type checker |
+| `PyYAML` | YAML parsing (freshness script) |
+| `tree-sitter` | AST parsing framework (freshness script) |
+| `tree-sitter-typescript` | TypeScript grammar for tree-sitter |
 
 Install dev dependencies: `pip install -e ".[dev]"`
 
 ## Automation & CI
+
+### Documentation Freshness (`.github/scripts/freshness.py`)
+
+Scores each documentation page by comparing its `freshness.sources` references against symbols actually present in the source files and checking how recently the doc was edited.
+
+**How it works:**
+- Reads frontmatter from each `.md` file in the repository
+- Extracts symbol references from the document body (functions, classes, types mentioned in inline code or code blocks)
+- Compares those references against live symbols extracted from the declared source files
+- Applies penalties for: age (time since last edit), missing source files, and unrecognized references
+- Emits a JSON report and fails the CI check if any page scores below 80
+
+**Multi-language symbol extraction:**
+- **Python (`.py`)**: Regex-based extraction of top-level `def` and `class` names
+- **TypeScript (`.ts`, `.mts`, `.cts`)**: Tree-sitter AST parsing for functions, classes, methods, interfaces, and type aliases
+- **Unknown extensions**: Contribute nothing to the live symbol set — pages behave as if the source had no definitions until an extractor is added
+
+The tree-sitter grammar and query compile lazily on first TypeScript file encountered, so Python-only repos pay no import cost. Requires `tree-sitter>=0.24` and `tree-sitter-typescript>=0.23` (both in the `dev` extra).
+
+**Bootstrap mode:** `--bootstrap` (or `FRESHNESS_BOOTSTRAP=1`) skips the drift signal for pages that don't yet declare a `freshness.sources` block, so day-one adopters aren't penalized for unmapped pages. Age and TTL still apply.
 
 ### Dependabot (`.github/dependabot.yml`)
 

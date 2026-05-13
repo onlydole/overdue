@@ -75,3 +75,6 @@ The `[dev]` extra installs:
 - **pytest-cov** -- coverage reporting
 - **ruff** -- linter and formatter
 - **mypy** -- static type checking
+- **PyYAML** -- YAML parsing for freshness metadata
+- **tree-sitter** -- AST parser for symbol extraction
+- **tree-sitter-typescript** -- TypeScript grammar for tree-sitter
