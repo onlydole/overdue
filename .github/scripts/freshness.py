@@ -286,13 +286,14 @@ def score(
 
 
 def discover_docs() -> list[Path]:
-    """Every .md under DOCS_DIR plus any *.md at REPO_ROOT that opts in via
-    a `freshness:` frontmatter block. Root files without that block are
-    skipped (README.md and similar shouldn't be silently scored)."""
+    """Every .md/.mdx under DOCS_DIR plus any *.md/.mdx at REPO_ROOT that
+    opts in via a `freshness:` frontmatter block. Root files without that
+    block are skipped (README.md and similar shouldn't be silently scored)."""
     found: set[Path] = set()
     if DOCS_DIR.exists():
         found.update(DOCS_DIR.rglob("*.md"))
-    for p in REPO_ROOT.glob("*.md"):
+        found.update(DOCS_DIR.rglob("*.mdx"))
+    for p in (*REPO_ROOT.glob("*.md"), *REPO_ROOT.glob("*.mdx")):
         if "freshness" in parse_frontmatter(p.read_text(errors="ignore")):
             found.add(p.resolve())
     return sorted(found)
