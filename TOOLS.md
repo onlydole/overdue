@@ -330,7 +330,7 @@ Scores each documentation page by comparing its `freshness.sources` references a
 - Emits a JSON report and fails the CI check if any page scores below 80
 
 **Multi-language symbol extraction:**
-- **Python (`.py`)**: Regex-based extraction of top-level `def` and `class` names
+- **Python (`.py`)**: Regex-based extraction of top-level `def`, `async def`, and `class` names
 - **TypeScript (`.ts`, `.mts`, `.cts`)**: Tree-sitter AST parsing for functions, classes, methods, interfaces, and type aliases
 - **Unknown extensions**: Contribute nothing to the live symbol set — pages behave as if the source had no definitions until an extractor is added
 

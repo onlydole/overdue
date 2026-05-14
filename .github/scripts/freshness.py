@@ -156,8 +156,8 @@ def _live_symbols_python(text: str) -> set[str]:
     and dynamic registrations, but covers the public API surface for the
     typical Python project."""
     symbols: set[str] = set()
-    symbols.update(re.findall(r"def\s+([A-Za-z_][A-Za-z0-9_]*)", text))
-    symbols.update(re.findall(r"class\s+([A-Za-z_][A-Za-z0-9_]*)", text))
+    symbols.update(re.findall(r"\b(?:async\s+)?def\s+([A-Za-z_][A-Za-z0-9_]*)", text))
+    symbols.update(re.findall(r"\bclass\s+([A-Za-z_][A-Za-z0-9_]*)", text))
     return symbols
 
 
@@ -286,13 +286,14 @@ def score(
 
 
 def discover_docs() -> list[Path]:
-    """Every .md under DOCS_DIR plus any *.md at REPO_ROOT that opts in via
-    a `freshness:` frontmatter block. Root files without that block are
-    skipped (README.md and similar shouldn't be silently scored)."""
+    """Every .md/.mdx under DOCS_DIR plus any *.md/.mdx at REPO_ROOT that
+    opts in via a `freshness:` frontmatter block. Root files without that
+    block are skipped (README.md and similar shouldn't be silently scored)."""
     found: set[Path] = set()
     if DOCS_DIR.exists():
         found.update(DOCS_DIR.rglob("*.md"))
-    for p in REPO_ROOT.glob("*.md"):
+        found.update(DOCS_DIR.rglob("*.mdx"))
+    for p in (*REPO_ROOT.glob("*.md"), *REPO_ROOT.glob("*.mdx")):
         if "freshness" in parse_frontmatter(p.read_text(errors="ignore")):
             found.add(p.resolve())
     return sorted(found)
