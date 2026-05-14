@@ -40,7 +40,7 @@ Automatically detects when merged PRs introduce documentation drift and proposes
 
 Bash is allowed without restriction. This is a deliberate trade-off between tool-level command restrictions and workflow reliability:
 
-- **Why not individual patterns:** Restricting Bash to individual command patterns (e.g., `Bash(git diff *)`) is fragile — Claude naturally uses arbitrary shell commands (`find`, `cat`, compound commands, env-prefixed commands) that don't match specific patterns. Each denied command wastes a turn, and with `--max-turns 15`, a few denials can cause the workflow to fail without completing its task. This failure mode occurred repeatedly in PRs #29, #33, and #38.
+- **Why not individual patterns:** Restricting Bash to individual command patterns (e.g., `Bash(git diff *)`) is fragile — Claude naturally uses arbitrary shell commands (`find`, `cat`, compound commands, env-prefixed commands) that don't match specific patterns. Each denied command wastes a turn, and with `--max-turns 25`, a few denials can cause the workflow to fail without completing its task. This failure mode occurred repeatedly in PRs #29, #33, and #38.
 - **Residual risk:** Unrestricted Bash means Claude can execute any shell command on the runner, including network calls or reading environment variables. If PR metadata were crafted to manipulate Claude's behavior, this could be exploited.
 - **Mitigations:** The workflow only runs for `OWNER`, `MEMBER`, or `COLLABORATOR` PRs (not external contributors). PR metadata is wrapped in XML tags with explicit instructions to treat it as untrusted data. The runner is ephemeral (disposable VM) with no access to production systems. All changes go through PR review before merging. The `ANTHROPIC_API_KEY` secret is the only sensitive value on the runner and is not exposed to tool output.
 
@@ -53,7 +53,7 @@ Bash is allowed without restriction. This is a deliberate trade-off between tool
 | Author association check | Only runs for `OWNER`, `MEMBER`, or `COLLABORATOR` PRs |
 | Concurrency group | Cancels in-progress runs for the same PR |
 | 30-minute timeout | Prevents runaway workflow costs |
-| `--max-turns 15` | Caps Claude's iteration depth |
+| `--max-turns 25` | Caps Claude's iteration depth |
 
 **Required repository configuration:**
 
