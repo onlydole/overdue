@@ -340,6 +340,15 @@ class TestLiveSymbolsPython:
         text = "def alpha():\n    pass\n\nclass Beta:\n    pass\n"
         assert freshness._live_symbols_python(text) == {"alpha", "Beta"}
 
+    def test_extracts_async_def(self, freshness):
+        text = "async def fetch_user(uid):\n    return await db.users.get(uid)\n"
+        assert freshness._live_symbols_python(text) == {"fetch_user"}
+
+    def test_word_boundary_excludes_partial_matches(self, freshness):
+        # `undef` and `myasyncdef` look like def/async def but are not.
+        text = "undef = 1\nmyasyncdef = 2\nmyclass = 3\n"
+        assert freshness._live_symbols_python(text) == set()
+
     def test_no_matches_returns_empty(self, freshness):
         assert freshness._live_symbols_python("# comment\n") == set()
 
