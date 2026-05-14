@@ -156,7 +156,7 @@ def _live_symbols_python(text: str) -> set[str]:
     and dynamic registrations, but covers the public API surface for the
     typical Python project."""
     symbols: set[str] = set()
-    symbols.update(re.findall(r"def\s+([A-Za-z_][A-Za-z0-9_]*)", text))
+    symbols.update(re.findall(r"(?:async\s+)?def\s+([A-Za-z_][A-Za-z0-9_]*)", text))
     symbols.update(re.findall(r"class\s+([A-Za-z_][A-Za-z0-9_]*)", text))
     return symbols
 
