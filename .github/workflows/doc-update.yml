@@ -64,7 +64,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: |
-            --max-turns 15
+            --max-turns 25
             --allowedTools "Read,Edit,Write,Glob,Grep,Bash"
           display_report: true
           prompt: |
