@@ -162,6 +162,7 @@ jobs:
           path: /tmp/comment.md
 
       - name: SLO gate
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'bypass-freshness-gate') }}
         run: |
           set -euo pipefail
           python <<'PY'
