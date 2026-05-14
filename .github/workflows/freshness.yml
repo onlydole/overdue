@@ -26,6 +26,10 @@ name: Documentation Freshness
 
 on:
   pull_request:
+    # `labeled`/`unlabeled` are required so the SLO gate's
+    # `bypass-freshness-gate` opt-out re-runs after a label is applied
+    # to a previously-failed required check.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
     paths:
       - 'docs/**'
       - 'src/**'
