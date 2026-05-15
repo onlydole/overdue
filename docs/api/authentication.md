@@ -103,3 +103,13 @@ Overdue uses a rank-based permission system. See the [gameplay guide](../guides/
 - **401:** "You'll need a library card to access the stacks." (missing or invalid token)
 - **401:** "Your library card has expired. Renew at POST /librarians/login." (expired token)
 - **403:** "Only the head librarian has access to the restricted section." (insufficient role)
+
+## Implementation reference
+
+Five helpers in `src/auth/library_card.py` cover the full card lifecycle:
+
+- `validateLibraryCard` -- decode a JWT, check the signing key, and enforce the expiry window
+- `rotateLibraryCard` -- issue a replacement card without forcing a re-login
+- `revokeLibraryCard` -- add a card's `jti` to the revocation list
+- `decodeLibraryClaim` -- low-level claim extraction used by the FastAPI dependency
+- `expireDormantCard` -- background sweep for stale tokens past their refresh window
