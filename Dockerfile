@@ -1,4 +1,4 @@
-FROM python:3.14.0-slim AS base
+FROM python:3.14.5-slim AS base
 
 # Prevent stale .pyc bytecode and ensure real-time log output
 ENV PYTHONDONTWRITEBYTECODE=1 \
