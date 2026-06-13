@@ -117,17 +117,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-_cors_origins = settings.get_origins()
 # A wildcard origin combined with credentials is both forbidden by the CORS
 # spec and dangerous: Starlette reflects the caller's Origin, letting any site
-# make credentialed cross-origin requests. Only allow credentials when origins
-# are an explicit allowlist. (Same-origin requests from the web UI and bearer
-# tokens on the API don't rely on CORS credentials, so this is safe.)
-_allow_credentials = "*" not in _cors_origins
+# make credentialed cross-origin requests. settings.cors_allow_credentials()
+# only enables credentials for an explicit allowlist. (Same-origin requests
+# from the web UI and bearer tokens on the API don't rely on CORS credentials.)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_cors_origins,
-    allow_credentials=_allow_credentials,
+    allow_origins=settings.get_origins(),
+    allow_credentials=settings.cors_allow_credentials(),
     allow_methods=["*"],
     allow_headers=["*"],
 )

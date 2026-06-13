@@ -51,7 +51,7 @@ Overdue follows a layered architecture with clear separation of concerns. Every 
 REST API endpoints organized by domain. Each router handles a specific resource type (volumes, shelves, catalog, reading room, bulletins).
 
 ### `src/auth/`
-Authentication and authorization. Librarian registration and login, JWT "library card" generation via PyJWT (HS256), session cookies for web, and role-based access control via the circulation desk.
+Authentication and authorization. Librarian registration and login, JWT "library card" generation via PyJWT (HS256), session cookies for web, and object-level authorization via the circulation desk (a resource's owner, or a Head Librarian, may manage it).
 
 ### `src/config/`
 Application settings (via pydantic-settings with `OVERDUE_` prefix), game balance constants (Dewey thresholds, XP values, rank definitions, mood levels), and rate limiting configuration.

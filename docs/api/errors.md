@@ -30,7 +30,7 @@ All errors in Overdue are called "incidents" and follow a consistent format:
 | TS-002 | 404 | Shelf not found | "That shelf isn't in our library. Check the catalog and try again." |
 | TS-003 | 401 | Invalid library card | "You'll need a library card to access the stacks." |
 | TS-004 | 401 | Expired library card | "Your library card has expired. Renew at POST /librarians/login." |
-| TS-005 | 403 | Insufficient permissions | "Only the volume's keeper or a head librarian may change it." |
+| TS-005 | 403 | Insufficient permissions | "Only the keeper of this item or a head librarian may change it." |
 | TS-006 | 409 | Duplicate entry | "A volume with that title is already shelved in this section." |
 | TS-007 | 429 | Rate limit exceeded | "Quiet hours, please. Try again in {retry_after}s." |
 | TS-008 | 422 | Validation error | Varies by field |

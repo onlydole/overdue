@@ -87,7 +87,7 @@ overdue/
       web_session.py        # Session-based browser auth (cookie)
       librarian.py          # Registration, login, refresh, leaderboard routes
       dependencies.py       # FastAPI dependency injection for auth
-      circulation.py        # Role-based access control (Page -> Head Librarian)
+      circulation.py        # Object-level authorization (resource owner or Head Librarian)
     cli/                    # Typer CLI
       main.py               # Entry point (overdue command)
       helpers.py            # Shared CLI helper utilities

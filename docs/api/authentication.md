@@ -110,4 +110,4 @@ forged as long as `OVERDUE_SECRET_KEY` is set to a strong value.
 
 - **401:** "You'll need a library card to access the stacks." (missing or invalid token)
 - **401:** "Your library card has expired. Renew at POST /librarians/login." (expired token)
-- **403:** "Only the volume's keeper or a head librarian may change it." (mutating a resource you don't own)
+- **403:** "Only the keeper of this item or a head librarian may change it." (mutating a resource you don't own; returned as a `TS-005` incident)

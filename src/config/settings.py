@@ -73,5 +73,14 @@ class Settings(BaseSettings):
             return self.cors_origins
         return self.allowed_origins
 
+    def cors_allow_credentials(self) -> bool:
+        """Whether to allow credentialed CORS.
+
+        A wildcard origin combined with credentials is forbidden by the CORS
+        spec and unsafe (Starlette would reflect the caller's Origin), so
+        credentials are only enabled for an explicit origin allowlist.
+        """
+        return "*" not in self.get_origins()
+
 
 settings = Settings()

@@ -6,6 +6,7 @@ from fastapi import Depends, HTTPException
 
 from src.auth.library_card import verify_library_card
 from src.config.defaults import RANKS
+from src.errors.incidents import InsufficientPermissions
 
 # Librarians at this rank or above may curate any volume/shelf in the library;
 # everyone else may only manage what they personally created.
@@ -37,11 +38,10 @@ def can_manage_resource(payload: dict[str, Any], owner_id: int) -> bool:
 
 
 def require_resource_owner(payload: dict[str, Any], owner_id: int) -> None:
-    """Raise 403 unless the actor may manage the owned resource."""
+    """Raise a 403 incident unless the actor may manage the owned resource."""
     if not can_manage_resource(payload, owner_id):
-        raise HTTPException(
-            status_code=403,
-            detail="Only the volume's keeper or a head librarian may change it.",
+        raise InsufficientPermissions(
+            "Only the keeper of this item or a head librarian may change it."
         )
 
 
