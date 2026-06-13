@@ -158,7 +158,11 @@ async def update_volume(
             detail="That volume isn't on any of our shelves. Check the catalog and try again.",
         )
 
-    require_resource_owner(payload, volume.author_id)
+    require_resource_owner(
+        payload,
+        volume.author_id,
+        "Only the volume's keeper or a head librarian may change it.",
+    )
 
     update_data = body.model_dump(exclude_unset=True)
     bookmarks_update = update_data.pop("bookmarks", None)
@@ -199,7 +203,11 @@ async def archive_volume(
             detail="That volume isn't on any of our shelves. Check the catalog and try again.",
         )
 
-    require_resource_owner(payload, volume.author_id)
+    require_resource_owner(
+        payload,
+        volume.author_id,
+        "Only the volume's keeper or a head librarian may archive it.",
+    )
 
     volume.archived = True
     await session.commit()

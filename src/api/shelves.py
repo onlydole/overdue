@@ -5,10 +5,11 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.volumes import calculate_dewey_score
-from src.auth.circulation import require_resource_owner
+from src.auth.circulation import is_curator, require_resource_owner
 from src.auth.library_card import verify_library_card
 from src.db.engine import get_session
 from src.db.tables import ShelfRow, VolumeRow
+from src.errors.incidents import InsufficientPermissions
 from src.models.shelf import ShelfCreate, ShelfListResponse, ShelfResponse, ShelfUpdate
 
 router = APIRouter()
@@ -114,7 +115,11 @@ async def update_shelf(
             detail="That shelf isn't in our library. Check the catalog and try again.",
         )
 
-    require_resource_owner(payload, shelf.created_by)
+    require_resource_owner(
+        payload,
+        shelf.created_by,
+        "Only the shelf's creator or a head librarian may change it.",
+    )
 
     update_data = body.model_dump(exclude_unset=True)
     for key, value in update_data.items():
@@ -139,7 +144,29 @@ async def delete_shelf(
             detail="That shelf isn't in our library. Check the catalog and try again.",
         )
 
-    require_resource_owner(payload, shelf.created_by)
+    require_resource_owner(
+        payload,
+        shelf.created_by,
+        "Only the shelf's creator or a head librarian may delete it.",
+    )
+
+    # Deleting a shelf cascades to every volume on it. A shelf's creator must not
+    # be able to destroy volumes authored by OTHER librarians this way -- that is
+    # library-wide curation, which only a head librarian may do.
+    if not is_curator(payload):
+        foreign_volumes = await session.execute(
+            select(func.count())
+            .select_from(VolumeRow)
+            .where(
+                VolumeRow.shelf_id == shelf_id,
+                VolumeRow.author_id != int(payload["sub"]),
+            )
+        )
+        if (foreign_volumes.scalar() or 0) > 0:
+            raise InsufficientPermissions(
+                "This shelf holds volumes by other librarians; "
+                "only a head librarian may delete it."
+            )
 
     await session.delete(shelf)
     await session.commit()

@@ -21,6 +21,11 @@ def get_rank_level(role: str) -> int:
     return 0
 
 
+def is_curator(payload: dict[str, Any]) -> bool:
+    """True if the actor holds the curator rank (library-wide management rights)."""
+    return get_rank_level(payload.get("role", "Page")) >= get_rank_level(CURATOR_ROLE)
+
+
 def can_manage_resource(payload: dict[str, Any], owner_id: int) -> bool:
     """Authorize a mutation: the actor must own the resource or be a curator.
 
@@ -32,17 +37,20 @@ def can_manage_resource(payload: dict[str, Any], owner_id: int) -> bool:
         actor_id = int(payload["sub"])
     except (KeyError, TypeError, ValueError):
         return False
-    if actor_id == owner_id:
-        return True
-    return get_rank_level(payload.get("role", "Page")) >= get_rank_level(CURATOR_ROLE)
+    return actor_id == owner_id or is_curator(payload)
 
 
-def require_resource_owner(payload: dict[str, Any], owner_id: int) -> None:
-    """Raise a 403 incident unless the actor may manage the owned resource."""
+def require_resource_owner(
+    payload: dict[str, Any],
+    owner_id: int,
+    detail: str = "Only the keeper of this item or a head librarian may change it.",
+) -> None:
+    """Raise a 403 incident unless the actor may manage the owned resource.
+
+    ``detail`` lets callers give a resource-specific message (volume vs shelf).
+    """
     if not can_manage_resource(payload, owner_id):
-        raise InsufficientPermissions(
-            "Only the keeper of this item or a head librarian may change it."
-        )
+        raise InsufficientPermissions(detail)
 
 
 def require_role(minimum_role: str):

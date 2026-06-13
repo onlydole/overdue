@@ -342,3 +342,54 @@ async def test_web_login_sets_samesite_lax_session_cookie(client, session_factor
     assert "session=" in set_cookie
     assert "samesite=lax" in set_cookie
     assert "httponly" in set_cookie
+
+
+# --- Secret detection: empty / whitespace keys are the most dangerous --------
+
+
+def test_empty_or_whitespace_secret_flagged_as_insecure():
+    # An empty/whitespace key hashes to a single globally-predictable value, so
+    # it must be flagged just like the public placeholders.
+    assert Settings(secret_key="").is_using_insecure_secret() is True
+    assert Settings(secret_key="   ").is_using_insecure_secret() is True
+
+
+# --- Cascade guard: a shelf delete must not destroy others' volumes ---------
+
+
+async def test_non_curator_cannot_delete_shelf_holding_foreign_volumes(client, session_factory):
+    owner = await _make_librarian(session_factory, "owner")
+    other = await _make_librarian(session_factory, "other")
+    shelf = await _make_shelf(session_factory, owner)
+    await _make_volume(session_factory, other, shelf)  # volume authored by someone else
+
+    resp = await client.delete(
+        f"/api/shelves/{shelf}", headers=_auth(owner, "owner", "Page")
+    )
+    assert resp.status_code == 403
+    async with session_factory() as s:
+        assert await s.get(ShelfRow, shelf) is not None  # nothing was deleted
+
+
+async def test_head_librarian_can_delete_shelf_holding_foreign_volumes(client, session_factory):
+    owner = await _make_librarian(session_factory, "owner")
+    other = await _make_librarian(session_factory, "other")
+    curator = await _make_librarian(session_factory, "curator", role="Head Librarian")
+    shelf = await _make_shelf(session_factory, owner)
+    await _make_volume(session_factory, other, shelf)
+
+    resp = await client.delete(
+        f"/api/shelves/{shelf}", headers=_auth(curator, "curator", "Head Librarian")
+    )
+    assert resp.status_code == 204
+
+
+async def test_owner_can_delete_shelf_holding_only_own_volumes(client, session_factory):
+    owner = await _make_librarian(session_factory, "owner")
+    shelf = await _make_shelf(session_factory, owner)
+    await _make_volume(session_factory, owner, shelf)  # owner's own volume
+
+    resp = await client.delete(
+        f"/api/shelves/{shelf}", headers=_auth(owner, "owner", "Page")
+    )
+    assert resp.status_code == 204

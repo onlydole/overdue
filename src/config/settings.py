@@ -59,8 +59,13 @@ class Settings(BaseSettings):
         return hashlib.sha256(raw).hexdigest()
 
     def is_using_insecure_secret(self) -> bool:
-        """True when the signing secret is a known public placeholder."""
-        return (self.secret_key or "") in _INSECURE_DEFAULT_SECRETS
+        """True when the signing secret is empty, whitespace, or a public placeholder.
+
+        An empty/whitespace key is the most dangerous case: ``signing_secret_key``
+        would hash it to a single, globally predictable value, so it must warn too.
+        """
+        secret = (self.secret_key or "").strip()
+        return not secret or secret in _INSECURE_DEFAULT_SECRETS
 
     def get_origins(self) -> list[str]:
         """Return the effective CORS origins, preferring allowed_origins."""
