@@ -160,7 +160,7 @@ async def get_my_streak(
 @router.get("/leaderboard")
 async def get_leaderboard(
     session: AsyncSession = Depends(get_session),
-    limit: int = 10,
+    limit: int = Query(10, ge=1, le=100),
     timeframe: str = Query("all-time", description="Filter: week, month, or all-time"),
     sort_by: str = Query("xp", description="Sort by: xp or streak"),
 ) -> dict:

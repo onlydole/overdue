@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Party mode easter egg: library card barcode on settings page is a hidden clickable toggle (default cursor stays normal, revealing the secret only on hover). Subtle gold glow hint and faster scan animation appear on hover to aid discovery. Click activates party mode with cycling rainbow borders, purple scan line animations, audio, and localStorage persistence.
 - Keyboard accessibility for party mode toggle (`Tab` to focus, `Enter`/`Space` to activate) with `prefers-reduced-motion` support.
 - Safety guards: skips bot-authored PRs and respects `skip-docs-check` label to prevent infinite loops and allow opt-out.
+- `OVERDUE_SESSION_HTTPS_ONLY` setting (default `false`) to mark the session cookie `Secure` for HTTPS deployments.
 
 ### Changed
 - Documentation update workflow triggers on all merged PRs instead of only those touching `docs/` or `src/` paths.
@@ -25,6 +26,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Documentation update workflow by adding `--allowedTools "Bash(git:*),Bash(gh:*)"` to claude_args configuration. This resolved the "This command requires approval" error that was blocking Claude from creating branches, committing, pushing, and opening PRs (PR #29).
 - Documentation update workflow by adding file manipulation tools (Read, Edit, Write, Glob, Grep) to allowedTools. This resolved the root cause of PR #31's failure where Claude had 3 permission denials and couldn't read code changes or modify documentation files. The original allowedTools from PR #29 only included git/gh bash subcommands (PR #33).
 - Documentation update workflow by replacing individual `Bash(git diff *)`, `Bash(git log *)`, etc. patterns with unrestricted `Bash` in `--allowedTools`. Individual patterns caused repeated failures (PRs #29, #33, #38) because Claude uses arbitrary shell commands that don't match specific patterns. Unrestricted Bash is safe on ephemeral GHA runners with author-association guards (PR #40).
+
+### Security
+- **Object-level authorization (IDOR fix):** updating or archiving a volume, and updating or deleting a shelf, now require the authenticated librarian to be the resource's owner (or a Head Librarian). Previously any librarian with a library card could modify or delete anyone's volumes and shelves — and deleting a shelf cascades to all its volumes.
+- **CORS hardening:** credentialed CORS is now disabled while `OVERDUE_ALLOWED_ORIGINS` is the `["*"]` wildcard, closing the wildcard-plus-credentials reflection that let any site make credentialed cross-origin requests.
+- **Session cookie:** the session cookie carrying the library card is now explicitly `SameSite=Lax`, with an opt-in `OVERDUE_SESSION_HTTPS_ONLY` flag to add `Secure` behind HTTPS.
+- **Insecure-secret warning:** the server logs a prominent startup warning when `OVERDUE_SECRET_KEY` is left at a public default, since a known signing key allows forged library cards.
+- **Request limits:** the `per_page`, leaderboard `limit`, and autocomplete `limit` query parameters are now bounded to prevent unbounded result sets.
+- **Dependencies:** upgraded `starlette` 1.0.0 → 1.3.1 (CVE-2026-48710, malformed-header restriction bypass) and `idna` 3.14 → 3.18 (CVE-2026-45409), and refreshed all locked dependencies to current patch releases.
+- **Supply chain:** pinned the remaining GitHub Actions in `doc-update.yml` (`actions/checkout`, `anthropics/claude-code-action`) to commit SHAs, matching the other workflows.
+- **Container:** base image upgraded `python:3.14.0-slim` → `python:3.14.6-slim`.
 
 ## [1.0.0] - 2026-03-04
 

@@ -410,9 +410,10 @@ All settings are configurable via environment variables prefixed with `OVERDUE_`
 | `OVERDUE_DEBUG` | `false` | Enable debug mode |
 | `OVERDUE_TOKEN_EXPIRY_MINUTES` | `60` | JWT token lifetime |
 | `OVERDUE_TOKEN_REFRESH_WINDOW_MINUTES` | `15` | Token refresh window |
-| `OVERDUE_ALLOWED_ORIGINS` | `["*"]` | CORS allowed origins |
+| `OVERDUE_ALLOWED_ORIGINS` | `["*"]` | CORS allowed origins (wildcard disables credentialed CORS) |
 | `OVERDUE_HOST` | `0.0.0.0` | Server bind host |
 | `OVERDUE_PORT` | `8000` | Server bind port |
+| `OVERDUE_SESSION_HTTPS_ONLY` | `false` | Mark the session cookie `Secure` (HTTPS-only); set `true` in production |
 | `OVERDUE_WEBHOOK_SECRET` | (empty) | Bulletin verification secret |
 | `OVERDUE_DEWEY_DECAY_SECONDS` | `10` | Seconds per decay unit (86400 for daily) |
 | `OVERDUE_STREAK_COOLDOWN_SECONDS` | `5` | Seconds between reviews for streak (86400 for daily) |

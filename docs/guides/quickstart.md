@@ -71,12 +71,12 @@ If you prefer curl, register and get a library card first:
 # Register
 curl -X POST http://localhost:8000/api/librarians/register \
   -H "Content-Type: application/json" \
-  -d '{"username": "ada", "email": "ada@example.com", "password": "lovelace1815"}'
+  -d '{"username": "ada", "email": "ada@example.com", "password": "Lovelace1815!"}'
 
 # Login (get your library card)
 curl -X POST http://localhost:8000/api/librarians/login \
   -H "Content-Type: application/json" \
-  -d '{"username": "ada", "password": "lovelace1815"}'
+  -d '{"username": "ada", "password": "Lovelace1815!"}'
 
 # Check the library's mood
 curl http://localhost:8000/api/reading-room/health

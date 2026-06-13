@@ -8,6 +8,17 @@ from pydantic_settings import BaseSettings
 
 _SECRET_KEY_MIN_BYTES = 32
 
+# Known placeholder secrets shipped in source/compose defaults. Deploying with
+# any of these means the JWT signing key and session secret are public, which
+# lets anyone forge a library card and impersonate any librarian (including a
+# Head Librarian). Startup warns loudly when one of these is in effect.
+_INSECURE_DEFAULT_SECRETS = frozenset(
+    {
+        "change-me-in-production-please-set-a-strong-secret-key",
+        "change-me-in-production",
+    }
+)
+
 
 class Settings(BaseSettings):
     """Overdue application configuration.
@@ -27,6 +38,10 @@ class Settings(BaseSettings):
     allowed_origins: list[str] = ["*"]
     host: str = "0.0.0.0"
     port: int = 8000
+    # Set true behind HTTPS so the session cookie carrying the library card is
+    # only sent over TLS (Secure flag). Defaults false so the http://localhost
+    # demo keeps working; turn on for any real deployment.
+    session_https_only: bool = False
     webhook_secret: str = ""
     dewey_recalc_interval_minutes: int = 15
     dewey_decay_rate: int = 3  # points lost per decay unit
@@ -42,6 +57,10 @@ class Settings(BaseSettings):
         if len(raw) >= _SECRET_KEY_MIN_BYTES:
             return self.secret_key
         return hashlib.sha256(raw).hexdigest()
+
+    def is_using_insecure_secret(self) -> bool:
+        """True when the signing secret is a known public placeholder."""
+        return (self.secret_key or "") in _INSECURE_DEFAULT_SECRETS
 
     def get_origins(self) -> list[str]:
         """Return the effective CORS origins, preferring allowed_origins."""

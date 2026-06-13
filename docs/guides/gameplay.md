@@ -45,11 +45,11 @@ As you accumulate pages read, you level up through the librarian ranks:
 
 | Rank | Pages required | Perks |
 |---|---|---|
-| Page | 0 | Basic access |
-| Shelver | 100 | Can create shelves |
-| Librarian | 500 | Can manage other librarians' volumes |
-| Archivist | 2,000 | Can archive and restore |
-| Head Librarian | 5,000 | Full admin access |
+| Page | 0 | Create shelves & volumes, review, manage your own work |
+| Shelver | 100 | Seasoned shelver |
+| Librarian | 500 | Steady contributor |
+| Archivist | 2,000 | Master archivist |
+| Head Librarian | 5,000 | Full admin access -- curate (edit/delete) any librarian's volumes and shelves |
 | Living Document | 10,000 | The ultimate librarian: you've read so many pages you've become self-updating |
 
 ## Badges

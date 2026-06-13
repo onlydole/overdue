@@ -1,6 +1,7 @@
 """Overdue -- FastAPI application entry point."""
 
 import asyncio
+import logging
 import time
 from collections import defaultdict
 from contextlib import asynccontextmanager
@@ -22,8 +23,21 @@ from src.errors.handlers import register_handlers
 from src.errors.incidents import QuietHoursExceeded
 from src.web.mood_middleware import MoodMiddleware
 
+logger = logging.getLogger("overdue")
+
 # Track last Dewey recalculation time
 _last_dewey_recalc: datetime | None = None
+
+
+def _warn_on_insecure_secret() -> None:
+    """Loudly flag a public/default signing secret at startup."""
+    if settings.is_using_insecure_secret():
+        logger.warning(
+            "INSECURE SECRET KEY: OVERDUE_SECRET_KEY is set to a public default. "
+            "Anyone can forge library cards and impersonate any librarian. "
+            "Set OVERDUE_SECRET_KEY to a strong random value (>=32 bytes) before "
+            "exposing this server."
+        )
 
 
 async def dewey_recalc_task() -> None:
@@ -41,6 +55,7 @@ async def dewey_recalc_task() -> None:
 async def lifespan(app: FastAPI):  # type: ignore[no-untyped-def]
     """Create database tables on startup and start background tasks."""
     global _last_dewey_recalc
+    _warn_on_insecure_secret()
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
@@ -102,14 +117,26 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+_cors_origins = settings.get_origins()
+# A wildcard origin combined with credentials is both forbidden by the CORS
+# spec and dangerous: Starlette reflects the caller's Origin, letting any site
+# make credentialed cross-origin requests. Only allow credentials when origins
+# are an explicit allowlist. (Same-origin requests from the web UI and bearer
+# tokens on the API don't rely on CORS credentials, so this is safe.)
+_allow_credentials = "*" not in _cors_origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.get_origins(),
-    allow_credentials=True,
+    allow_origins=_cors_origins,
+    allow_credentials=_allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(SessionMiddleware, secret_key=settings.signing_secret_key)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.signing_secret_key,
+    same_site="lax",
+    https_only=settings.session_https_only,
+)
 
 app.add_middleware(MoodMiddleware)
 

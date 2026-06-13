@@ -26,7 +26,8 @@ Overdue uses environment variables for configuration. All variables are prefixed
 | `OVERDUE_SECRET_KEY` | insecure default | Secret key for JWT signing -- **set a strong value in production** |
 | `OVERDUE_HOST` | `0.0.0.0` | Server bind address |
 | `OVERDUE_PORT` | `8000` | Server port |
-| `OVERDUE_ALLOWED_ORIGINS` | `["*"]` | CORS allowed origins |
+| `OVERDUE_ALLOWED_ORIGINS` | `["*"]` | CORS allowed origins. While `["*"]`, credentialed CORS is disabled (the wildcard + credentials combination is unsafe). Set explicit origins to allow credentialed cross-origin requests. |
+| `OVERDUE_SESSION_HTTPS_ONLY` | `false` | When `true`, marks the session cookie `Secure` so it is only sent over HTTPS. Leave `false` for local `http://` use; set `true` in any HTTPS deployment. |
 
 ### Authentication
 
@@ -74,8 +75,13 @@ services:
 
 ## Production notes
 
-- Always set a strong `OVERDUE_SECRET_KEY` -- the default is insecure
+- Always set a strong `OVERDUE_SECRET_KEY` (>= 32 random bytes) -- the default is
+  a public placeholder, and the server logs a loud warning at startup while it is
+  in use. With a known key, anyone can forge library cards and impersonate any
+  librarian.
+- Set `OVERDUE_SESSION_HTTPS_ONLY=true` so the session cookie is only sent over TLS
 - Use a production database like PostgreSQL instead of SQLite
-- Set `OVERDUE_ALLOWED_ORIGINS` to your frontend domain(s)
+- Set `OVERDUE_ALLOWED_ORIGINS` to your frontend domain(s) -- leaving it as `["*"]`
+  disables credentialed CORS
 - Set `OVERDUE_DEBUG=false`
 - Set `OVERDUE_DEWEY_DECAY_SECONDS=86400` and `OVERDUE_STREAK_COOLDOWN_SECONDS=86400` for daily gameplay

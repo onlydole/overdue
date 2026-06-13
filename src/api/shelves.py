@@ -5,6 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.volumes import calculate_dewey_score
+from src.auth.circulation import require_resource_owner
 from src.auth.library_card import verify_library_card
 from src.db.engine import get_session
 from src.db.tables import ShelfRow, VolumeRow
@@ -113,6 +114,8 @@ async def update_shelf(
             detail="That shelf isn't in our library. Check the catalog and try again.",
         )
 
+    require_resource_owner(payload, shelf.created_by)
+
     update_data = body.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(shelf, key, value)
@@ -135,6 +138,8 @@ async def delete_shelf(
             status_code=404,
             detail="That shelf isn't in our library. Check the catalog and try again.",
         )
+
+    require_resource_owner(payload, shelf.created_by)
 
     await session.delete(shelf)
     await session.commit()
