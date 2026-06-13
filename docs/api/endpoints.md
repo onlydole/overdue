@@ -27,7 +27,7 @@ Register a new librarian account.
 {
   "username": "ada",
   "email": "ada@example.com",
-  "password": "lovelace1815"
+  "password": "Lovelace1815!"
 }
 ```
 
@@ -40,7 +40,7 @@ Log in and receive a library card (JWT token).
 ```json
 {
   "username": "ada",
-  "password": "lovelace1815"
+  "password": "Lovelace1815!"
 }
 ```
 
@@ -64,7 +64,7 @@ Refresh a library card. Requires a valid (non-expired) library card.
 Get the top librarians ranked by pages read.
 
 **Query parameters:**
-- `limit` (int, default: 10) -- Number of entries to return
+- `limit` (int, default: 10, max: 100) -- Number of entries to return
 
 ## Volumes
 
@@ -87,8 +87,8 @@ Create a new volume (shelve knowledge).
 List all volumes in the library.
 
 **Query parameters:**
-- `page` (int, default: 1) -- Page number
-- `per_page` (int, default: 20) -- Items per page
+- `page` (int, default: 1, min: 1) -- Page number
+- `per_page` (int, default: 20, min: 1, max: 100) -- Items per page
 - `shelf_id` (int, optional) -- Filter by shelf
 
 **Response:** Paginated list of volumes.
@@ -99,14 +99,16 @@ Get a specific volume by ID.
 **Response:** Volume with current Dewey Score.
 
 ### `PATCH /api/volumes/{volume_id}`
-Update a volume's title, content, shelf, or bookmarks.
+Update a volume's title, content, shelf, or bookmarks. Requires library card.
+Only the volume's author (or a Head Librarian) may update it; others receive `403`.
 
 **Request body:** Any subset of volume fields.
 
 **Response:** Updated volume.
 
 ### `DELETE /api/volumes/{volume_id}`
-Archive a volume (soft delete).
+Archive a volume (soft delete). Requires library card. Only the volume's author
+(or a Head Librarian) may archive it; others receive `403`.
 
 **Response:** `204 No Content`
 
@@ -137,10 +139,12 @@ List all shelves with volume counts and average Dewey Scores.
 Get a specific shelf by ID.
 
 ### `PATCH /api/shelves/{shelf_id}`
-Update a shelf's name or description.
+Update a shelf's name or description. Requires library card. Only the shelf's
+creator (or a Head Librarian) may update it; others receive `403`.
 
 ### `DELETE /api/shelves/{shelf_id}`
-Delete a shelf and all its volumes.
+Delete a shelf and all its volumes. Requires library card. Only the shelf's
+creator (or a Head Librarian) may delete it; others receive `403`.
 
 **Response:** `204 No Content`
 
@@ -151,7 +155,7 @@ Get autocomplete suggestions from volume titles.
 
 **Query parameters:**
 - `q` (string, required) -- Search query
-- `limit` (int, default: 5) -- Maximum suggestions
+- `limit` (int, default: 5, min: 1, max: 50) -- Maximum suggestions
 
 **Response:** List of title suggestions.
 

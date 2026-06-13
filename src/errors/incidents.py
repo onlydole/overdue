@@ -56,12 +56,12 @@ class ExpiredLibraryCard(LibraryIncident):
 
 
 class InsufficientPermissions(LibraryIncident):
-    """TS-005: The librarian lacks the required rank."""
+    """TS-005: The librarian may not perform this action."""
 
-    def __init__(self) -> None:
+    def __init__(self, detail: str | None = None) -> None:
         super().__init__(
             code="TS-005",
-            detail="Only the head librarian has access to the restricted section.",
+            detail=detail or "Only the head librarian has access to the restricted section.",
             status_code=403,
         )
 

@@ -3,10 +3,11 @@
 import random
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.auth.circulation import require_resource_owner
 from src.auth.library_card import verify_library_card
 from src.config.defaults import DEWEY_LOST, DEWEY_PRISTINE
 from src.config.settings import settings
@@ -92,8 +93,8 @@ async def create_volume(
 
 @router.get("/", response_model=VolumeListResponse)
 async def list_volumes(
-    page: int = 1,
-    per_page: int = 20,
+    page: int = Query(1, ge=1),
+    per_page: int = Query(20, ge=1, le=100),
     shelf_id: int | None = None,
     session: AsyncSession = Depends(get_session),
 ) -> VolumeListResponse:
@@ -157,6 +158,12 @@ async def update_volume(
             detail="That volume isn't on any of our shelves. Check the catalog and try again.",
         )
 
+    require_resource_owner(
+        payload,
+        volume.author_id,
+        "Only the volume's keeper or a head librarian may change it.",
+    )
+
     update_data = body.model_dump(exclude_unset=True)
     bookmarks_update = update_data.pop("bookmarks", None)
 
@@ -195,6 +202,12 @@ async def archive_volume(
             status_code=404,
             detail="That volume isn't on any of our shelves. Check the catalog and try again.",
         )
+
+    require_resource_owner(
+        payload,
+        volume.author_id,
+        "Only the volume's keeper or a head librarian may archive it.",
+    )
 
     volume.archived = True
     await session.commit()

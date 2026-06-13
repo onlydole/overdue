@@ -34,7 +34,7 @@ def fuzzy_score(query: str, text: str) -> float:
 @router.get("/autocomplete", response_model=SuggestResponse)
 async def autocomplete(
     q: str,
-    limit: int = 5,
+    limit: int = Query(5, ge=1, le=50),
     session: AsyncSession = Depends(get_session),
 ) -> SuggestResponse:
     """Get autocomplete suggestions from volume titles (renamed from suggest)."""

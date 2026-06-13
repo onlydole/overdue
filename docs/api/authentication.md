@@ -30,14 +30,15 @@ curl -X POST http://localhost:8000/api/librarians/register \
   -d '{
     "username": "ada",
     "email": "ada@example.com",
-    "password": "lovelace1815"
+    "password": "Lovelace1815!"
   }'
 ```
 
 **Requirements:**
 - Username: 3-100 characters, unique
 - Email: valid email format, unique
-- Password: minimum 8 characters
+- Password: at least 8 characters and must include an uppercase letter, a
+  lowercase letter, a digit, and a special character (`@$!%*?&`)
 
 ## Login
 
@@ -46,7 +47,7 @@ Obtain a library card:
 ```bash
 curl -X POST http://localhost:8000/api/librarians/login \
   -H "Content-Type: application/json" \
-  -d '{"username": "ada", "password": "lovelace1815"}'
+  -d '{"username": "ada", "password": "Lovelace1815!"}'
 ```
 
 **Response:**
@@ -88,18 +89,25 @@ This returns a new library card with a fresh expiry.
 
 ## Roles and permissions
 
-Overdue uses a rank-based permission system. See the [gameplay guide](../guides/gameplay.md) for rank details.
+Authorization is **object-level**, based on who created a resource. Any librarian
+with a valid library card can read the library and create their own shelves and
+volumes. Mutating or deleting an existing resource is restricted to its owner:
 
-| Role | Permissions |
+| Action | Who may perform it |
 |---|---|
-| Page | Read volumes, create volumes on existing shelves |
-| Shelver | All Page permissions + create shelves |
-| Librarian | All Shelver permissions + manage other librarians' volumes |
-| Archivist | All Librarian permissions + archive and restore volumes |
-| Head Librarian | Full admin access |
+| Read volumes/shelves, search the catalog | Anyone (no card required) |
+| Create a shelf or volume | Any librarian with a library card |
+| Review any volume | Any librarian with a library card |
+| Update / archive a volume | The volume's **author**, or a **Head Librarian** |
+| Update / delete a shelf | The shelf's **creator**, or a **Head Librarian** |
+
+"Head Librarian" is the rank earned at 5000 pages read (see the
+[gameplay guide](../guides/gameplay.md)); reaching it grants library-wide
+curation rights. Roles are carried in the signed library card, so they cannot be
+forged as long as `OVERDUE_SECRET_KEY` is set to a strong value.
 
 ## Error responses
 
 - **401:** "You'll need a library card to access the stacks." (missing or invalid token)
 - **401:** "Your library card has expired. Renew at POST /librarians/login." (expired token)
-- **403:** "Only the head librarian has access to the restricted section." (insufficient role)
+- **403:** "Only the keeper of this item or a head librarian may change it." (mutating a resource you don't own; returned as a `TS-005` incident)
