@@ -1,0 +1,128 @@
+# Tests, Lint and Types
+#
+# The three checks CLAUDE.md and CONTRIBUTING.md ask contributors to run,
+# enforced on every PR as independent parallel jobs so one failure doesn't
+# mask the others:
+#
+#   test   -> pytest
+#   lint   -> ruff check + ruff format --check
+#   types  -> mypy (strict)
+#
+# Design choices:
+#   - No `paths:` filter on pull_request. These are meant to be required
+#     status checks, and a skipped required check leaves a PR blocked
+#     forever waiting on a run that will never report. Running them on
+#     every PR costs a couple of cached minutes and always reports.
+#   - Separate jobs rather than sequential steps in one job: a type error
+#     shouldn't hide a test failure, and the three run concurrently.
+#   - Python 3.12 matches [tool.mypy] python_version and the other
+#     workflows. Note the Dockerfile ships 3.14 -- see docs/architecture/ci-cd.md.
+#
+# Security choices:
+#   - Top-level permissions: {} denies the default GITHUB_TOKEN scope; each
+#     job opts into contents: read and nothing more. No secrets are used, so
+#     this is safe to run on fork PRs.
+#   - Third-party actions are pinned to a commit SHA with the tag in a
+#     trailing comment so Dependabot can pick up upgrades and a reviewer can
+#     read intent at a glance.
+#   - No untrusted PR input (title/body/branch) reaches a shell.
+
+name: Tests, Lint and Types
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions: {}
+
+concurrency:
+  group: checks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Run tests
+        run: uv run pytest
+
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      # Two steps, not `&&`, so the annotation points at whichever failed.
+      - name: Ruff lint
+        run: uv run ruff check src/ tests/ scripts/
+
+      - name: Ruff format
+        run: uv run ruff format --check src/ tests/ scripts/
+
+  types:
+    name: types
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Run mypy
+        run: uv run mypy src/
