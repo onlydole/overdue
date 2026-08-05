@@ -1,6 +1,6 @@
 """Web session utilities for cookie-based browser auth."""
 
-from typing import Any, cast
+from typing import Any
 
 import jwt
 from fastapi import Request
@@ -64,7 +64,7 @@ async def login_librarian(
     result = await session.execute(select(LibrarianRow).where(LibrarianRow.username == username))
     librarian = result.scalar_one_or_none()
 
-    if not librarian or not verify_password(password, cast(str, librarian.hashed_password)):
+    if not librarian or not verify_password(password, librarian.hashed_password):
         return None
 
     token = create_library_card(

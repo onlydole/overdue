@@ -1,5 +1,7 @@
 """My Library route -- personal dashboard for authenticated users."""
 
+from typing import Any
+
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
@@ -66,7 +68,7 @@ async def my_library(
         )
     )
     all_volumes = volumes_result.scalars().all()
-    overdue_volumes = []
+    overdue_volumes: list[dict[str, Any]] = []
     for v in all_volumes:
         score = calculate_dewey_score(v.last_reviewed_at)
         if score <= DEWEY_OVERDUE:

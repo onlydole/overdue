@@ -1,6 +1,7 @@
 """Middleware to compute library mood and inject into request state."""
 
 import time
+from typing import TypedDict
 
 from fastapi import Request
 from sqlalchemy import select
@@ -13,7 +14,14 @@ from src.db.tables import VolumeRow
 from src.game.mood import calculate_mood
 
 _MOOD_CACHE_TTL = 30  # seconds
-_mood_cache: dict[str, object] = {"ambiance": "", "expires_at": 0.0}
+
+
+class _MoodCache(TypedDict):
+    ambiance: str
+    expires_at: float
+
+
+_mood_cache: _MoodCache = {"ambiance": "", "expires_at": 0.0}
 
 
 class MoodMiddleware(BaseHTTPMiddleware):

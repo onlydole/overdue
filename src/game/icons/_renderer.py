@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 
 def _build_rects(
     pixels: list[tuple[int, int, str]],
@@ -22,7 +24,7 @@ def render_icon_svg(
     size: int = 24,
     color: str | None = None,
     *,
-    _catalog: dict[str, str | list[tuple[int, int, str]]] | None = None,
+    _catalog: Mapping[str, str | list[tuple[int, int, str]]] | None = None,
 ) -> str:
     """Return an inline SVG string for the given icon.
 
@@ -75,7 +77,7 @@ def render_icon_svg_bare(
     name: str,
     color: str | None = None,
     *,
-    _catalog: dict[str, str | list[tuple[int, int, str]]] | None = None,
+    _catalog: Mapping[str, str | list[tuple[int, int, str]]] | None = None,
 ) -> str | None:
     """Return a bare SVG string for static files."""
     if _catalog is None:

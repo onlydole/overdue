@@ -12,6 +12,7 @@ from src.auth.web_session import get_current_librarian_required
 from src.db.engine import get_session
 from src.db.tables import LibrarianRow
 from src.game.avatars import AVATAR_CATALOG, get_avatar_choices
+from src.web.forms import form_str
 from src.web.templates import templates
 
 router = APIRouter()
@@ -76,9 +77,9 @@ async def update_avatar(
         return RedirectResponse(url="/login", status_code=302)
 
     form = await request.form()
-    username = str(form.get("username", "")).strip()
-    email = str(form.get("email", "")).strip().lower()
-    avatar_id = str(form.get("avatar_id", "avatar_01"))
+    username = form_str(form, "username").strip()
+    email = form_str(form, "email").strip().lower()
+    avatar_id = form_str(form, "avatar_id", "avatar_01")
 
     errors: list[str] = []
     if len(username) < 3:

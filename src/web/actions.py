@@ -3,6 +3,7 @@
 import json
 import random
 from datetime import datetime
+from typing import Any
 
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import RedirectResponse
@@ -16,6 +17,7 @@ from src.db.engine import get_session
 from src.db.tables import ReviewRow, ShelfRow, VolumeRow, volume_bookmarks
 from src.game.engine import on_volume_reviewed, on_volume_shelved
 from src.models.game import GameResult
+from src.web.forms import form_str
 from src.web.templates import templates
 from src.web.volumes import REVIEWS_PER_PAGE
 
@@ -68,8 +70,8 @@ async def shelf_create_submit(
         return user
 
     form = await request.form()
-    name = form.get("name", "").strip()
-    description = form.get("description", "").strip()
+    name = form_str(form, "name").strip()
+    description = form_str(form, "description").strip()
 
     if not name:
         return templates.TemplateResponse(
@@ -145,10 +147,10 @@ async def volume_create_submit(
         return user
 
     form = await request.form()
-    title = form.get("title", "").strip()
-    content = form.get("content", "").strip()
-    shelf_id = form.get("shelf_id", "")
-    bookmarks_str = form.get("bookmarks", "").strip()
+    title = form_str(form, "title").strip()
+    content = form_str(form, "content").strip()
+    shelf_id = form_str(form, "shelf_id")
+    bookmarks_str = form_str(form, "bookmarks").strip()
 
     shelves_result = await session.execute(select(ShelfRow))
     shelves = shelves_result.scalars().all()
@@ -297,7 +299,7 @@ async def review_volume_web(
             )
         )
         siblings = siblings_result.scalars().all()
-        candidates = []
+        candidates: list[dict[str, Any]] = []
         for v in siblings:
             score = calculate_dewey_score(v.last_reviewed_at)
             if score < 75:

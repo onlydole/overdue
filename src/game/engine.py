@@ -87,7 +87,7 @@ async def on_volume_reviewed(
         else "Reviewed a current volume"
     )
     xp_awarded = review_amount
-    xp_breakdown = [{"amount": review_amount, "reason": review_reason}]
+    xp_breakdown: list[dict[str, str | int]] = [{"amount": review_amount, "reason": review_reason}]
     total_xp = await award_review_xp(session, librarian_id, was_overdue)
 
     # Award rescue bonus for saving a volume from Overdue territory

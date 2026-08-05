@@ -2,7 +2,7 @@
 
 import re
 from datetime import datetime, timedelta
-from typing import Any, cast
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
@@ -77,7 +77,7 @@ async def login(
     )
     librarian = result.scalar_one_or_none()
 
-    if not librarian or not verify_password(body.password, cast(str, librarian.hashed_password)):
+    if not librarian or not verify_password(body.password, librarian.hashed_password):
         raise HTTPException(
             status_code=401,
             detail="You'll need a library card to access the stacks.",

@@ -1,6 +1,7 @@
 """Stats and analytics CLI commands."""
 
 from datetime import datetime, timedelta
+from typing import Any
 
 import typer
 from rich.panel import Panel
@@ -27,7 +28,9 @@ def summary() -> None:
         raise SystemExit(1)
 
     xp = xp_resp.json()
-    badges = badges_resp.json() if badges_resp.status_code == 200 else {"badges": [], "total": 0}
+    badges: dict[str, Any] = (
+        badges_resp.json() if badges_resp.status_code == 200 else {"badges": [], "total": 0}
+    )
     streak = (
         streak_resp.json()
         if streak_resp.status_code == 200
