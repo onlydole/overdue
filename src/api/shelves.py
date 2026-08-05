@@ -29,7 +29,8 @@ async def shelf_to_response(row: ShelfRow, session: AsyncSession) -> ShelfRespon
     if volume_count > 0:
         volumes_result = await session.execute(
             select(VolumeRow).where(
-                VolumeRow.shelf_id == row.id, VolumeRow.archived == False  # noqa: E712
+                VolumeRow.shelf_id == row.id,
+                VolumeRow.archived == False,  # noqa: E712
             )
         )
         volumes = volumes_result.scalars().all()
@@ -164,8 +165,7 @@ async def delete_shelf(
         )
         if (foreign_volumes.scalar() or 0) > 0:
             raise InsufficientPermissions(
-                "This shelf holds volumes by other librarians; "
-                "only a head librarian may delete it."
+                "This shelf holds volumes by other librarians; only a head librarian may delete it."
             )
 
     await session.delete(shelf)

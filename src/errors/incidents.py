@@ -1,7 +1,10 @@
 """Custom exception classes for library incidents."""
 
 
-class LibraryIncident(Exception):
+# noqa rationale: the library metaphor names these "incidents", not "errors" --
+# renaming the base to LibraryIncidentError would break the convention the whole
+# hierarchy (VolumeNotFound, QuietHoursExceeded, ...) is built on.
+class LibraryIncident(Exception):  # noqa: N818
     """Base exception for all library incidents."""
 
     def __init__(self, code: str, detail: str, status_code: int = 500):

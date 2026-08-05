@@ -1,7 +1,7 @@
 """Shelf browsing routes."""
 
 from fastapi import APIRouter, Depends, Request
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.volumes import calculate_dewey_score
@@ -38,19 +38,25 @@ async def browse_shelves(
             scores = [calculate_dewey_score(v.last_reviewed_at) for v in volumes]
             avg_dewey = sum(scores) / len(scores)
 
-        shelf_data.append({
-            "id": shelf.id,
-            "name": shelf.name,
-            "description": shelf.description,
-            "volume_count": volume_count,
-            "average_dewey": round(avg_dewey, 1),
-        })
+        shelf_data.append(
+            {
+                "id": shelf.id,
+                "name": shelf.name,
+                "description": shelf.description,
+                "volume_count": volume_count,
+                "average_dewey": round(avg_dewey, 1),
+            }
+        )
 
-    return templates.TemplateResponse(request, "shelves.html", {
-        "request": request,
-        "current_user": current_user,
-        "shelves": shelf_data,
-    })
+    return templates.TemplateResponse(
+        request,
+        "shelves.html",
+        {
+            "request": request,
+            "current_user": current_user,
+            "shelves": shelf_data,
+        },
+    )
 
 
 @router.get("/shelves/{shelf_id}")
@@ -63,10 +69,15 @@ async def shelf_detail(
     current_user = await get_current_librarian_optional(request, session)
     shelf = await session.get(ShelfRow, shelf_id)
     if not shelf:
-        return templates.TemplateResponse(request, "404.html", {
-            "request": request,
-            "current_user": current_user,
-        }, status_code=404)
+        return templates.TemplateResponse(
+            request,
+            "404.html",
+            {
+                "request": request,
+                "current_user": current_user,
+            },
+            status_code=404,
+        )
 
     vol_result = await session.execute(
         select(VolumeRow).where(
@@ -79,17 +90,23 @@ async def shelf_detail(
     volume_data = []
     for v in volumes:
         score = calculate_dewey_score(v.last_reviewed_at)
-        volume_data.append({
-            "id": v.id,
-            "title": v.title,
-            "dewey_score": round(score, 1),
-            "last_reviewed_at": v.last_reviewed_at,
-            "spine_seed": v.spine_seed if v.spine_seed else sum(ord(c) for c in v.title),
-        })
+        volume_data.append(
+            {
+                "id": v.id,
+                "title": v.title,
+                "dewey_score": round(score, 1),
+                "last_reviewed_at": v.last_reviewed_at,
+                "spine_seed": v.spine_seed if v.spine_seed else sum(ord(c) for c in v.title),
+            }
+        )
 
-    return templates.TemplateResponse(request, "shelf_detail.html", {
-        "request": request,
-        "current_user": current_user,
-        "shelf": shelf,
-        "volumes": volume_data,
-    })
+    return templates.TemplateResponse(
+        request,
+        "shelf_detail.html",
+        {
+            "request": request,
+            "current_user": current_user,
+            "shelf": shelf,
+            "volumes": volume_data,
+        },
+    )

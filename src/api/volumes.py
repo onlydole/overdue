@@ -12,8 +12,8 @@ from src.auth.library_card import verify_library_card
 from src.config.defaults import DEWEY_LOST, DEWEY_PRISTINE
 from src.config.settings import settings
 from src.db.engine import get_session
-from src.errors.incidents import VolumeTooLarge
 from src.db.tables import ShelfRow, VolumeRow, volume_bookmarks
+from src.errors.incidents import VolumeTooLarge
 from src.models.volume import VolumeCreate, VolumeListResponse, VolumeResponse, VolumeUpdate
 
 router = APIRouter()
@@ -63,7 +63,10 @@ async def create_volume(
     # Verify shelf exists
     shelf = await session.get(ShelfRow, body.shelf_id)
     if not shelf:
-        raise HTTPException(status_code=404, detail="That shelf isn't in our library. Check the catalog and try again.")
+        raise HTTPException(
+            status_code=404,
+            detail="That shelf isn't in our library. Check the catalog and try again.",
+        )
 
     volume = VolumeRow(
         title=body.title,
@@ -85,7 +88,7 @@ async def create_volume(
     # Trigger game mechanics
     from src.game.engine import on_volume_shelved
 
-    game_result = await on_volume_shelved(session, int(payload["sub"]), volume.id)
+    await on_volume_shelved(session, int(payload["sub"]), volume.id)
     await session.commit()
 
     return volume_to_response(volume, body.bookmarks)
@@ -235,9 +238,7 @@ async def review_volume(
     # Trigger game mechanics (creates ReviewRow, awards XP, updates streak, checks badges)
     from src.game.engine import on_volume_reviewed
 
-    game_result = await on_volume_reviewed(
-        session, int(payload["sub"]), volume_id, dewey_score_before
-    )
+    await on_volume_reviewed(session, int(payload["sub"]), volume_id, dewey_score_before)
 
     await session.commit()
     await session.refresh(volume)

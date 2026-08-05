@@ -169,9 +169,7 @@ async def test_non_owner_cannot_delete_shelf(client, session_factory):
     intruder = await _make_librarian(session_factory, "intruder")
     shelf = await _make_shelf(session_factory, owner)
 
-    resp = await client.delete(
-        f"/api/shelves/{shelf}", headers=_auth(intruder, "intruder", "Page")
-    )
+    resp = await client.delete(f"/api/shelves/{shelf}", headers=_auth(intruder, "intruder", "Page"))
     assert resp.status_code == 403
 
     async with session_factory() as s:
@@ -182,9 +180,7 @@ async def test_owner_can_delete_own_shelf(client, session_factory):
     owner = await _make_librarian(session_factory, "owner")
     shelf = await _make_shelf(session_factory, owner)
 
-    resp = await client.delete(
-        f"/api/shelves/{shelf}", headers=_auth(owner, "owner", "Page")
-    )
+    resp = await client.delete(f"/api/shelves/{shelf}", headers=_auth(owner, "owner", "Page"))
     assert resp.status_code == 204
 
 
@@ -334,9 +330,7 @@ async def test_web_login_sets_samesite_lax_session_cookie(client, session_factor
         )
         await s.commit()
 
-    resp = await client.post(
-        "/login", data={"username": "weblogin", "password": "Lovelace1815!"}
-    )
+    resp = await client.post("/login", data={"username": "weblogin", "password": "Lovelace1815!"})
     assert resp.status_code == 302
     set_cookie = resp.headers.get("set-cookie", "").lower()
     assert "session=" in set_cookie
@@ -363,9 +357,7 @@ async def test_non_curator_cannot_delete_shelf_holding_foreign_volumes(client, s
     shelf = await _make_shelf(session_factory, owner)
     await _make_volume(session_factory, other, shelf)  # volume authored by someone else
 
-    resp = await client.delete(
-        f"/api/shelves/{shelf}", headers=_auth(owner, "owner", "Page")
-    )
+    resp = await client.delete(f"/api/shelves/{shelf}", headers=_auth(owner, "owner", "Page"))
     assert resp.status_code == 403
     async with session_factory() as s:
         assert await s.get(ShelfRow, shelf) is not None  # nothing was deleted
@@ -389,7 +381,5 @@ async def test_owner_can_delete_shelf_holding_only_own_volumes(client, session_f
     shelf = await _make_shelf(session_factory, owner)
     await _make_volume(session_factory, owner, shelf)  # owner's own volume
 
-    resp = await client.delete(
-        f"/api/shelves/{shelf}", headers=_auth(owner, "owner", "Page")
-    )
+    resp = await client.delete(f"/api/shelves/{shelf}", headers=_auth(owner, "owner", "Page"))
     assert resp.status_code == 204

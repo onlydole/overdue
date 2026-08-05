@@ -6,7 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.defaults import DEWEY_OVERDUE
-from src.db.tables import BadgeRow, LibrarianRow, ReviewRow, StreakRow, VolumeRow
+from src.db.tables import BadgeRow, ReviewRow, StreakRow, VolumeRow
 
 BADGE_DEFINITIONS = {
     "First Shelve": {
@@ -160,19 +160,29 @@ async def check_badges_after_review(session: AsyncSession, librarian_id: int) ->
         select(StreakRow).where(StreakRow.librarian_id == librarian_id)
     )
     streak = streak_result.scalar_one_or_none()
-    if streak and streak.current_streak >= 7 and not await has_badge(session, librarian_id, "Streak Freak!"):
+    if (
+        streak
+        and streak.current_streak >= 7
+        and not await has_badge(session, librarian_id, "Streak Freak!")
+    ):
         await grant_badge(session, librarian_id, "Streak Freak!")
         awarded.append("Streak Freak!")
 
     # Marathon Reader (30-day streak)
-    if streak and streak.current_streak >= 30 and not await has_badge(session, librarian_id, "Marathon Reader"):
+    if (
+        streak
+        and streak.current_streak >= 30
+        and not await has_badge(session, librarian_id, "Marathon Reader")
+    ):
         await grant_badge(session, librarian_id, "Marathon Reader")
         awarded.append("Marathon Reader")
 
     # Dust Buster -- 10 reviews where score was overdue (<=25)
     if not await has_badge(session, librarian_id, "Dust Buster"):
         dust_result = await session.execute(
-            select(func.count()).select_from(ReviewRow).where(
+            select(func.count())
+            .select_from(ReviewRow)
+            .where(
                 ReviewRow.librarian_id == librarian_id,
                 ReviewRow.dewey_score_before <= DEWEY_OVERDUE,
             )
@@ -185,7 +195,9 @@ async def check_badges_after_review(session: AsyncSession, librarian_id: int) ->
     # Centurion -- 100 total reviews
     if not await has_badge(session, librarian_id, "Centurion"):
         total_result = await session.execute(
-            select(func.count()).select_from(ReviewRow).where(
+            select(func.count())
+            .select_from(ReviewRow)
+            .where(
                 ReviewRow.librarian_id == librarian_id,
             )
         )
@@ -222,8 +234,7 @@ async def check_badges_after_review(session: AsyncSession, librarian_id: int) ->
         )
         user_volumes = user_volumes_result.scalars().all()
         if user_volumes and all(
-            calculate_dewey_score(v.last_reviewed_at) >= DEWEY_GOOD_SHAPE
-            for v in user_volumes
+            calculate_dewey_score(v.last_reviewed_at) >= DEWEY_GOOD_SHAPE for v in user_volumes
         ):
             await grant_badge(session, librarian_id, "Pristine Stacks")
             awarded.append("Pristine Stacks")
@@ -240,7 +251,9 @@ async def check_badges_after_review(session: AsyncSession, librarian_id: int) ->
         )
         dv_volumes = dv_result.scalars().all()
         if dv_volumes:
-            avg = sum(calculate_dewey_score(v.last_reviewed_at) for v in dv_volumes) / len(dv_volumes)
+            avg = sum(calculate_dewey_score(v.last_reviewed_at) for v in dv_volumes) / len(
+                dv_volumes
+            )
             if avg >= 90:
                 await grant_badge(session, librarian_id, "Dewey Devotee")
                 awarded.append("Dewey Devotee")
@@ -248,13 +261,17 @@ async def check_badges_after_review(session: AsyncSession, librarian_id: int) ->
     # Completionist -- has all other badges
     all_other = [b for b in BADGE_DEFINITIONS if b != "Completionist"]
     earned_result = await session.execute(
-        select(func.count()).select_from(BadgeRow).where(
+        select(func.count())
+        .select_from(BadgeRow)
+        .where(
             BadgeRow.librarian_id == librarian_id,
             BadgeRow.badge_name.in_(all_other),
         )
     )
     earned_count = earned_result.scalar() or 0
-    if earned_count == len(all_other) and not await has_badge(session, librarian_id, "Completionist"):
+    if earned_count == len(all_other) and not await has_badge(
+        session, librarian_id, "Completionist"
+    ):
         await grant_badge(session, librarian_id, "Completionist")
         awarded.append("Completionist")
 

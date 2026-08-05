@@ -6,7 +6,6 @@ import pytest
 
 from src.game.avatars import AVATAR_CATALOG, get_avatar_choices, render_avatar_svg
 
-
 EXPECTED_AVATAR_IDS = [f"avatar_{i:02d}" for i in range(1, 9)]
 REQUIRED_META_KEYS = {
     "name",
@@ -17,8 +16,9 @@ REQUIRED_META_KEYS = {
     "secondary",
     "outline",
     "path",
-    "accents"
+    "accents",
 }
+
 
 def test_all_8_avatars_registered() -> None:
     """All 8 stable avatar IDs must remain available."""
@@ -66,7 +66,7 @@ def test_fallback_for_unknown_avatar() -> None:
     assert svg.startswith("<svg")
     assert 'viewBox="0 0 32 32"' in svg
     # Should default to avatar_01 colors
-    assert '#f0c543' in svg # Isaac primary
+    assert "#f0c543" in svg  # Isaac primary
 
 
 def test_size_parameter() -> None:
@@ -90,10 +90,8 @@ def test_get_avatar_choices() -> None:
 
 def test_imports_resolve() -> None:
     """Public avatar API exports should remain importable."""
-    from src.game.avatars import AVATAR_CATALOG as catalog
-    from src.game.avatars import get_avatar_choices as get_choices
-    from src.game.avatars import render_avatar_svg as render
+    from src.game.avatars import AVATAR_CATALOG, get_avatar_choices, render_avatar_svg
 
-    assert isinstance(catalog, dict)
-    assert callable(get_choices)
-    assert callable(render)
+    assert isinstance(AVATAR_CATALOG, dict)
+    assert callable(get_avatar_choices)
+    assert callable(render_avatar_svg)

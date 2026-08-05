@@ -96,6 +96,7 @@ async def seed_demo_data(session: AsyncSession) -> None:
     # Offsets in "decay units" (default: 10 seconds each).
     # This creates a nice spread of scores immediately on startup.
     from src.config.settings import settings
+
     decay_unit = settings.dewey_decay_seconds  # seconds per decay unit
 
     volume_defs = [
@@ -123,7 +124,11 @@ async def seed_demo_data(session: AsyncSession) -> None:
     for title, shelf_idx, author_idx, units_ago, bmarks in volume_defs:
         vol = VolumeRow(
             title=title,
-            content=f"Comprehensive notes on {title.lower()}. This volume covers key concepts, best practices, and real-world examples gathered from production experience.",
+            content=(
+                f"Comprehensive notes on {title.lower()}. This volume covers key "
+                "concepts, best practices, and real-world examples gathered from "
+                "production experience."
+            ),
             shelf_id=shelves[shelf_idx].id,
             author_id=librarians[author_idx].id,
             last_reviewed_at=now - timedelta(seconds=units_ago * decay_unit),
@@ -136,9 +141,7 @@ async def seed_demo_data(session: AsyncSession) -> None:
     # Add bookmarks
     for vol, bmarks in volumes:
         for tag in bmarks:
-            await session.execute(
-                volume_bookmarks.insert().values(volume_id=vol.id, bookmark=tag)
-            )
+            await session.execute(volume_bookmarks.insert().values(volume_id=vol.id, bookmark=tag))
 
     # --- Reviews ---
     # (vol_idx, author_idx, decay_units_ago, score_before)
@@ -187,8 +190,18 @@ async def seed_demo_data(session: AsyncSession) -> None:
     # --- Streaks ---
     cooldown = settings.streak_cooldown_seconds
     streaks = [
-        StreakRow(librarian_id=librarians[0].id, current_streak=12, longest_streak=45, last_review_date=now - timedelta(seconds=cooldown)),
-        StreakRow(librarian_id=librarians[1].id, current_streak=3, longest_streak=8, last_review_date=now - timedelta(seconds=cooldown)),
+        StreakRow(
+            librarian_id=librarians[0].id,
+            current_streak=12,
+            longest_streak=45,
+            last_review_date=now - timedelta(seconds=cooldown),
+        ),
+        StreakRow(
+            librarian_id=librarians[1].id,
+            current_streak=3,
+            longest_streak=8,
+            last_review_date=now - timedelta(seconds=cooldown),
+        ),
     ]
     for s in streaks:
         session.add(s)

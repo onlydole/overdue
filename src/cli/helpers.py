@@ -1,12 +1,10 @@
 """Shared CLI utilities: API client, Rich console, formatting."""
 
-import json
 import os
 from pathlib import Path
 
 import httpx
 from rich.console import Console
-from rich.table import Table
 
 console = Console()
 

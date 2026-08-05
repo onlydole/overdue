@@ -5,20 +5,19 @@ import random
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.volumes import calculate_dewey_score
-from src.auth.web_session import get_current_librarian_optional, get_current_librarian_required
+from src.auth.web_session import get_current_librarian_required
 from src.config.settings import settings
 from src.db.engine import get_session
-from src.web.volumes import REVIEWS_PER_PAGE
 from src.db.tables import ReviewRow, ShelfRow, VolumeRow, volume_bookmarks
-from src.errors.incidents import VolumeTooLarge
 from src.game.engine import on_volume_reviewed, on_volume_shelved
 from src.models.game import GameResult
 from src.web.templates import templates
+from src.web.volumes import REVIEWS_PER_PAGE
 
 router = APIRouter()
 
@@ -48,10 +47,14 @@ async def shelf_create_page(
     user = await get_current_librarian_required(request, session)
     if isinstance(user, RedirectResponse):
         return user
-    return templates.TemplateResponse(request, "shelf_create.html", {
-        "request": request,
-        "current_user": user,
-    })
+    return templates.TemplateResponse(
+        request,
+        "shelf_create.html",
+        {
+            "request": request,
+            "current_user": user,
+        },
+    )
 
 
 @router.post("/shelves/create")
@@ -69,22 +72,30 @@ async def shelf_create_submit(
     description = form.get("description", "").strip()
 
     if not name:
-        return templates.TemplateResponse(request, "shelf_create.html", {
-            "request": request,
-            "current_user": user,
-            "error": "Shelf name is required.",
-        })
+        return templates.TemplateResponse(
+            request,
+            "shelf_create.html",
+            {
+                "request": request,
+                "current_user": user,
+                "error": "Shelf name is required.",
+            },
+        )
 
     # Check duplicate
     existing = await session.execute(select(ShelfRow).where(ShelfRow.name == name))
     if existing.scalar_one_or_none():
-        return templates.TemplateResponse(request, "shelf_create.html", {
-            "request": request,
-            "current_user": user,
-            "error": "A shelf with that name already exists.",
-            "name": name,
-            "description": description,
-        })
+        return templates.TemplateResponse(
+            request,
+            "shelf_create.html",
+            {
+                "request": request,
+                "current_user": user,
+                "error": "A shelf with that name already exists.",
+                "name": name,
+                "description": description,
+            },
+        )
 
     shelf = ShelfRow(
         name=name,
@@ -111,12 +122,16 @@ async def volume_create_page(
     shelves_result = await session.execute(select(ShelfRow))
     shelves = shelves_result.scalars().all()
 
-    return templates.TemplateResponse(request, "volume_create.html", {
-        "request": request,
-        "current_user": user,
-        "shelves": shelves,
-        "selected_shelf_id": shelf_id,
-    })
+    return templates.TemplateResponse(
+        request,
+        "volume_create.html",
+        {
+            "request": request,
+            "current_user": user,
+            "shelves": shelves,
+            "selected_shelf_id": shelf_id,
+        },
+    )
 
 
 @router.post("/volumes/create")
@@ -153,30 +168,38 @@ async def volume_create_submit(
             selected_shelf = int(shelf_id) if shelf_id else None
         except (ValueError, TypeError):
             selected_shelf = None
-        return templates.TemplateResponse(request, "volume_create.html", {
-            "request": request,
-            "current_user": user,
-            "shelves": shelves,
-            "errors": errors,
-            "title": title,
-            "content": content,
-            "selected_shelf_id": selected_shelf,
-            "bookmarks": bookmarks_str,
-        })
+        return templates.TemplateResponse(
+            request,
+            "volume_create.html",
+            {
+                "request": request,
+                "current_user": user,
+                "shelves": shelves,
+                "errors": errors,
+                "title": title,
+                "content": content,
+                "selected_shelf_id": selected_shelf,
+                "bookmarks": bookmarks_str,
+            },
+        )
 
     # Check content size
     content_size_kb = len(content.encode("utf-8")) / 1024
     if content_size_kb > settings.max_volume_size_kb:
-        return templates.TemplateResponse(request, "volume_create.html", {
-            "request": request,
-            "current_user": user,
-            "shelves": shelves,
-            "errors": [f"Content exceeds maximum size of {settings.max_volume_size_kb}KB."],
-            "title": title,
-            "content": content,
-            "selected_shelf_id": int(shelf_id),
-            "bookmarks": bookmarks_str,
-        })
+        return templates.TemplateResponse(
+            request,
+            "volume_create.html",
+            {
+                "request": request,
+                "current_user": user,
+                "shelves": shelves,
+                "errors": [f"Content exceeds maximum size of {settings.max_volume_size_kb}KB."],
+                "title": title,
+                "content": content,
+                "selected_shelf_id": int(shelf_id),
+                "bookmarks": bookmarks_str,
+            },
+        )
 
     volume = VolumeRow(
         title=title,
@@ -191,13 +214,15 @@ async def volume_create_submit(
     # Add bookmarks
     if bookmarks_str:
         for tag in [t.strip() for t in bookmarks_str.split(",") if t.strip()]:
-            await session.execute(volume_bookmarks.insert().values(volume_id=volume.id, bookmark=tag))
+            await session.execute(
+                volume_bookmarks.insert().values(volume_id=volume.id, bookmark=tag)
+            )
 
     await session.commit()
     await session.refresh(volume)
 
     # Trigger game mechanics
-    game_result = await on_volume_shelved(session, user["id"], volume.id)
+    await on_volume_shelved(session, user["id"], volume.id)
     await session.commit()
 
     return RedirectResponse(url=f"/volumes/{volume.id}", status_code=302)
@@ -223,6 +248,7 @@ async def review_volume_web(
     if dewey_score_before >= 99.9:
         # Volume is already pristine; no action taken
         from src.game.xp import get_rank
+
         current_rank = get_rank(user["total_xp"])
         game_result = GameResult(
             xp_awarded=0,
@@ -233,7 +259,7 @@ async def review_volume_web(
             new_rank=None,
             badges_earned=[],
             streak=0,
-            streak_bonus_awarded=False
+            streak_bonus_awarded=False,
         )
     else:
         volume.last_reviewed_at = datetime.utcnow()
@@ -255,8 +281,7 @@ async def review_volume_web(
         has_more_reviews = len(reviews) > REVIEWS_PER_PAGE
         reviews = reviews[:REVIEWS_PER_PAGE]
         count_result = await session.execute(
-            select(func.count()).select_from(ReviewRow)
-            .where(ReviewRow.volume_id == volume.id)
+            select(func.count()).select_from(ReviewRow).where(ReviewRow.volume_id == volume.id)
         )
         total_reviews = count_result.scalar() or 0
 
@@ -295,23 +320,29 @@ async def review_volume_web(
             for v in all_volumes:
                 score = calculate_dewey_score(v.last_reviewed_at)
                 if score < 75:
-                    candidates.append({"id": v.id, "title": v.title, "dewey_score": round(score, 1)})
+                    candidates.append(
+                        {"id": v.id, "title": v.title, "dewey_score": round(score, 1)}
+                    )
             candidates.sort(key=lambda c: c["dewey_score"])
             if candidates:
                 next_volume = candidates[0]
 
-        response = templates.TemplateResponse(request, "partials/review_result.html", {
-            "request": request,
-            "current_user": user,
-            "volume": volume,
-            "dewey_score": round(new_score, 1),
-            "reviews": reviews,
-            "review_page": 1,
-            "has_more_reviews": has_more_reviews,
-            "total_reviews": total_reviews,
-            "game_result": game_result,
-            "next_volume": next_volume,
-        })
+        response = templates.TemplateResponse(
+            request,
+            "partials/review_result.html",
+            {
+                "request": request,
+                "current_user": user,
+                "volume": volume,
+                "dewey_score": round(new_score, 1),
+                "reviews": reviews,
+                "review_page": 1,
+                "has_more_reviews": has_more_reviews,
+                "total_reviews": total_reviews,
+                "game_result": game_result,
+                "next_volume": next_volume,
+            },
+        )
         response.headers.update(_game_trigger_header(game_result))
         return response
 

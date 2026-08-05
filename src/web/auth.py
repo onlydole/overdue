@@ -31,10 +31,14 @@ async def login_page(
     user = await get_current_librarian_optional(request, session)
     if user:
         return RedirectResponse(url="/", status_code=302)
-    return templates.TemplateResponse(request, "login.html", {
-        "request": request,
-        "current_user": None,
-    })
+    return templates.TemplateResponse(
+        request,
+        "login.html",
+        {
+            "request": request,
+            "current_user": None,
+        },
+    )
 
 
 @router.post("/login")
@@ -48,19 +52,27 @@ async def login_submit(
     password = form.get("password", "")
 
     if not username or not password:
-        return templates.TemplateResponse(request, "login.html", {
-            "request": request,
-            "current_user": None,
-            "error": "Username and password are required.",
-        })
+        return templates.TemplateResponse(
+            request,
+            "login.html",
+            {
+                "request": request,
+                "current_user": None,
+                "error": "Username and password are required.",
+            },
+        )
 
     result = await login_librarian(request, session, username, password)
     if not result:
-        return templates.TemplateResponse(request, "login.html", {
-            "request": request,
-            "current_user": None,
-            "error": "Invalid username or password.",
-        })
+        return templates.TemplateResponse(
+            request,
+            "login.html",
+            {
+                "request": request,
+                "current_user": None,
+                "error": "Invalid username or password.",
+            },
+        )
 
     return RedirectResponse(url="/", status_code=302)
 
@@ -74,11 +86,15 @@ async def register_page(
     user = await get_current_librarian_optional(request, session)
     if user:
         return RedirectResponse(url="/", status_code=302)
-    return templates.TemplateResponse(request, "register.html", {
-        "request": request,
-        "current_user": None,
-        "avatar_choices": get_avatar_choices(),
-    })
+    return templates.TemplateResponse(
+        request,
+        "register.html",
+        {
+            "request": request,
+            "current_user": None,
+            "avatar_choices": get_avatar_choices(),
+        },
+    )
 
 
 @router.post("/register")
@@ -104,49 +120,60 @@ async def register_submit(
     if not email or "@" not in email:
         errors.append("A valid email is required.")
     if not PASSWORD_PATTERN.match(password):
-        errors.append("Password must be 8+ chars with uppercase, lowercase, digit, and special character (@$!%*?&).")
+        errors.append(
+            "Password must be 8+ chars with uppercase, lowercase, "
+            "digit, and special character (@$!%*?&)."
+        )
     if password != confirm:
         errors.append("Passwords do not match.")
 
     if errors:
-        return templates.TemplateResponse(request, "register.html", {
-            "request": request,
-            "current_user": None,
-            "errors": errors,
-            "username": username,
-            "email": email,
-            "avatar_choices": get_avatar_choices(),
-            "selected_avatar": avatar_id,
-        })
+        return templates.TemplateResponse(
+            request,
+            "register.html",
+            {
+                "request": request,
+                "current_user": None,
+                "errors": errors,
+                "username": username,
+                "email": email,
+                "avatar_choices": get_avatar_choices(),
+                "selected_avatar": avatar_id,
+            },
+        )
 
     # Check existing username/email
-    existing = await session.execute(
-        select(LibrarianRow).where(LibrarianRow.username == username)
-    )
+    existing = await session.execute(select(LibrarianRow).where(LibrarianRow.username == username))
     if existing.scalar_one_or_none():
-        return templates.TemplateResponse(request, "register.html", {
-            "request": request,
-            "current_user": None,
-            "errors": ["That username is already taken."],
-            "username": username,
-            "email": email,
-            "avatar_choices": get_avatar_choices(),
-            "selected_avatar": avatar_id,
-        })
+        return templates.TemplateResponse(
+            request,
+            "register.html",
+            {
+                "request": request,
+                "current_user": None,
+                "errors": ["That username is already taken."],
+                "username": username,
+                "email": email,
+                "avatar_choices": get_avatar_choices(),
+                "selected_avatar": avatar_id,
+            },
+        )
 
-    existing_email = await session.execute(
-        select(LibrarianRow).where(LibrarianRow.email == email)
-    )
+    existing_email = await session.execute(select(LibrarianRow).where(LibrarianRow.email == email))
     if existing_email.scalar_one_or_none():
-        return templates.TemplateResponse(request, "register.html", {
-            "request": request,
-            "current_user": None,
-            "errors": ["That email is already registered."],
-            "username": username,
-            "email": email,
-            "avatar_choices": get_avatar_choices(),
-            "selected_avatar": avatar_id,
-        })
+        return templates.TemplateResponse(
+            request,
+            "register.html",
+            {
+                "request": request,
+                "current_user": None,
+                "errors": ["That email is already registered."],
+                "username": username,
+                "email": email,
+                "avatar_choices": get_avatar_choices(),
+                "selected_avatar": avatar_id,
+            },
+        )
 
     librarian = LibrarianRow(
         username=username,

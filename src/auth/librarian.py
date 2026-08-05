@@ -35,7 +35,10 @@ async def register(
     if not PASSWORD_PATTERN.match(body.password):
         raise HTTPException(
             status_code=422,
-            detail="Password must be at least 8 characters with uppercase, lowercase, digit, and special character.",
+            detail=(
+                "Password must be at least 8 characters with uppercase, "
+                "lowercase, digit, and special character."
+            ),
         )
 
     # Check for existing username
@@ -201,9 +204,7 @@ async def get_leaderboard(
         )
     else:
         result = await session.execute(
-            select(LibrarianRow)
-            .order_by(LibrarianRow.total_xp.desc())
-            .limit(limit)
+            select(LibrarianRow).order_by(LibrarianRow.total_xp.desc()).limit(limit)
         )
 
     librarians = result.scalars().all()
@@ -220,14 +221,16 @@ async def get_leaderboard(
         )
         streak = streak_result.scalar_one_or_none()
 
-        entries.append({
-            "rank_position": i,
-            "username": lib.username,
-            "total_xp": lib.total_xp,
-            "librarian_rank": get_rank(lib.total_xp),
-            "badge_count": badge_count,
-            "current_streak": streak.current_streak if streak else 0,
-        })
+        entries.append(
+            {
+                "rank_position": i,
+                "username": lib.username,
+                "total_xp": lib.total_xp,
+                "librarian_rank": get_rank(lib.total_xp),
+                "badge_count": badge_count,
+                "current_streak": streak.current_streak if streak else 0,
+            }
+        )
 
     return {
         "entries": entries,

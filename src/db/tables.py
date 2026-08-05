@@ -83,9 +83,13 @@ class LibrarianRow(Base):
 
     volumes = relationship("VolumeRow", back_populates="author")
     shelves_created = relationship("ShelfRow", back_populates="creator")
-    xp_ledger = relationship("XPLedgerRow", back_populates="librarian", cascade="all, delete-orphan")
+    xp_ledger = relationship(
+        "XPLedgerRow", back_populates="librarian", cascade="all, delete-orphan"
+    )
     badges = relationship("BadgeRow", back_populates="librarian", cascade="all, delete-orphan")
-    streak = relationship("StreakRow", back_populates="librarian", uselist=False, cascade="all, delete-orphan")
+    streak = relationship(
+        "StreakRow", back_populates="librarian", uselist=False, cascade="all, delete-orphan"
+    )
     reviews = relationship("ReviewRow", back_populates="librarian", cascade="all, delete-orphan")
 
 

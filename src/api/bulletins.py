@@ -2,14 +2,12 @@
 
 import hashlib
 import hmac
-from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.library_card import verify_library_card
-from src.config.settings import settings
 from src.db.engine import get_session
 from src.db.tables import BulletinRow
 from src.models.bulletin import BulletinCreate, BulletinListResponse, BulletinResponse
@@ -38,7 +36,10 @@ async def create_bulletin(
     if invalid:
         raise HTTPException(
             status_code=422,
-            detail=f"Invalid event types: {', '.join(invalid)}. Valid events: {', '.join(VALID_EVENTS)}",
+            detail=(
+                f"Invalid event types: {', '.join(invalid)}. "
+                f"Valid events: {', '.join(VALID_EVENTS)}"
+            ),
         )
 
     bulletin = BulletinRow(

@@ -6,15 +6,37 @@ import pytest
 
 from src.game.icons import get_icon_names, render_icon_svg
 
-
 # The exact set of 26 icon names that must be present
-EXPECTED_ICONS = sorted([
-    "books", "book-open", "book-closed", "bookmark", "clipboard",
-    "fire", "moon", "star", "sparkles", "zap",
-    "crown", "award", "chart",
-    "clock", "search", "key", "hourglass", "gear", "house", "library", "construction",
-    "person", "robot", "gamepad", "play", "checkmark",
-])
+EXPECTED_ICONS = sorted(
+    [
+        "books",
+        "book-open",
+        "book-closed",
+        "bookmark",
+        "clipboard",
+        "fire",
+        "moon",
+        "star",
+        "sparkles",
+        "zap",
+        "crown",
+        "award",
+        "chart",
+        "clock",
+        "search",
+        "key",
+        "hourglass",
+        "gear",
+        "house",
+        "library",
+        "construction",
+        "person",
+        "robot",
+        "gamepad",
+        "play",
+        "checkmark",
+    ]
+)
 assert len(EXPECTED_ICONS) == 26
 
 
@@ -62,8 +84,8 @@ def test_size_parameter():
 
 def test_import_from_package():
     """The package import must work identically to the old module import."""
-    from src.game.icons import render_icon_svg as fn1
     from src.game.icons import get_icon_names as fn2
+    from src.game.icons import render_icon_svg as fn1
 
     assert callable(fn1)
     assert callable(fn2)

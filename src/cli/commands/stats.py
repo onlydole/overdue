@@ -28,23 +28,31 @@ def summary() -> None:
 
     xp = xp_resp.json()
     badges = badges_resp.json() if badges_resp.status_code == 200 else {"badges": [], "total": 0}
-    streak = streak_resp.json() if streak_resp.status_code == 200 else {"current_streak": 0, "longest_streak": 0}
+    streak = (
+        streak_resp.json()
+        if streak_resp.status_code == 200
+        else {"current_streak": 0, "longest_streak": 0}
+    )
 
     panel_content = Text()
-    panel_content.append(f"Rank: ", style="dim")
+    panel_content.append("Rank: ", style="dim")
     panel_content.append(f"{xp['rank']}\n", style="bold gold1")
-    panel_content.append(f"XP: ", style="dim")
+    panel_content.append("XP: ", style="dim")
     panel_content.append(f"{xp['total_xp']} pages read\n", style="green")
     if xp.get("next_rank"):
-        panel_content.append(f"Next: ", style="dim")
-        panel_content.append(f"{xp['next_rank']} ({xp['xp_to_next_rank']} XP away)\n", style="yellow")
-    panel_content.append(f"Streak: ", style="dim")
+        panel_content.append("Next: ", style="dim")
+        panel_content.append(
+            f"{xp['next_rank']} ({xp['xp_to_next_rank']} XP away)\n", style="yellow"
+        )
+    panel_content.append("Streak: ", style="dim")
     panel_content.append(f"{streak['current_streak']}d", style="bold red")
     panel_content.append(f" (best: {streak['longest_streak']}d)\n", style="dim")
-    panel_content.append(f"Badges: ", style="dim")
+    panel_content.append("Badges: ", style="dim")
     panel_content.append(f"{badges['total']}", style="cyan")
 
-    console.print(Panel(panel_content, title="[gold1]Your Library Stats[/gold1]", border_style="gold1"))
+    console.print(
+        Panel(panel_content, title="[gold1]Your Library Stats[/gold1]", border_style="gold1")
+    )
 
     if badges.get("badges"):
         console.print("\n[bold]Earned Badges:[/bold]")
@@ -77,13 +85,15 @@ def decay_forecast(
         future = max(0, current - (3 * units))  # 3 points per decay unit
         if current > 25 and future <= 25:
             units_until = max(1, int((current - 25) / 3))
-            at_risk.append({
-                "id": vol["id"],
-                "title": vol["title"],
-                "current": round(current, 1),
-                "future": round(future, 1),
-                "units_until": units_until,
-            })
+            at_risk.append(
+                {
+                    "id": vol["id"],
+                    "title": vol["title"],
+                    "current": round(current, 1),
+                    "future": round(future, 1),
+                    "units_until": units_until,
+                }
+            )
 
     at_risk.sort(key=lambda x: x["units_until"])
 
@@ -158,4 +168,7 @@ def heatmap() -> None:
     for line in lines:
         console.print(line)
 
-    console.print(f"\n[dim]░ = no activity  [green]▒[/green] = some  [bold green]▓[/bold green] = active  █ = very active[/dim]")
+    console.print(
+        "\n[dim]░ = no activity  [green]▒[/green] = some  "
+        "[bold green]▓[/bold green] = active  █ = very active[/dim]"
+    )

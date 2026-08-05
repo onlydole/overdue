@@ -34,7 +34,9 @@ def list_volumes(
     if sort == "dewey":
         items.sort(key=lambda v: v.get("dewey_score", 0))
 
-    table = Table(title=f"Volumes (Page {data.get('page', 1)}/{max(1, -(-data.get('total', 0) // 20))})")
+    table = Table(
+        title=f"Volumes (Page {data.get('page', 1)}/{max(1, -(-data.get('total', 0) // 20))})"
+    )
     table.add_column("ID", style="dim")
     table.add_column("Title", style="bold")
     table.add_column("Dewey", justify="right")
@@ -42,7 +44,15 @@ def list_volumes(
 
     for vol in items:
         score = vol.get("dewey_score", 0)
-        score_color = "green" if score >= 75 else "yellow" if score >= 50 else "red" if score >= 25 else "bold red"
+        score_color = (
+            "green"
+            if score >= 75
+            else "yellow"
+            if score >= 50
+            else "red"
+            if score >= 25
+            else "bold red"
+        )
         table.add_row(
             str(vol["id"]),
             vol["title"][:50],
@@ -88,7 +98,10 @@ def create_volume(
 
     if resp.status_code == 201:
         data = resp.json()
-        console.print(f"[green]Volume '{data['title']}' shelved (ID: {data['id']}, Dewey: {data['dewey_score']}).[/green]")
+        console.print(
+            f"[green]Volume '{data['title']}' shelved "
+            f"(ID: {data['id']}, Dewey: {data['dewey_score']}).[/green]"
+        )
     else:
         console.print(f"[red]Failed: {resp.json().get('detail', resp.text)}[/red]")
         raise SystemExit(1)
@@ -106,9 +119,15 @@ def review_volumes(
             resp = client.post(f"/api/volumes/{vol_id}/review")
             if resp.status_code == 200:
                 data = resp.json()
-                console.print(f"[green]Reviewed '{data['title']}' — Dewey: {data['dewey_score']}[/green]")
+                console.print(
+                    f"[green]Reviewed '{data['title']}' — Dewey: {data['dewey_score']}[/green]"
+                )
             else:
-                detail = resp.json().get("detail", resp.text) if resp.headers.get("content-type", "").startswith("application/json") else resp.text
+                detail = (
+                    resp.json().get("detail", resp.text)
+                    if resp.headers.get("content-type", "").startswith("application/json")
+                    else resp.text
+                )
                 console.print(f"[red]Volume {vol_id}: {detail}[/red]")
 
 
@@ -176,7 +195,9 @@ def list_overdue() -> None:
         table.add_column("Dewey", justify="right", style="red")
 
         for item in overdue:
-            table.add_row(str(item["id"]), item["title"][:50], str(round(item.get("dewey_score", 0), 1)))
+            table.add_row(
+                str(item["id"]), item["title"][:50], str(round(item.get("dewey_score", 0), 1))
+            )
         console.print(table)
 
     if attention:
@@ -186,5 +207,7 @@ def list_overdue() -> None:
         table.add_column("Dewey", justify="right", style="yellow")
 
         for item in attention:
-            table.add_row(str(item["id"]), item["title"][:50], str(round(item.get("dewey_score", 0), 1)))
+            table.add_row(
+                str(item["id"]), item["title"][:50], str(round(item.get("dewey_score", 0), 1))
+            )
         console.print(table)

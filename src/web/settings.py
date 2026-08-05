@@ -45,15 +45,19 @@ async def settings_page(
         "expires_on": (librarian.created_at + timedelta(days=365 * 3)).strftime("%Y-%m-%d"),
         "renewed_on": renewed_on,
     }
-    return templates.TemplateResponse(request, "settings.html", {
-        "request": request,
-        "current_user": user,
-        "avatar_choices": get_avatar_choices(),
-        "card_form": card_form,
-        "card_meta": card_meta,
-        "form_errors": [],
-        "saved": request.query_params.get("saved") == "1",
-    })
+    return templates.TemplateResponse(
+        request,
+        "settings.html",
+        {
+            "request": request,
+            "current_user": user,
+            "avatar_choices": get_avatar_choices(),
+            "card_form": card_form,
+            "card_meta": card_meta,
+            "form_errors": [],
+            "saved": request.query_params.get("saved") == "1",
+        },
+    )
 
 
 @router.post("/settings/card")
@@ -108,7 +112,9 @@ async def update_avatar(
             errors.append("That email is already registered.")
 
     if errors:
-        renewed_on = request.session.get("card_renewed_on") or librarian.created_at.strftime("%Y-%m-%d")
+        renewed_on = request.session.get("card_renewed_on") or librarian.created_at.strftime(
+            "%Y-%m-%d"
+        )
         card_form = {
             "username": username or librarian.username,
             "email": email or librarian.email,
@@ -121,15 +127,20 @@ async def update_avatar(
             "expires_on": (librarian.created_at + timedelta(days=365 * 3)).strftime("%Y-%m-%d"),
             "renewed_on": renewed_on,
         }
-        return templates.TemplateResponse(request, "settings.html", {
-            "request": request,
-            "current_user": user,
-            "avatar_choices": get_avatar_choices(),
-            "card_form": card_form,
-            "card_meta": card_meta,
-            "form_errors": errors,
-            "saved": False,
-        }, status_code=400)
+        return templates.TemplateResponse(
+            request,
+            "settings.html",
+            {
+                "request": request,
+                "current_user": user,
+                "avatar_choices": get_avatar_choices(),
+                "card_form": card_form,
+                "card_meta": card_meta,
+                "form_errors": errors,
+                "saved": False,
+            },
+            status_code=400,
+        )
 
     librarian.username = username
     librarian.email = email

@@ -2,9 +2,9 @@
 
 from datetime import datetime, timedelta
 
+import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-import jwt
 from jwt.exceptions import PyJWTError as JWTError
 
 from src.config.settings import settings

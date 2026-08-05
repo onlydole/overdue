@@ -61,9 +61,7 @@ async def login_librarian(
     password: str,
 ) -> dict | None:
     """Verify credentials and store JWT in session. Returns librarian dict or None."""
-    result = await session.execute(
-        select(LibrarianRow).where(LibrarianRow.username == username)
-    )
+    result = await session.execute(select(LibrarianRow).where(LibrarianRow.username == username))
     librarian = result.scalar_one_or_none()
 
     if not librarian or not verify_password(password, cast(str, librarian.hashed_password)):

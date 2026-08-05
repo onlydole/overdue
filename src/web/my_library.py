@@ -49,12 +49,14 @@ async def my_library(
         if volumes:
             scores = [calculate_dewey_score(v.last_reviewed_at) for v in volumes]
             avg_dewey = sum(scores) / len(scores)
-        shelf_data.append({
-            "id": shelf.id,
-            "name": shelf.name,
-            "volume_count": len(volumes),
-            "average_dewey": round(avg_dewey, 1),
-        })
+        shelf_data.append(
+            {
+                "id": shelf.id,
+                "name": shelf.name,
+                "volume_count": len(volumes),
+                "average_dewey": round(avg_dewey, 1),
+            }
+        )
 
     # Get user's overdue volumes
     volumes_result = await session.execute(
@@ -68,12 +70,14 @@ async def my_library(
     for v in all_volumes:
         score = calculate_dewey_score(v.last_reviewed_at)
         if score <= DEWEY_OVERDUE:
-            overdue_volumes.append({
-                "id": v.id,
-                "title": v.title,
-                "dewey_score": round(score, 1),
-                "last_reviewed_at": v.last_reviewed_at,
-            })
+            overdue_volumes.append(
+                {
+                    "id": v.id,
+                    "title": v.title,
+                    "dewey_score": round(score, 1),
+                    "last_reviewed_at": v.last_reviewed_at,
+                }
+            )
     overdue_volumes.sort(key=lambda x: x["dewey_score"])
 
     # XP and rank
@@ -87,6 +91,7 @@ async def my_library(
     progress = 0
     if next_rank and xp_to_next:
         from src.config.defaults import RANKS
+
         current_threshold = 0
         next_threshold = 0
         for rank_name, threshold in RANKS:
@@ -98,17 +103,21 @@ async def my_library(
         earned = user["total_xp"] - current_threshold
         progress = int((earned / total_needed) * 100) if total_needed > 0 else 100
 
-    return templates.TemplateResponse(request, "my_library.html", {
-        "request": request,
-        "current_user": user,
-        "my_shelves": shelf_data,
-        "overdue_volumes": overdue_volumes,
-        "total_volumes": len(all_volumes),
-        "rank": rank,
-        "next_rank": next_rank,
-        "xp_to_next": xp_to_next,
-        "progress": progress,
-        "badges": badges,
-        "streak": streak,
-        "recent_awards": recent_awards,
-    })
+    return templates.TemplateResponse(
+        request,
+        "my_library.html",
+        {
+            "request": request,
+            "current_user": user,
+            "my_shelves": shelf_data,
+            "overdue_volumes": overdue_volumes,
+            "total_volumes": len(all_volumes),
+            "rank": rank,
+            "next_rank": next_rank,
+            "xp_to_next": xp_to_next,
+            "progress": progress,
+            "badges": badges,
+            "streak": streak,
+            "recent_awards": recent_awards,
+        },
+    )

@@ -25,16 +25,19 @@ async def volume_detail(
     """Render a volume detail page."""
     current_user = await get_current_librarian_optional(request, session)
     result = await session.execute(
-        select(VolumeRow)
-        .where(VolumeRow.id == volume_id)
-        .options(selectinload(VolumeRow.author))
+        select(VolumeRow).where(VolumeRow.id == volume_id).options(selectinload(VolumeRow.author))
     )
     volume = result.scalar_one_or_none()
     if not volume:
-        return templates.TemplateResponse(request, "404.html", {
-            "request": request,
-            "current_user": current_user,
-        }, status_code=404)
+        return templates.TemplateResponse(
+            request,
+            "404.html",
+            {
+                "request": request,
+                "current_user": current_user,
+            },
+            status_code=404,
+        )
 
     score = calculate_dewey_score(volume.last_reviewed_at)
 
@@ -59,17 +62,21 @@ async def volume_detail(
     )
     total_reviews = count_result.scalar() or 0
 
-    return templates.TemplateResponse(request, "volume_detail.html", {
-        "request": request,
-        "current_user": current_user,
-        "volume": volume,
-        "dewey_score": round(score, 1),
-        "bookmarks": bookmarks,
-        "reviews": reviews,
-        "review_page": 1,
-        "has_more_reviews": has_more,
-        "total_reviews": total_reviews,
-    })
+    return templates.TemplateResponse(
+        request,
+        "volume_detail.html",
+        {
+            "request": request,
+            "current_user": current_user,
+            "volume": volume,
+            "dewey_score": round(score, 1),
+            "bookmarks": bookmarks,
+            "reviews": reviews,
+            "review_page": 1,
+            "has_more_reviews": has_more,
+            "total_reviews": total_reviews,
+        },
+    )
 
 
 @router.get("/volumes/{volume_id}/reviews")
@@ -92,10 +99,14 @@ async def volume_reviews_page(
     has_more = len(reviews) > REVIEWS_PER_PAGE
     reviews = reviews[:REVIEWS_PER_PAGE]
 
-    return templates.TemplateResponse(request, "partials/review_history_page.html", {
-        "request": request,
-        "reviews": reviews,
-        "volume_id": volume_id,
-        "review_page": page,
-        "has_more_reviews": has_more,
-    })
+    return templates.TemplateResponse(
+        request,
+        "partials/review_history_page.html",
+        {
+            "request": request,
+            "reviews": reviews,
+            "volume_id": volume_id,
+            "review_page": page,
+            "has_more_reviews": has_more,
+        },
+    )

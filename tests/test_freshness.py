@@ -96,79 +96,61 @@ class TestFrontmatter:
 class TestScoreFormula:
     def test_perfect_score_with_no_penalties(self, freshness):
         assert (
-            freshness.compute_score(
-                doc_age=10, youngest_source_age=10, ttl=None, missing_count=0
-            )
+            freshness.compute_score(doc_age=10, youngest_source_age=10, ttl=None, missing_count=0)
             == 100
         )
 
     def test_drift_only(self, freshness):
         # 3 missing -> 30 penalty -> 70
         assert (
-            freshness.compute_score(
-                doc_age=10, youngest_source_age=10, ttl=None, missing_count=3
-            )
+            freshness.compute_score(doc_age=10, youngest_source_age=10, ttl=None, missing_count=3)
             == 70
         )
 
     def test_drift_caps_at_40(self, freshness):
         # 7 missing -> cap at 40 -> 60
         assert (
-            freshness.compute_score(
-                doc_age=10, youngest_source_age=10, ttl=None, missing_count=7
-            )
+            freshness.compute_score(doc_age=10, youngest_source_age=10, ttl=None, missing_count=7)
             == 60
         )
 
     def test_age_penalty_floors_at_zero_when_doc_is_younger(self, freshness):
         # doc fresher than source -> no penalty
         assert (
-            freshness.compute_score(
-                doc_age=5, youngest_source_age=30, ttl=None, missing_count=0
-            )
+            freshness.compute_score(doc_age=5, youngest_source_age=30, ttl=None, missing_count=0)
             == 100
         )
 
     def test_age_penalty_integer_division_by_three(self, freshness):
         # delta of 30 days -> 10 penalty
         assert (
-            freshness.compute_score(
-                doc_age=40, youngest_source_age=10, ttl=None, missing_count=0
-            )
+            freshness.compute_score(doc_age=40, youngest_source_age=10, ttl=None, missing_count=0)
             == 90
         )
 
     def test_age_penalty_caps_at_30(self, freshness):
         assert (
-            freshness.compute_score(
-                doc_age=1000, youngest_source_age=0, ttl=None, missing_count=0
-            )
+            freshness.compute_score(doc_age=1000, youngest_source_age=0, ttl=None, missing_count=0)
             == 70
         )
 
     def test_ttl_penalty_zero_when_under_ttl(self, freshness):
         assert (
-            freshness.compute_score(
-                doc_age=30, youngest_source_age=30, ttl=90, missing_count=0
-            )
+            freshness.compute_score(doc_age=30, youngest_source_age=30, ttl=90, missing_count=0)
             == 100
         )
 
     def test_ttl_penalty_two_per_day_over(self, freshness):
         # 14 days past 90-day TTL -> 28 penalty
         assert (
-            freshness.compute_score(
-                doc_age=104, youngest_source_age=104, ttl=90, missing_count=0
-            )
+            freshness.compute_score(doc_age=104, youngest_source_age=104, ttl=90, missing_count=0)
             == 72
         )
 
     def test_score_floors_at_zero(self, freshness):
         # massive penalties -> still 0, never negative
         assert (
-            freshness.compute_score(
-                doc_age=10_000, youngest_source_age=0, ttl=1, missing_count=10
-            )
+            freshness.compute_score(doc_age=10_000, youngest_source_age=0, ttl=1, missing_count=10)
             == 0
         )
 
@@ -184,9 +166,7 @@ class TestDiscovery:
         found = freshness.discover_docs()
         assert {p.name for p in found} == {"a.md", "b.md"}
 
-    def test_picks_up_root_md_with_freshness_frontmatter(
-        self, freshness, tmp_path, monkeypatch
-    ):
+    def test_picks_up_root_md_with_freshness_frontmatter(self, freshness, tmp_path, monkeypatch):
         monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
         monkeypatch.setattr(freshness, "DOCS_DIR", tmp_path / "docs")
         (tmp_path / "docs").mkdir()
@@ -197,30 +177,22 @@ class TestDiscovery:
         found = freshness.discover_docs()
         assert {p.name for p in found} == {"page.md", "CLAUDE.md"}
 
-    def test_skips_root_md_without_freshness_frontmatter(
-        self, freshness, tmp_path, monkeypatch
-    ):
+    def test_skips_root_md_without_freshness_frontmatter(self, freshness, tmp_path, monkeypatch):
         monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
         monkeypatch.setattr(freshness, "DOCS_DIR", tmp_path / "docs")
         (tmp_path / "docs").mkdir()
         (tmp_path / "README.md").write_text("# Overdue\n\nA readme without frontmatter.\n")
-        (tmp_path / "CONTRIBUTING.md").write_text(
-            "---\ntitle: Contributing\n---\n# Contributing\n"
-        )
+        (tmp_path / "CONTRIBUTING.md").write_text("---\ntitle: Contributing\n---\n# Contributing\n")
         found = freshness.discover_docs()
         # neither root file opts in (no freshness: block)
         assert found == []
 
-    def test_no_duplicates_when_doc_lives_under_docs_root(
-        self, freshness, tmp_path, monkeypatch
-    ):
+    def test_no_duplicates_when_doc_lives_under_docs_root(self, freshness, tmp_path, monkeypatch):
         # If DOCS_DIR happens to equal REPO_ROOT, a root file with frontmatter
         # should not be returned twice.
         monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
         monkeypatch.setattr(freshness, "DOCS_DIR", tmp_path)
-        (tmp_path / "CLAUDE.md").write_text(
-            "---\nfreshness:\n  ttl_days: 90\n---\n"
-        )
+        (tmp_path / "CLAUDE.md").write_text("---\nfreshness:\n  ttl_days: 90\n---\n")
         found = freshness.discover_docs()
         assert len(found) == 1
 
@@ -233,19 +205,15 @@ class TestDottedSymbols:
         assert freshness.compute_missing({"getUser"}, set()) == {"getUser"}
 
     def test_dotted_present_when_all_components_live(self, freshness):
-        assert freshness.compute_missing(
-            {"MyClass.my_method"}, {"MyClass", "my_method"}
-        ) == set()
+        assert freshness.compute_missing({"MyClass.my_method"}, {"MyClass", "my_method"}) == set()
 
     def test_dotted_missing_when_only_some_components_live(self, freshness):
-        assert freshness.compute_missing(
-            {"MyClass.my_method"}, {"MyClass"}
-        ) == {"MyClass.my_method"}
+        assert freshness.compute_missing({"MyClass.my_method"}, {"MyClass"}) == {
+            "MyClass.my_method"
+        }
 
     def test_three_part_dotted(self, freshness):
-        assert freshness.compute_missing(
-            {"users.api.create"}, {"users", "api", "create"}
-        ) == set()
+        assert freshness.compute_missing({"users.api.create"}, {"users", "api", "create"}) == set()
 
 
 class TestFrontmatterDefensive:
@@ -268,9 +236,7 @@ class TestFrontmatterDefensive:
 
 
 class TestLastTouchedFallback:
-    def test_falls_back_when_git_subprocess_fails(
-        self, freshness, tmp_path, monkeypatch
-    ):
+    def test_falls_back_when_git_subprocess_fails(self, freshness, tmp_path, monkeypatch):
         import subprocess as sp
 
         def boom(*a, **kw):
@@ -281,11 +247,10 @@ class TestLastTouchedFallback:
         p.write_text("hi")
         result = freshness.last_touched(p)
         from datetime import datetime
+
         assert isinstance(result, datetime)
 
-    def test_falls_back_when_git_not_installed(
-        self, freshness, tmp_path, monkeypatch
-    ):
+    def test_falls_back_when_git_not_installed(self, freshness, tmp_path, monkeypatch):
         def boom(*a, **kw):
             raise FileNotFoundError("git not on PATH")
 
@@ -294,26 +259,21 @@ class TestLastTouchedFallback:
         p.write_text("hi")
         result = freshness.last_touched(p)
         from datetime import datetime
+
         assert isinstance(result, datetime)
 
 
 class TestScoreIntegration:
     def test_excluded_doc_returns_none(self, freshness, tmp_path, monkeypatch):
         monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
-        monkeypatch.setattr(
-            freshness, "last_touched", lambda p: freshness.NOW
-        )
+        monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
         doc = tmp_path / "x.md"
         doc.write_text("---\nfreshness:\n  exclude: true\n---\n# Hi\n")
         assert freshness.score(doc, allowlist=[]) is None
 
-    def test_basic_score_for_doc_with_no_references(
-        self, freshness, tmp_path, monkeypatch
-    ):
+    def test_basic_score_for_doc_with_no_references(self, freshness, tmp_path, monkeypatch):
         monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
-        monkeypatch.setattr(
-            freshness, "last_touched", lambda p: freshness.NOW
-        )
+        monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
         doc = tmp_path / "x.md"
         doc.write_text("# A doc with no backticks at all\n")
         result = freshness.score(doc, allowlist=[])
@@ -321,13 +281,9 @@ class TestScoreIntegration:
         assert result["score"] == 100
         assert result["missing_symbols"] == []
 
-    def test_allowlist_strips_noise_from_missing(
-        self, freshness, tmp_path, monkeypatch
-    ):
+    def test_allowlist_strips_noise_from_missing(self, freshness, tmp_path, monkeypatch):
         monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
-        monkeypatch.setattr(
-            freshness, "last_touched", lambda p: freshness.NOW
-        )
+        monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
         doc = tmp_path / "x.md"
         doc.write_text("references `PyJWT` and `getUser`\n")
         result = freshness.score(doc, allowlist=["PyJWT"])
@@ -379,9 +335,7 @@ class TestLiveSymbolsTypeScript:
         ts = "import { foo } from './bar';\nimport * as baz from 'qux';\n"
         assert freshness._live_symbols_typescript(ts) == set()
 
-    def test_extracts_arrow_function_const_and_enum_and_method_signature(
-        self, freshness
-    ):
+    def test_extracts_arrow_function_const_and_enum_and_method_signature(self, freshness):
         # Modern TS API shapes the docs are likely to reference: arrow
         # functions assigned to `const`, `enum` declarations, and the
         # method signatures inside interfaces.
@@ -399,8 +353,14 @@ class TestLiveSymbolsTypeScript:
         }
         """
         result = freshness._live_symbols_typescript(ts_source)
-        assert {"getUserId", "computeChecksum", "legacyCounter", "AuthScope",
-                "save", "close"} <= result
+        assert {
+            "getUserId",
+            "computeChecksum",
+            "legacyCounter",
+            "AuthScope",
+            "save",
+            "close",
+        } <= result
 
     def test_empty_or_comment_only_returns_empty(self, freshness):
         assert freshness._live_symbols_typescript("") == set()
@@ -440,9 +400,7 @@ class TestLiveSymbolsDispatch:
 
 
 class TestScoreIntegrationTypeScript:
-    def test_score_runs_drift_against_typescript_source(
-        self, freshness, tmp_path, monkeypatch
-    ):
+    def test_score_runs_drift_against_typescript_source(self, freshness, tmp_path, monkeypatch):
         monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
         monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
         (tmp_path / "src").mkdir()
@@ -464,9 +422,7 @@ class TestScoreIntegrationTypeScript:
 
 
 class TestBootstrap:
-    def test_bootstrapped_field_defaults_false(
-        self, freshness, tmp_path, monkeypatch
-    ):
+    def test_bootstrapped_field_defaults_false(self, freshness, tmp_path, monkeypatch):
         monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
         monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
         doc = tmp_path / "x.md"
@@ -475,18 +431,14 @@ class TestBootstrap:
         assert result is not None
         assert result["bootstrapped"] is False
 
-    def test_bootstrap_skips_drift_when_page_has_no_sources(
-        self, freshness, tmp_path, monkeypatch
-    ):
+    def test_bootstrap_skips_drift_when_page_has_no_sources(self, freshness, tmp_path, monkeypatch):
         # A page with several backticked candidates but no `freshness.sources`
         # block: without bootstrap the drift penalty caps the score at 60,
         # with bootstrap drift is skipped entirely and the score is 100.
         monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
         monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
         doc = tmp_path / "x.md"
-        doc.write_text(
-            "References `getUser`, `MyClass`, `users.create`, `apiClient` here.\n"
-        )
+        doc.write_text("References `getUser`, `MyClass`, `users.create`, `apiClient` here.\n")
 
         without = freshness.score(doc, allowlist=[], bootstrap=False)
         assert without is not None
@@ -522,9 +474,7 @@ class TestBootstrap:
         assert "realFn" not in result["missing_symbols"]
         assert result["score"] == 90  # one missing symbol = -10
 
-    def test_bootstrap_still_applies_ttl_for_unmapped_page(
-        self, freshness, tmp_path, monkeypatch
-    ):
+    def test_bootstrap_still_applies_ttl_for_unmapped_page(self, freshness, tmp_path, monkeypatch):
         # Even in bootstrap mode, a `ttl_days` contract still bites. The
         # author opted into a soft deadline by declaring it; we honour that.
         monkeypatch.setattr(freshness, "REPO_ROOT", tmp_path)
@@ -534,10 +484,7 @@ class TestBootstrap:
         old = freshness.NOW - timedelta(days=120)
         monkeypatch.setattr(freshness, "last_touched", lambda p: old)
         doc = tmp_path / "x.md"
-        doc.write_text(
-            "---\nfreshness:\n  ttl_days: 90\n---\n"
-            "References `getUser` here.\n"
-        )
+        doc.write_text("---\nfreshness:\n  ttl_days: 90\n---\nReferences `getUser` here.\n")
         result = freshness.score(doc, allowlist=[], bootstrap=True)
         assert result is not None
         assert result["bootstrapped"] is True
@@ -570,9 +517,7 @@ class TestBootstrap:
         assert bootstrapped[0]["score"] == 100
         assert bootstrapped[0]["bootstrapped"] is True
 
-    def test_score_accepts_sources_as_single_string(
-        self, freshness, tmp_path, monkeypatch
-    ):
+    def test_score_accepts_sources_as_single_string(self, freshness, tmp_path, monkeypatch):
         # YAML allows scalars where a list is expected: `sources: 'src/api.py'`
         # rather than `sources: ['src/api.py']`. Normalize to [str] so the
         # glob loop doesn't iterate over individual characters of the string.
@@ -582,8 +527,7 @@ class TestBootstrap:
         (tmp_path / "src" / "api.py").write_text("def realFn():\n    pass\n")
         doc = tmp_path / "x.md"
         doc.write_text(
-            "---\nfreshness:\n  sources: 'src/api.py'\n---\n"
-            "Uses `realFn` and `missingFn`.\n"
+            "---\nfreshness:\n  sources: 'src/api.py'\n---\nUses `realFn` and `missingFn`.\n"
         )
         result = freshness.score(doc, allowlist=[])
         assert result is not None
@@ -610,8 +554,7 @@ class TestBootstrap:
         (tmp_path / "src" / "api.py").write_text("def realFn(): pass\n")
         doc = tmp_path / "x.md"
         doc.write_text(
-            "---\nfreshness:\n  sources: ['src/api.py']\n---\n"
-            "A doc with no backticks at all.\n"
+            "---\nfreshness:\n  sources: ['src/api.py']\n---\nA doc with no backticks at all.\n"
         )
         result = freshness.score(doc, allowlist=[])
         assert result is not None
@@ -667,8 +610,7 @@ class TestBootstrap:
         monkeypatch.setattr(freshness, "last_touched", lambda p: freshness.NOW)
         doc = tmp_path / "x.md"
         doc.write_text(
-            "---\nfreshness:\n  ttl_days: 365\n---\n"
-            "References `getUser` and `MyClass`.\n"
+            "---\nfreshness:\n  ttl_days: 365\n---\nReferences `getUser` and `MyClass`.\n"
         )
         result = freshness.score(doc, allowlist=[], bootstrap=True)
         assert result is not None

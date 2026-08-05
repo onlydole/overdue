@@ -56,16 +56,16 @@ def render_icon_svg(
         )
 
     # Handle new path data (assumed 24x24 viewBox)
-    # If color is provided, we use it for fill/stroke. 
+    # If color is provided, we use it for fill/stroke.
     # The data string should contain the inner SVG elements (paths, etc).
     # We can inject the fill color into the parent SVG or the paths if they use "currentColor".
     style = f'style="color: {color};"' if color else ""
-    
+
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"'
         f' width="{size}" height="{size}"'
         f' class="pixel-icon" role="img" aria-hidden="true"'
-        f' {style}>'
+        f" {style}>"
         f"{data}"
         f"</svg>"
     )

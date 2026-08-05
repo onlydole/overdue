@@ -14,7 +14,6 @@ from src.game.icons._catalog import ICON_CATALOG
 from src.game.icons._renderer import render_icon_svg as _render_icon_svg
 from src.game.icons._renderer import render_icon_svg_bare as _render_icon_svg_bare
 
-
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
