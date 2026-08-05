@@ -16,6 +16,44 @@ Overdue uses GitHub Actions for continuous integration and automated documentati
 
 ## Workflows
 
+### Tests, Lint and Types (`checks.yml`)
+
+Runs the three checks CONTRIBUTING.md asks contributors to run locally, as independent parallel jobs.
+
+**Trigger:** Every pull request, every push to `main`, and `workflow_dispatch`.
+
+**Jobs:**
+
+| Job ID | Command |
+|---|---|
+| `test` | `uv run pytest` |
+| `lint` | `uv run ruff check src/ tests/ scripts/` then `uv run ruff format --check src/ tests/ scripts/` |
+| `types` | `uv run mypy src/` |
+
+The jobs run concurrently rather than as steps in one job, so a type error can't mask a test failure -- each reports its own status independently.
+
+**Why there is no `paths:` filter:** these are intended to be required status checks, and GitHub never reports a required check that was skipped by a path filter, leaving the PR blocked on a run that will never arrive. Running on every PR costs a couple of cached minutes and always reports.
+
+**Python version:** 3.12, matching `[tool.mypy] python_version` and the other workflows. Note that `Dockerfile` ships Python 3.14 -- CI does not currently exercise the version the image runs on.
+
+**Required repository configuration:** none. The jobs use no secrets and opt into `contents: read` only, so they run on fork PRs.
+
+**Required status check setup:**
+
+1. Settings -> Branches -> Add rule (or edit the existing rule for `main`)
+2. Enable **Require status checks to pass before merging**
+3. Search for and select **test**, **lint**, and **types**
+4. Save
+
+**Local equivalent:**
+
+```bash
+uv run pytest
+uv run ruff check src/ tests/ scripts/
+uv run ruff format --check src/ tests/ scripts/
+uv run mypy src/
+```
+
 ### Auto-Update Documentation (`doc-update.yml`)
 
 Automatically detects when merged PRs introduce documentation drift and proposes updates via follow-up PRs.

@@ -59,12 +59,15 @@ pytest --cov=src
 
 ## Code Style
 
-We use [Ruff](https://docs.astral.sh/ruff/) for linting and formatting. Run both before submitting a PR:
+We use [Ruff](https://docs.astral.sh/ruff/) for linting and formatting, and [mypy](https://mypy.readthedocs.io/) in strict mode for type checking. Run all three before submitting a PR:
 
 ```bash
-ruff check src/ tests/
-ruff format src/ tests/
+ruff check src/ tests/ scripts/
+ruff format src/ tests/ scripts/
+mypy src/
 ```
+
+CI runs these as required checks on every PR (see [CI/CD and Automation](docs/architecture/ci-cd.md)), so it's quicker to catch failures locally first.
 
 ## Commit Conventions
 
@@ -82,7 +85,7 @@ chore: bump dependencies
 
 1. Fork the repo and create a branch from `main`
 2. Make your changes -- keep commits focused and atomic
-3. Run `pytest` and `ruff check` to make sure everything's clean
+3. Run `pytest`, `ruff check`, `ruff format --check` and `mypy src/` to make sure everything's clean
 4. Push your branch and open a PR
 5. Describe what you changed and why in the PR body
 
