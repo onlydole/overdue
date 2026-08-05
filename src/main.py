@@ -7,7 +7,7 @@ from collections import defaultdict
 from contextlib import asynccontextmanager
 from datetime import datetime
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -138,7 +138,7 @@ register_handlers(app)
 
 # Custom error pages for web routes
 @app.exception_handler(404)
-async def not_found_handler(request: Request, exc: StarletteHTTPException):
+async def not_found_handler(request: Request, exc: StarletteHTTPException) -> Response:
     if request.url.path.startswith("/api"):
         return JSONResponse(status_code=404, content={"detail": str(exc.detail)})
     return _templates.TemplateResponse(
@@ -150,7 +150,7 @@ async def not_found_handler(request: Request, exc: StarletteHTTPException):
 
 
 @app.exception_handler(500)
-async def server_error_handler(request: Request, exc: Exception):
+async def server_error_handler(request: Request, exc: Exception) -> Response:
     if request.url.path.startswith("/api"):
         return JSONResponse(status_code=500, content={"detail": "Internal server error"})
     return _templates.TemplateResponse(

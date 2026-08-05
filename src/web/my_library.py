@@ -1,6 +1,6 @@
 """My Library route -- personal dashboard for authenticated users."""
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,7 +22,7 @@ router = APIRouter()
 async def my_library(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Render the personal library dashboard."""
     user = await get_current_librarian_required(request, session)
     if isinstance(user, RedirectResponse):

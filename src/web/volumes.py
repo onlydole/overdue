@@ -1,6 +1,6 @@
 """Volume detail routes."""
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -21,7 +21,7 @@ async def volume_detail(
     volume_id: int,
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Render a volume detail page."""
     current_user = await get_current_librarian_optional(request, session)
     result = await session.execute(
@@ -85,7 +85,7 @@ async def volume_reviews_page(
     request: Request,
     page: int = 2,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Return a page of review history as an HTML fragment for HTMX."""
     offset = (page - 1) * REVIEWS_PER_PAGE
     reviews_result = await session.execute(

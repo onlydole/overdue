@@ -1,6 +1,6 @@
 """Librarian profile route."""
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.web_session import get_current_librarian_optional
@@ -19,7 +19,7 @@ async def librarian_profile(
     librarian_id: int,
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Render a librarian's profile page."""
     current_user = await get_current_librarian_optional(request, session)
     librarian = await session.get(LibrarianRow, librarian_id)

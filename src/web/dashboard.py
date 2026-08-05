@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -78,7 +78,7 @@ async def _build_reading_room_context(session: AsyncSession) -> dict[str, Any]:
 async def reading_room(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Render the Reading Room dashboard."""
     current_user = await get_current_librarian_optional(request, session)
     ctx = await _build_reading_room_context(session)
@@ -97,7 +97,7 @@ async def reading_room(
 async def reading_room_live(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Return the live-updating partial for the Reading Room."""
     ctx = await _build_reading_room_context(session)
     return templates.TemplateResponse(

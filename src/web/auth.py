@@ -3,7 +3,7 @@
 import re
 from typing import cast
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,7 +26,7 @@ PASSWORD_PATTERN = re.compile(
 async def login_page(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Render the login page."""
     user = await get_current_librarian_optional(request, session)
     if user:
@@ -45,7 +45,7 @@ async def login_page(
 async def login_submit(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Process login form submission."""
     form = await request.form()
     username = form.get("username", "").strip()
@@ -81,7 +81,7 @@ async def login_submit(
 async def register_page(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Render the registration page."""
     user = await get_current_librarian_optional(request, session)
     if user:
@@ -101,7 +101,7 @@ async def register_page(
 async def register_submit(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Process registration form submission."""
     form = await request.form()
     username = form.get("username", "").strip()
@@ -191,7 +191,7 @@ async def register_submit(
 
 
 @router.post("/logout")
-async def logout(request: Request):
+async def logout(request: Request) -> Response:
     """Log out and redirect to home."""
     logout_librarian(request)
     return RedirectResponse(url="/", status_code=302)

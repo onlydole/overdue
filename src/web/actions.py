@@ -4,7 +4,7 @@ import json
 import random
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,7 +22,7 @@ from src.web.volumes import REVIEWS_PER_PAGE
 router = APIRouter()
 
 
-def _game_trigger_header(game_result) -> dict[str, str]:
+def _game_trigger_header(game_result: GameResult) -> dict[str, str]:
     """Build HX-Trigger header for game feedback toast."""
     event_data = {
         "xp_awarded": game_result.xp_awarded,
@@ -42,7 +42,7 @@ def _game_trigger_header(game_result) -> dict[str, str]:
 async def shelf_create_page(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Render shelf creation form."""
     user = await get_current_librarian_required(request, session)
     if isinstance(user, RedirectResponse):
@@ -61,7 +61,7 @@ async def shelf_create_page(
 async def shelf_create_submit(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Process shelf creation."""
     user = await get_current_librarian_required(request, session)
     if isinstance(user, RedirectResponse):
@@ -113,7 +113,7 @@ async def volume_create_page(
     request: Request,
     shelf_id: int | None = None,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Render volume creation form."""
     user = await get_current_librarian_required(request, session)
     if isinstance(user, RedirectResponse):
@@ -138,7 +138,7 @@ async def volume_create_page(
 async def volume_create_submit(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Process volume creation."""
     user = await get_current_librarian_required(request, session)
     if isinstance(user, RedirectResponse):
@@ -233,7 +233,7 @@ async def review_volume_web(
     volume_id: int,
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Review a volume from the web UI."""
     user = await get_current_librarian_required(request, session)
     if isinstance(user, RedirectResponse):

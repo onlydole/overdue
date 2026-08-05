@@ -1,6 +1,6 @@
 """Leaderboard route."""
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,7 +17,7 @@ router = APIRouter()
 async def leaderboard(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     current_user = await get_current_librarian_optional(request, session)
     """Render the leaderboard page."""
     result = await session.execute(

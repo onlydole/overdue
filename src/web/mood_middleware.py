@@ -4,7 +4,8 @@ import time
 
 from fastapi import Request
 from sqlalchemy import select
-from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.responses import Response
 
 from src.api.volumes import calculate_dewey_score
 from src.db.engine import async_session
@@ -18,7 +19,7 @@ _mood_cache: dict[str, object] = {"ambiance": "", "expires_at": 0.0}
 class MoodMiddleware(BaseHTTPMiddleware):
     """Compute the library mood on each request and store it in request.state."""
 
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         # Skip for static files and API routes
         if request.url.path.startswith(("/static", "/api", "/favicon")):
             return await call_next(request)

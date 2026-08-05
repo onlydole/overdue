@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,7 +21,7 @@ router = APIRouter()
 async def settings_page(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Render the settings page."""
     user = await get_current_librarian_required(request, session)
     if isinstance(user, RedirectResponse):
@@ -65,7 +65,7 @@ async def settings_page(
 async def update_avatar(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Update editable library card fields for the current librarian."""
     user = await get_current_librarian_required(request, session)
     if isinstance(user, RedirectResponse):

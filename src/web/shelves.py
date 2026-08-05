@@ -1,6 +1,6 @@
 """Shelf browsing routes."""
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,7 +17,7 @@ router = APIRouter()
 async def browse_shelves(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     current_user = await get_current_librarian_optional(request, session)
     """Render the shelf browsing page."""
     result = await session.execute(select(ShelfRow))
@@ -64,7 +64,7 @@ async def shelf_detail(
     shelf_id: int,
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Render a shelf detail page with its volumes."""
     current_user = await get_current_librarian_optional(request, session)
     shelf = await session.get(ShelfRow, shelf_id)

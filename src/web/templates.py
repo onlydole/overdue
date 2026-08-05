@@ -1,5 +1,6 @@
 """Shared Jinja2 templates instance with avatar and icon rendering globals."""
 
+from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from markupsafe import Markup
 
@@ -66,7 +67,7 @@ def _title_hash(title: str) -> int:
 templates.env.filters["title_hash"] = _title_hash
 
 
-def _get_mood_ambiance(request) -> str:
+def _get_mood_ambiance(request: Request) -> str:
     """Get the mood ambiance from request state, with fallback."""
     return getattr(getattr(request, "state", None), "mood_ambiance", "soft_pages")
 
