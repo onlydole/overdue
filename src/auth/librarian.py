@@ -2,7 +2,7 @@
 
 import re
 from datetime import datetime, timedelta
-from typing import cast
+from typing import Any, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
@@ -97,7 +97,7 @@ async def login(
 @router.post("/refresh", response_model=LibraryCard)
 async def refresh_token(
     session: AsyncSession = Depends(get_session),
-    payload: dict = Depends(verify_library_card),
+    payload: dict[str, Any] = Depends(verify_library_card),
 ) -> LibraryCard:
     """Refresh a library card before it expires."""
     librarian_id = int(payload["sub"])
@@ -119,8 +119,8 @@ async def refresh_token(
 @router.get("/me/xp")
 async def get_my_xp(
     session: AsyncSession = Depends(get_session),
-    payload: dict = Depends(verify_library_card),
-) -> dict:
+    payload: dict[str, Any] = Depends(verify_library_card),
+) -> dict[str, Any]:
     """Get the current librarian's XP summary."""
     librarian_id = int(payload["sub"])
     librarian = await session.get(LibrarianRow, librarian_id)
@@ -142,8 +142,8 @@ async def get_my_xp(
 @router.get("/me/badges")
 async def get_my_badges(
     session: AsyncSession = Depends(get_session),
-    payload: dict = Depends(verify_library_card),
-) -> dict:
+    payload: dict[str, Any] = Depends(verify_library_card),
+) -> dict[str, Any]:
     """Get the current librarian's earned badges."""
     librarian_id = int(payload["sub"])
     badges = await get_earned_badges(session, librarian_id)
@@ -153,8 +153,8 @@ async def get_my_badges(
 @router.get("/me/streak")
 async def get_my_streak(
     session: AsyncSession = Depends(get_session),
-    payload: dict = Depends(verify_library_card),
-) -> dict:
+    payload: dict[str, Any] = Depends(verify_library_card),
+) -> dict[str, Any]:
     """Get the current librarian's review streak."""
     librarian_id = int(payload["sub"])
     return await get_streak(session, librarian_id)
@@ -166,7 +166,7 @@ async def get_leaderboard(
     limit: int = Query(10, ge=1, le=100),
     timeframe: str = Query("all-time", description="Filter: week, month, or all-time"),
     sort_by: str = Query("xp", description="Sort by: xp or streak"),
-) -> dict:
+) -> dict[str, Any]:
     """Get the top librarians by pages read or streak length."""
     from src.db.tables import XPLedgerRow
 

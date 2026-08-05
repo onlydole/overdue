@@ -1,6 +1,6 @@
 """Web session utilities for cookie-based browser auth."""
 
-from typing import cast
+from typing import Any, cast
 
 import jwt
 from fastapi import Request
@@ -18,7 +18,7 @@ from src.db.tables import LibrarianRow
 async def get_current_librarian_optional(
     request: Request,
     session: AsyncSession,
-) -> dict | None:
+) -> dict[str, Any] | None:
     """Return librarian info from session cookie, or None if not logged in."""
     token = request.session.get("token")
     if not token:
@@ -46,7 +46,7 @@ async def get_current_librarian_optional(
 async def get_current_librarian_required(
     request: Request,
     session: AsyncSession,
-) -> dict | RedirectResponse:
+) -> dict[str, Any] | RedirectResponse:
     """Return librarian info or redirect to login."""
     user = await get_current_librarian_optional(request, session)
     if not user:
@@ -59,7 +59,7 @@ async def login_librarian(
     session: AsyncSession,
     username: str,
     password: str,
-) -> dict | None:
+) -> dict[str, Any] | None:
     """Verify credentials and store JWT in session. Returns librarian dict or None."""
     result = await session.execute(select(LibrarianRow).where(LibrarianRow.username == username))
     librarian = result.scalar_one_or_none()

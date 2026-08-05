@@ -2,6 +2,7 @@
 
 import random
 from datetime import datetime
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
@@ -52,7 +53,7 @@ def volume_to_response(row: VolumeRow, bookmarks: list[str]) -> VolumeResponse:
 async def create_volume(
     body: VolumeCreate,
     session: AsyncSession = Depends(get_session),
-    payload: dict = Depends(verify_library_card),
+    payload: dict[str, Any] = Depends(verify_library_card),
 ) -> VolumeResponse:
     """Shelve a new volume in the library."""
     # Check volume size
@@ -151,7 +152,7 @@ async def update_volume(
     volume_id: int,
     body: VolumeUpdate,
     session: AsyncSession = Depends(get_session),
-    payload: dict = Depends(verify_library_card),
+    payload: dict[str, Any] = Depends(verify_library_card),
 ) -> VolumeResponse:
     """Update an existing volume."""
     volume = await session.get(VolumeRow, volume_id)
@@ -196,7 +197,7 @@ async def update_volume(
 async def archive_volume(
     volume_id: int,
     session: AsyncSession = Depends(get_session),
-    payload: dict = Depends(verify_library_card),
+    payload: dict[str, Any] = Depends(verify_library_card),
 ) -> None:
     """Archive a volume (soft delete)."""
     volume = await session.get(VolumeRow, volume_id)
@@ -220,7 +221,7 @@ async def archive_volume(
 async def review_volume(
     volume_id: int,
     session: AsyncSession = Depends(get_session),
-    payload: dict = Depends(verify_library_card),
+    payload: dict[str, Any] = Depends(verify_library_card),
 ) -> VolumeResponse:
     """Review a volume, resetting its Dewey Score to pristine."""
     volume = await session.get(VolumeRow, volume_id)

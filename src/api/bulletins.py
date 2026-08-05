@@ -2,6 +2,7 @@
 
 import hashlib
 import hmac
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -28,7 +29,7 @@ VALID_EVENTS = [
 async def create_bulletin(
     body: BulletinCreate,
     session: AsyncSession = Depends(get_session),
-    payload: dict = Depends(verify_library_card),
+    payload: dict[str, Any] = Depends(verify_library_card),
 ) -> BulletinResponse:
     """Subscribe to webhook notifications."""
     # Validate events
@@ -64,7 +65,7 @@ async def create_bulletin(
 @router.get("/", response_model=BulletinListResponse)
 async def list_bulletins(
     session: AsyncSession = Depends(get_session),
-    payload: dict = Depends(verify_library_card),
+    payload: dict[str, Any] = Depends(verify_library_card),
 ) -> BulletinListResponse:
     """List all webhook subscriptions for the current librarian."""
     librarian_id = int(payload["sub"])
@@ -90,7 +91,7 @@ async def list_bulletins(
 async def delete_bulletin(
     bulletin_id: int,
     session: AsyncSession = Depends(get_session),
-    payload: dict = Depends(verify_library_card),
+    payload: dict[str, Any] = Depends(verify_library_card),
 ) -> None:
     """Remove a webhook subscription."""
     librarian_id = int(payload["sub"])

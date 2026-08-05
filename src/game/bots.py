@@ -8,6 +8,7 @@ badge collection.
 
 import random
 from datetime import datetime, timedelta
+from typing import Any
 
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -38,7 +39,7 @@ _RANKS: list[tuple[str, int]] = [
 # ---------------------------------------------------------------------------
 # Difficulty profiles
 # ---------------------------------------------------------------------------
-DIFFICULTY_PROFILES: dict[str, dict] = {
+DIFFICULTY_PROFILES: dict[str, dict[str, Any]] = {
     "casual": {
         "xp_range": (50, 400),
         "volume_range": (1, 3),
@@ -498,7 +499,7 @@ async def remove_all_bots(session: AsyncSession) -> int:
 # =========================================================================
 
 
-async def list_bots(session: AsyncSession) -> list[dict]:
+async def list_bots(session: AsyncSession) -> list[dict[str, Any]]:
     """Return a summary list of all bot librarians."""
     result = await session.execute(
         select(LibrarianRow).where(LibrarianRow.is_bot == True)  # noqa: E712
@@ -525,7 +526,7 @@ async def list_bots(session: AsyncSession) -> list[dict]:
 async def simulate_bot_activity(
     session: AsyncSession,
     bot_username: str | None = None,
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """Simulate a round of activity for one or all bots.
 
     For each bot the simulation:
@@ -565,7 +566,7 @@ async def simulate_bot_activity(
         bots = list(result.scalars().all())
 
     now = datetime.utcnow()
-    changes: list[dict] = []
+    changes: list[dict[str, Any]] = []
 
     for bot in bots:
         profile = DIFFICULTY_PROFILES.get(

@@ -57,7 +57,7 @@ def require_role(minimum_role: str):
     """Create a dependency that requires a minimum librarian rank."""
     minimum_level = get_rank_level(minimum_role)
 
-    def check_role(payload: dict = Depends(verify_library_card)) -> dict:
+    def check_role(payload: dict[str, Any] = Depends(verify_library_card)) -> dict[str, Any]:
         user_role = payload.get("role", "Page")
         user_level = get_rank_level(user_role)
 

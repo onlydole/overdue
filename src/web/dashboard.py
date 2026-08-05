@@ -1,5 +1,7 @@
 """Reading Room dashboard route."""
 
+from typing import Any
+
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,7 +18,7 @@ from src.web.templates import templates
 router = APIRouter()
 
 
-async def _build_reading_room_context(session: AsyncSession) -> dict:
+async def _build_reading_room_context(session: AsyncSession) -> dict[str, Any]:
     """Build template context for the Reading Room dashboard.
 
     Shared by both the full-page route and the HTMX partial endpoint.

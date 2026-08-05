@@ -1,6 +1,7 @@
 """Achievement badge definitions and tracking."""
 
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -79,7 +80,7 @@ BADGE_DEFINITIONS = {
 }
 
 
-async def get_earned_badges(session: AsyncSession, librarian_id: int) -> list[dict]:
+async def get_earned_badges(session: AsyncSession, librarian_id: int) -> list[dict[str, Any]]:
     """Get all badges earned by a librarian."""
     result = await session.execute(
         select(BadgeRow)

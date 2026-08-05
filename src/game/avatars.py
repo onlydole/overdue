@@ -6,7 +6,9 @@ inspired by classic 32-bit RPG sprites.
 
 from __future__ import annotations
 
-AVATAR_CATALOG: dict[str, dict] = {
+from typing import Any
+
+AVATAR_CATALOG: dict[str, dict[str, Any]] = {
     "avatar_01": {
         "name": "Sol",
         "role_title": "Venus Scribe",

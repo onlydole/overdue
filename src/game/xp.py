@@ -1,5 +1,7 @@
 """XP calculation, rank thresholds, and leveling."""
 
+from typing import Any
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -101,7 +103,7 @@ async def get_recent_awards(
     session: AsyncSession,
     librarian_id: int,
     limit: int = 10,
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """Get recent XP awards for a librarian."""
     result = await session.execute(
         select(XPLedgerRow)
