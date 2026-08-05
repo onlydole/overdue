@@ -4,7 +4,8 @@ Default: 5-second cooldown between reviews for demo mode.
 Set OVERDUE_STREAK_COOLDOWN_SECONDS=86400 for realistic daily streaks.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,15 +14,13 @@ from src.config.settings import settings
 from src.db.tables import StreakRow
 
 
-async def update_streak(session: AsyncSession, librarian_id: int) -> dict:
+async def update_streak(session: AsyncSession, librarian_id: int) -> dict[str, Any]:
     """Update the review streak for a librarian after a review.
 
     Uses configurable cooldown: if last review was within cooldown window,
     streak extends. If too much time passed, streak resets.
     """
-    result = await session.execute(
-        select(StreakRow).where(StreakRow.librarian_id == librarian_id)
-    )
+    result = await session.execute(select(StreakRow).where(StreakRow.librarian_id == librarian_id))
     streak = result.scalar_one_or_none()
 
     now = datetime.utcnow()
@@ -81,11 +80,9 @@ async def update_streak(session: AsyncSession, librarian_id: int) -> dict:
     }
 
 
-async def get_streak(session: AsyncSession, librarian_id: int) -> dict:
+async def get_streak(session: AsyncSession, librarian_id: int) -> dict[str, Any]:
     """Get the current streak info for a librarian."""
-    result = await session.execute(
-        select(StreakRow).where(StreakRow.librarian_id == librarian_id)
-    )
+    result = await session.execute(select(StreakRow).where(StreakRow.librarian_id == librarian_id))
     streak = result.scalar_one_or_none()
 
     if not streak:

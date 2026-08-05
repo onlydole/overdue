@@ -13,7 +13,7 @@ from sqlalchemy import (
     Table,
     Text,
 )
-from sqlalchemy.orm import DeclarativeBase, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
@@ -34,20 +34,26 @@ class VolumeRow(Base):
 
     __tablename__ = "volumes"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String(60), nullable=False)
-    content = Column(Text, nullable=False)
-    shelf_id = Column(Integer, ForeignKey("shelves.id"), nullable=False)
-    author_id = Column(Integer, ForeignKey("librarians.id"), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
-    last_reviewed_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    archived = Column(Boolean, default=False, nullable=False)
-    spine_seed = Column(Integer, nullable=False, default=0)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    title: Mapped[str] = mapped_column(String(60), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    shelf_id: Mapped[int] = mapped_column(Integer, ForeignKey("shelves.id"), nullable=False)
+    author_id: Mapped[int] = mapped_column(Integer, ForeignKey("librarians.id"), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+    last_reviewed_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
+    archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    spine_seed: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
-    shelf = relationship("ShelfRow", back_populates="volumes")
-    author = relationship("LibrarianRow", back_populates="volumes")
-    reviews = relationship("ReviewRow", back_populates="volume", cascade="all, delete-orphan")
+    shelf: Mapped["ShelfRow"] = relationship("ShelfRow", back_populates="volumes")
+    author: Mapped["LibrarianRow"] = relationship("LibrarianRow", back_populates="volumes")
+    reviews: Mapped[list["ReviewRow"]] = relationship(
+        "ReviewRow", back_populates="volume", cascade="all, delete-orphan"
+    )
 
 
 class ShelfRow(Base):
@@ -55,14 +61,16 @@ class ShelfRow(Base):
 
     __tablename__ = "shelves"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(255), nullable=False, unique=True)
-    description = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    created_by = Column(Integer, ForeignKey("librarians.id"), nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    created_by: Mapped[int] = mapped_column(Integer, ForeignKey("librarians.id"), nullable=False)
 
-    volumes = relationship("VolumeRow", back_populates="shelf", cascade="all, delete-orphan")
-    creator = relationship("LibrarianRow", back_populates="shelves_created")
+    volumes: Mapped[list["VolumeRow"]] = relationship(
+        "VolumeRow", back_populates="shelf", cascade="all, delete-orphan"
+    )
+    creator: Mapped["LibrarianRow"] = relationship("LibrarianRow", back_populates="shelves_created")
 
 
 class LibrarianRow(Base):
@@ -70,23 +78,31 @@ class LibrarianRow(Base):
 
     __tablename__ = "librarians"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    username = Column(String(100), nullable=False, unique=True)
-    email = Column(String(255), nullable=False, unique=True)
-    hashed_password = Column(String(255), nullable=False)
-    role = Column(String(50), default="Page", nullable=False)
-    total_xp = Column(Integer, default=0, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    is_bot = Column(Boolean, default=False, nullable=False)
-    bot_difficulty = Column(String(50), nullable=True)
-    avatar_id = Column(String(20), default="avatar_01", nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    username: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    role: Mapped[str] = mapped_column(String(50), default="Page", nullable=False)
+    total_xp: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    is_bot: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    bot_difficulty: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    avatar_id: Mapped[str] = mapped_column(String(20), default="avatar_01", nullable=False)
 
-    volumes = relationship("VolumeRow", back_populates="author")
-    shelves_created = relationship("ShelfRow", back_populates="creator")
-    xp_ledger = relationship("XPLedgerRow", back_populates="librarian", cascade="all, delete-orphan")
-    badges = relationship("BadgeRow", back_populates="librarian", cascade="all, delete-orphan")
-    streak = relationship("StreakRow", back_populates="librarian", uselist=False, cascade="all, delete-orphan")
-    reviews = relationship("ReviewRow", back_populates="librarian", cascade="all, delete-orphan")
+    volumes: Mapped[list["VolumeRow"]] = relationship("VolumeRow", back_populates="author")
+    shelves_created: Mapped[list["ShelfRow"]] = relationship("ShelfRow", back_populates="creator")
+    xp_ledger: Mapped[list["XPLedgerRow"]] = relationship(
+        "XPLedgerRow", back_populates="librarian", cascade="all, delete-orphan"
+    )
+    badges: Mapped[list["BadgeRow"]] = relationship(
+        "BadgeRow", back_populates="librarian", cascade="all, delete-orphan"
+    )
+    streak: Mapped["StreakRow | None"] = relationship(
+        "StreakRow", back_populates="librarian", uselist=False, cascade="all, delete-orphan"
+    )
+    reviews: Mapped[list["ReviewRow"]] = relationship(
+        "ReviewRow", back_populates="librarian", cascade="all, delete-orphan"
+    )
 
 
 class ReviewRow(Base):
@@ -94,14 +110,14 @@ class ReviewRow(Base):
 
     __tablename__ = "reviews"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    volume_id = Column(Integer, ForeignKey("volumes.id"), nullable=False)
-    librarian_id = Column(Integer, ForeignKey("librarians.id"), nullable=False)
-    reviewed_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    dewey_score_before = Column(Float, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    volume_id: Mapped[int] = mapped_column(Integer, ForeignKey("volumes.id"), nullable=False)
+    librarian_id: Mapped[int] = mapped_column(Integer, ForeignKey("librarians.id"), nullable=False)
+    reviewed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    dewey_score_before: Mapped[float] = mapped_column(Float, nullable=False)
 
-    volume = relationship("VolumeRow", back_populates="reviews")
-    librarian = relationship("LibrarianRow", back_populates="reviews")
+    volume: Mapped["VolumeRow"] = relationship("VolumeRow", back_populates="reviews")
+    librarian: Mapped["LibrarianRow"] = relationship("LibrarianRow", back_populates="reviews")
 
 
 class XPLedgerRow(Base):
@@ -109,13 +125,13 @@ class XPLedgerRow(Base):
 
     __tablename__ = "xp_ledger"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    librarian_id = Column(Integer, ForeignKey("librarians.id"), nullable=False)
-    amount = Column(Integer, nullable=False)
-    reason = Column(String(255), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    librarian_id: Mapped[int] = mapped_column(Integer, ForeignKey("librarians.id"), nullable=False)
+    amount: Mapped[int] = mapped_column(Integer, nullable=False)
+    reason: Mapped[str] = mapped_column(String(255), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
-    librarian = relationship("LibrarianRow", back_populates="xp_ledger")
+    librarian: Mapped["LibrarianRow"] = relationship("LibrarianRow", back_populates="xp_ledger")
 
 
 class BadgeRow(Base):
@@ -123,12 +139,12 @@ class BadgeRow(Base):
 
     __tablename__ = "badges"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    librarian_id = Column(Integer, ForeignKey("librarians.id"), nullable=False)
-    badge_name = Column(String(100), nullable=False)
-    earned_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    librarian_id: Mapped[int] = mapped_column(Integer, ForeignKey("librarians.id"), nullable=False)
+    badge_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    earned_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
-    librarian = relationship("LibrarianRow", back_populates="badges")
+    librarian: Mapped["LibrarianRow"] = relationship("LibrarianRow", back_populates="badges")
 
 
 class StreakRow(Base):
@@ -136,13 +152,15 @@ class StreakRow(Base):
 
     __tablename__ = "streaks"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    librarian_id = Column(Integer, ForeignKey("librarians.id"), nullable=False, unique=True)
-    current_streak = Column(Integer, default=0, nullable=False)
-    longest_streak = Column(Integer, default=0, nullable=False)
-    last_review_date = Column(DateTime, nullable=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    librarian_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("librarians.id"), nullable=False, unique=True
+    )
+    current_streak: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    longest_streak: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    last_review_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    librarian = relationship("LibrarianRow", back_populates="streak")
+    librarian: Mapped["LibrarianRow"] = relationship("LibrarianRow", back_populates="streak")
 
 
 class BulletinRow(Base):
@@ -150,10 +168,10 @@ class BulletinRow(Base):
 
     __tablename__ = "bulletins"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    url = Column(String(2048), nullable=False)
-    events = Column(String(500), nullable=False)
-    secret = Column(String(255), nullable=False, default="")
-    librarian_id = Column(Integer, ForeignKey("librarians.id"), nullable=False)
-    active = Column(Boolean, default=True, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    url: Mapped[str] = mapped_column(String(2048), nullable=False)
+    events: Mapped[str] = mapped_column(String(500), nullable=False)
+    secret: Mapped[str] = mapped_column(String(255), nullable=False, default="")
+    librarian_id: Mapped[int] = mapped_column(Integer, ForeignKey("librarians.id"), nullable=False)
+    active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)

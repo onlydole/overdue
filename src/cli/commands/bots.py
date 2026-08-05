@@ -9,9 +9,7 @@ app = typer.Typer(help="Manage AI bot players on the leaderboard.")
 
 @app.command("add")
 def add_bot(
-    difficulty: str = typer.Argument(
-        ..., help="Bot difficulty: casual, diligent, or obsessive"
-    ),
+    difficulty: str = typer.Argument(..., help="Bot difficulty: casual, diligent, or obsessive"),
     name: str = typer.Option(None, "--name", help="Custom bot username"),
     count: int = typer.Option(1, "--count", "-n", help="Number of bots to create"),
 ) -> None:
@@ -22,7 +20,9 @@ def add_bot(
     console = Console()
 
     if difficulty not in ("casual", "diligent", "obsessive"):
-        console.print(f"[red]Invalid difficulty '{difficulty}'. Choose: casual, diligent, obsessive[/red]")
+        console.print(
+            f"[red]Invalid difficulty '{difficulty}'. Choose: casual, diligent, obsessive[/red]"
+        )
         raise typer.Exit(1)
 
     if name and count > 1:
@@ -88,6 +88,7 @@ def remove_bot(
         async with async_session() as session:
             if all_bots:
                 from src.game.bots import remove_all_bots
+
                 count = await remove_all_bots(session)
                 await session.commit()
                 if count:
@@ -96,6 +97,7 @@ def remove_bot(
                     console.print("[yellow]No bots found to remove.[/yellow]")
             else:
                 from src.game.bots import remove_bot as rm_bot
+
                 removed = await rm_bot(session, name)
                 await session.commit()
                 if removed:
@@ -126,7 +128,10 @@ def list_bots() -> None:
             bots = await get_bots(session)
 
         if not bots:
-            console.print("[yellow]No bots found. Use 'overdue bots add <difficulty>' to create some.[/yellow]")
+            console.print(
+                "[yellow]No bots found. "
+                "Use 'overdue bots add <difficulty>' to create some.[/yellow]"
+            )
             return
 
         table = Table(title=f"Bot Players ({len(bots)})")

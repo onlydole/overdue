@@ -7,21 +7,21 @@ from collections import defaultdict
 from contextlib import asynccontextmanager
 from datetime import datetime
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from starlette.middleware.sessions import SessionMiddleware
-
 from sqlalchemy import text
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.sessions import SessionMiddleware
 
 from src.config.defaults import QUIET_HOURS_REQUESTS_PER_MINUTE
 from src.config.settings import settings
 from src.db.engine import async_session, engine
-from src.db.tables import Base, VolumeRow
-
+from src.db.tables import Base
 from src.errors.handlers import register_handlers
-from src.errors.incidents import QuietHoursExceeded
 from src.web.mood_middleware import MoodMiddleware
+from src.web.templates import templates as _templates
 
 logger = logging.getLogger("overdue")
 
@@ -67,11 +67,7 @@ async def lifespan(app: FastAPI):  # type: ignore[no-untyped-def]
             ("avatar_id", "VARCHAR(20) NOT NULL DEFAULT 'avatar_01'"),
         ]:
             try:
-                await conn.execute(
-                    text(
-                        f"ALTER TABLE librarians ADD COLUMN {col_name} {col_def}"
-                    )
-                )
+                await conn.execute(text(f"ALTER TABLE librarians ADD COLUMN {col_name} {col_def}"))
             except Exception:
                 pass  # Column already exists
 
@@ -81,22 +77,20 @@ async def lifespan(app: FastAPI):  # type: ignore[no-untyped-def]
             ("spine_seed", "INTEGER NOT NULL DEFAULT 0"),
         ]:
             try:
-                await conn.execute(
-                    text(
-                        f"ALTER TABLE volumes ADD COLUMN {col_name} {col_def}"
-                    )
-                )
+                await conn.execute(text(f"ALTER TABLE volumes ADD COLUMN {col_name} {col_def}"))
             except Exception:
                 pass  # Column already exists
 
     # Auto-seed if database is empty (for docker compose demo experience)
     from src.db.seed import is_db_empty, seed_demo_data
+
     async with async_session() as session:
         if await is_db_empty(session):
             await seed_demo_data(session)
 
     # Auto-simulate bot activity on startup so leaderboard shifts
     from src.game.bots import simulate_bot_activity
+
     async with async_session() as session:
         try:
             await simulate_bot_activity(session)
@@ -141,15 +135,10 @@ app.add_middleware(MoodMiddleware)
 # Register library incident handlers
 register_handlers(app)
 
+
 # Custom error pages for web routes
-from fastapi.responses import HTMLResponse, JSONResponse
-from starlette.exceptions import HTTPException as StarletteHTTPException
-
-from src.web.templates import templates as _templates
-
-
 @app.exception_handler(404)
-async def not_found_handler(request: Request, exc: StarletteHTTPException):
+async def not_found_handler(request: Request, exc: StarletteHTTPException) -> Response:
     if request.url.path.startswith("/api"):
         return JSONResponse(status_code=404, content={"detail": str(exc.detail)})
     return _templates.TemplateResponse(
@@ -161,7 +150,7 @@ async def not_found_handler(request: Request, exc: StarletteHTTPException):
 
 
 @app.exception_handler(500)
-async def server_error_handler(request: Request, exc: Exception):
+async def server_error_handler(request: Request, exc: Exception) -> Response:
     if request.url.path.startswith("/api"):
         return JSONResponse(status_code=500, content={"detail": "Internal server error"})
     return _templates.TemplateResponse(
@@ -188,21 +177,19 @@ async def quiet_hours_middleware(request: Request, call_next):  # type: ignore[n
     window = 60.0  # 1 minute window
 
     # Clean old entries
-    _request_counts[client_ip] = [
-        t for t in _request_counts[client_ip] if now - t < window
-    ]
+    _request_counts[client_ip] = [t for t in _request_counts[client_ip] if now - t < window]
 
     if len(_request_counts[client_ip]) >= QUIET_HOURS_REQUESTS_PER_MINUTE:
         oldest = _request_counts[client_ip][0]
         retry_after = int(window - (now - oldest)) + 1
-        
+
         if request.url.path.startswith("/api"):
             return JSONResponse(
                 status_code=429,
                 content={"detail": f"Quiet hours, please. Try again in {retry_after}s."},
-                headers={"Retry-After": str(retry_after)}
+                headers={"Retry-After": str(retry_after)},
             )
-        
+
         return HTMLResponse(
             status_code=429,
             content=f"""
@@ -213,9 +200,21 @@ async def quiet_hours_middleware(request: Request, call_next):  # type: ignore[n
                 <meta http-equiv="refresh" content="{retry_after}">
                 <title>Quiet Hours</title>
                 <style>
-                    body {{ background-color: #0f0e17; color: #f0e6d3; font-family: monospace; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }}
-                    .card {{ border: 4px solid #3d3d6b; background: #232342; padding: 2rem; text-align: center; box-shadow: 4px 4px 0 #0f0e17; max-width: 420px; }}
-                    h1 {{ color: #f0c543; text-transform: uppercase; margin-bottom: 1rem; font-size: 1.5rem; }}
+                    body {{
+                        background-color: #0f0e17; color: #f0e6d3;
+                        font-family: monospace; display: flex;
+                        align-items: center; justify-content: center;
+                        height: 100vh; margin: 0;
+                    }}
+                    .card {{
+                        border: 4px solid #3d3d6b; background: #232342;
+                        padding: 2rem; text-align: center;
+                        box-shadow: 4px 4px 0 #0f0e17; max-width: 420px;
+                    }}
+                    h1 {{
+                        color: #f0c543; text-transform: uppercase;
+                        margin-bottom: 1rem; font-size: 1.5rem;
+                    }}
                     .countdown {{ color: #f0c543; font-size: 2rem; margin: 1rem 0; }}
                 </style>
             </head>
@@ -244,7 +243,7 @@ async def quiet_hours_middleware(request: Request, call_next):  # type: ignore[n
             </body>
             </html>
             """,
-            headers={"Retry-After": str(retry_after)}
+            headers={"Retry-After": str(retry_after)},
         )
 
     _request_counts[client_ip].append(now)

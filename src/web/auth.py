@@ -1,9 +1,8 @@
 """Web authentication routes (login, register, logout)."""
 
 import re
-from typing import cast
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +12,7 @@ from src.auth.web_session import get_current_librarian_optional, login_librarian
 from src.db.engine import get_session
 from src.db.tables import LibrarianRow
 from src.game.avatars import AVATAR_CATALOG, get_avatar_choices
+from src.web.forms import form_str
 from src.web.templates import templates
 
 router = APIRouter()
@@ -26,41 +26,53 @@ PASSWORD_PATTERN = re.compile(
 async def login_page(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Render the login page."""
     user = await get_current_librarian_optional(request, session)
     if user:
         return RedirectResponse(url="/", status_code=302)
-    return templates.TemplateResponse(request, "login.html", {
-        "request": request,
-        "current_user": None,
-    })
+    return templates.TemplateResponse(
+        request,
+        "login.html",
+        {
+            "request": request,
+            "current_user": None,
+        },
+    )
 
 
 @router.post("/login")
 async def login_submit(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Process login form submission."""
     form = await request.form()
-    username = form.get("username", "").strip()
-    password = form.get("password", "")
+    username = form_str(form, "username").strip()
+    password = form_str(form, "password")
 
     if not username or not password:
-        return templates.TemplateResponse(request, "login.html", {
-            "request": request,
-            "current_user": None,
-            "error": "Username and password are required.",
-        })
+        return templates.TemplateResponse(
+            request,
+            "login.html",
+            {
+                "request": request,
+                "current_user": None,
+                "error": "Username and password are required.",
+            },
+        )
 
     result = await login_librarian(request, session, username, password)
     if not result:
-        return templates.TemplateResponse(request, "login.html", {
-            "request": request,
-            "current_user": None,
-            "error": "Invalid username or password.",
-        })
+        return templates.TemplateResponse(
+            request,
+            "login.html",
+            {
+                "request": request,
+                "current_user": None,
+                "error": "Invalid username or password.",
+            },
+        )
 
     return RedirectResponse(url="/", status_code=302)
 
@@ -69,30 +81,34 @@ async def login_submit(
 async def register_page(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Render the registration page."""
     user = await get_current_librarian_optional(request, session)
     if user:
         return RedirectResponse(url="/", status_code=302)
-    return templates.TemplateResponse(request, "register.html", {
-        "request": request,
-        "current_user": None,
-        "avatar_choices": get_avatar_choices(),
-    })
+    return templates.TemplateResponse(
+        request,
+        "register.html",
+        {
+            "request": request,
+            "current_user": None,
+            "avatar_choices": get_avatar_choices(),
+        },
+    )
 
 
 @router.post("/register")
 async def register_submit(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Process registration form submission."""
     form = await request.form()
-    username = form.get("username", "").strip()
-    email = form.get("email", "").strip()
-    password = form.get("password", "")
-    confirm = form.get("confirm_password", "")
-    avatar_id = form.get("avatar_id", "avatar_01").strip()
+    username = form_str(form, "username").strip()
+    email = form_str(form, "email").strip()
+    password = form_str(form, "password")
+    confirm = form_str(form, "confirm_password")
+    avatar_id = form_str(form, "avatar_id", "avatar_01").strip()
 
     # Validate avatar selection
     if avatar_id not in AVATAR_CATALOG:
@@ -104,54 +120,65 @@ async def register_submit(
     if not email or "@" not in email:
         errors.append("A valid email is required.")
     if not PASSWORD_PATTERN.match(password):
-        errors.append("Password must be 8+ chars with uppercase, lowercase, digit, and special character (@$!%*?&).")
+        errors.append(
+            "Password must be 8+ chars with uppercase, lowercase, "
+            "digit, and special character (@$!%*?&)."
+        )
     if password != confirm:
         errors.append("Passwords do not match.")
 
     if errors:
-        return templates.TemplateResponse(request, "register.html", {
-            "request": request,
-            "current_user": None,
-            "errors": errors,
-            "username": username,
-            "email": email,
-            "avatar_choices": get_avatar_choices(),
-            "selected_avatar": avatar_id,
-        })
+        return templates.TemplateResponse(
+            request,
+            "register.html",
+            {
+                "request": request,
+                "current_user": None,
+                "errors": errors,
+                "username": username,
+                "email": email,
+                "avatar_choices": get_avatar_choices(),
+                "selected_avatar": avatar_id,
+            },
+        )
 
     # Check existing username/email
-    existing = await session.execute(
-        select(LibrarianRow).where(LibrarianRow.username == username)
-    )
+    existing = await session.execute(select(LibrarianRow).where(LibrarianRow.username == username))
     if existing.scalar_one_or_none():
-        return templates.TemplateResponse(request, "register.html", {
-            "request": request,
-            "current_user": None,
-            "errors": ["That username is already taken."],
-            "username": username,
-            "email": email,
-            "avatar_choices": get_avatar_choices(),
-            "selected_avatar": avatar_id,
-        })
+        return templates.TemplateResponse(
+            request,
+            "register.html",
+            {
+                "request": request,
+                "current_user": None,
+                "errors": ["That username is already taken."],
+                "username": username,
+                "email": email,
+                "avatar_choices": get_avatar_choices(),
+                "selected_avatar": avatar_id,
+            },
+        )
 
-    existing_email = await session.execute(
-        select(LibrarianRow).where(LibrarianRow.email == email)
-    )
+    existing_email = await session.execute(select(LibrarianRow).where(LibrarianRow.email == email))
     if existing_email.scalar_one_or_none():
-        return templates.TemplateResponse(request, "register.html", {
-            "request": request,
-            "current_user": None,
-            "errors": ["That email is already registered."],
-            "username": username,
-            "email": email,
-            "avatar_choices": get_avatar_choices(),
-            "selected_avatar": avatar_id,
-        })
+        return templates.TemplateResponse(
+            request,
+            "register.html",
+            {
+                "request": request,
+                "current_user": None,
+                "errors": ["That email is already registered."],
+                "username": username,
+                "email": email,
+                "avatar_choices": get_avatar_choices(),
+                "selected_avatar": avatar_id,
+            },
+        )
 
     librarian = LibrarianRow(
         username=username,
         email=email,
-        hashed_password=hash_password(cast(str, password)),
+        hashed_password=hash_password(password),
         avatar_id=avatar_id,
     )
     session.add(librarian)
@@ -164,7 +191,7 @@ async def register_submit(
 
 
 @router.post("/logout")
-async def logout(request: Request):
+async def logout(request: Request) -> Response:
     """Log out and redirect to home."""
     logout_librarian(request)
     return RedirectResponse(url="/", status_code=302)

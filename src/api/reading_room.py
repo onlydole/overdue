@@ -1,5 +1,7 @@
 """Reading Room health check and dashboard data."""
 
+from typing import Any
+
 from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,7 +24,9 @@ def get_mood(average_score: float) -> tuple[str, str]:
                     "Warm golden light fills the reading room. Knowledge is well-tended."
                 ),
                 "Gentle hum": ("A pleasant bustle of activity. Most volumes are in good shape."),
-                "Getting noisy": ("The shelves are getting unruly. Several volumes need attention."),
+                "Getting noisy": (
+                    "The shelves are getting unruly. Several volumes need attention."
+                ),
                 "Call for order": (
                     "Warning! Many volumes are gathering dust. Review needed urgently."
                 ),
@@ -37,7 +41,7 @@ def get_mood(average_score: float) -> tuple[str, str]:
 @router.get("/health")
 async def health_check(
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, Any]:
     """Get the overall health of the library."""
     count_result = await session.execute(
         select(func.count()).select_from(VolumeRow).where(VolumeRow.archived.is_(False))
@@ -76,7 +80,7 @@ async def health_check(
 @router.get("/overdue")
 async def overdue_report(
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, Any]:
     """Get a report of all overdue volumes needing review."""
     volumes_result = await session.execute(select(VolumeRow).where(VolumeRow.archived.is_(False)))
     volumes = volumes_result.scalars().all()
@@ -107,7 +111,7 @@ async def overdue_report(
 
 
 @router.get("/last-recalc")
-async def last_recalc() -> dict:
+async def last_recalc() -> dict[str, Any]:
     """Get the timestamp of the last Dewey Score recalculation."""
     from src.main import _last_dewey_recalc
 

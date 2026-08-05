@@ -2,14 +2,13 @@
 
 import hashlib
 import hmac
-from datetime import datetime
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.library_card import verify_library_card
-from src.config.settings import settings
 from src.db.engine import get_session
 from src.db.tables import BulletinRow
 from src.models.bulletin import BulletinCreate, BulletinListResponse, BulletinResponse
@@ -30,7 +29,7 @@ VALID_EVENTS = [
 async def create_bulletin(
     body: BulletinCreate,
     session: AsyncSession = Depends(get_session),
-    payload: dict = Depends(verify_library_card),
+    payload: dict[str, Any] = Depends(verify_library_card),
 ) -> BulletinResponse:
     """Subscribe to webhook notifications."""
     # Validate events
@@ -38,7 +37,10 @@ async def create_bulletin(
     if invalid:
         raise HTTPException(
             status_code=422,
-            detail=f"Invalid event types: {', '.join(invalid)}. Valid events: {', '.join(VALID_EVENTS)}",
+            detail=(
+                f"Invalid event types: {', '.join(invalid)}. "
+                f"Valid events: {', '.join(VALID_EVENTS)}"
+            ),
         )
 
     bulletin = BulletinRow(
@@ -63,7 +65,7 @@ async def create_bulletin(
 @router.get("/", response_model=BulletinListResponse)
 async def list_bulletins(
     session: AsyncSession = Depends(get_session),
-    payload: dict = Depends(verify_library_card),
+    payload: dict[str, Any] = Depends(verify_library_card),
 ) -> BulletinListResponse:
     """List all webhook subscriptions for the current librarian."""
     librarian_id = int(payload["sub"])
@@ -89,7 +91,7 @@ async def list_bulletins(
 async def delete_bulletin(
     bulletin_id: int,
     session: AsyncSession = Depends(get_session),
-    payload: dict = Depends(verify_library_card),
+    payload: dict[str, Any] = Depends(verify_library_card),
 ) -> None:
     """Remove a webhook subscription."""
     librarian_id = int(payload["sub"])

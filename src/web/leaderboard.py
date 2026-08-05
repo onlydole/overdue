@@ -1,6 +1,6 @@
 """Leaderboard route."""
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,7 +17,7 @@ router = APIRouter()
 async def leaderboard(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     current_user = await get_current_librarian_optional(request, session)
     """Render the leaderboard page."""
     result = await session.execute(
@@ -37,20 +37,26 @@ async def leaderboard(
         )
         streak = streak_result.scalar_one_or_none()
 
-        entries.append({
-            "position": i,
-            "username": lib.username,
-            "total_xp": lib.total_xp,
-            "rank": get_rank(lib.total_xp),
-            "badge_count": badge_count,
-            "current_streak": streak.current_streak if streak else 0,
-            "is_bot": lib.is_bot,
-            "avatar_id": lib.avatar_id or "avatar_01",
-            "librarian_id": lib.id,
-        })
+        entries.append(
+            {
+                "position": i,
+                "username": lib.username,
+                "total_xp": lib.total_xp,
+                "rank": get_rank(lib.total_xp),
+                "badge_count": badge_count,
+                "current_streak": streak.current_streak if streak else 0,
+                "is_bot": lib.is_bot,
+                "avatar_id": lib.avatar_id or "avatar_01",
+                "librarian_id": lib.id,
+            }
+        )
 
-    return templates.TemplateResponse(request, "leaderboard.html", {
-        "request": request,
-        "current_user": current_user,
-        "entries": entries,
-    })
+    return templates.TemplateResponse(
+        request,
+        "leaderboard.html",
+        {
+            "request": request,
+            "current_user": current_user,
+            "entries": entries,
+        },
+    )

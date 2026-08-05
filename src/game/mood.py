@@ -1,9 +1,11 @@
 """Reading room mood calculation based on aggregate Dewey Scores."""
 
+from typing import Any
+
 from src.config.defaults import MOODS
 
 
-def calculate_mood(average_dewey_score: float) -> dict:
+def calculate_mood(average_dewey_score: float) -> dict[str, Any]:
     """Calculate the reading room mood from the average Dewey Score."""
     mood_name = "Closed for renovation"
     for name, threshold in MOODS:

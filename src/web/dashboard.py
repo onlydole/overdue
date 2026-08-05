@@ -1,6 +1,8 @@
 """Reading Room dashboard route."""
 
-from fastapi import APIRouter, Depends, Request
+from typing import Any
+
+from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -16,7 +18,7 @@ from src.web.templates import templates
 router = APIRouter()
 
 
-async def _build_reading_room_context(session: AsyncSession) -> dict:
+async def _build_reading_room_context(session: AsyncSession) -> dict[str, Any]:
     """Build template context for the Reading Room dashboard.
 
     Shared by both the full-page route and the HTMX partial endpoint.
@@ -60,10 +62,7 @@ async def _build_reading_room_context(session: AsyncSession) -> dict:
         .order_by(StreakRow.current_streak.desc())
         .limit(5)
     )
-    streak_leaders = [
-        {"username": row[0], "current_streak": row[1]}
-        for row in streak_result
-    ]
+    streak_leaders = [{"username": row[0], "current_streak": row[1]} for row in streak_result]
 
     return {
         "mood": mood,
@@ -79,25 +78,33 @@ async def _build_reading_room_context(session: AsyncSession) -> dict:
 async def reading_room(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Render the Reading Room dashboard."""
     current_user = await get_current_librarian_optional(request, session)
     ctx = await _build_reading_room_context(session)
-    return templates.TemplateResponse(request, "dashboard.html", {
-        "request": request,
-        "current_user": current_user,
-        **ctx,
-    })
+    return templates.TemplateResponse(
+        request,
+        "dashboard.html",
+        {
+            "request": request,
+            "current_user": current_user,
+            **ctx,
+        },
+    )
 
 
 @router.get("/reading-room/live")
 async def reading_room_live(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Return the live-updating partial for the Reading Room."""
     ctx = await _build_reading_room_context(session)
-    return templates.TemplateResponse(request, "partials/reading_room_live.html", {
-        "request": request,
-        **ctx,
-    })
+    return templates.TemplateResponse(
+        request,
+        "partials/reading_room_live.html",
+        {
+            "request": request,
+            **ctx,
+        },
+    )

@@ -3,7 +3,7 @@
 import typer
 from rich.prompt import Prompt
 
-from src.cli.helpers import clear_token, console, get_client, load_token, save_token
+from src.cli.helpers import clear_token, console, get_client, save_token
 
 app = typer.Typer(help="Authentication commands.")
 
@@ -20,7 +20,9 @@ def login(
         password = Prompt.ask("Password", password=True)
 
     with get_client() as client:
-        resp = client.post("/api/librarians/login", json={"username": username, "password": password})
+        resp = client.post(
+            "/api/librarians/login", json={"username": username, "password": password}
+        )
 
     if resp.status_code == 200:
         data = resp.json()
@@ -42,6 +44,7 @@ def logout() -> None:
 def whoami() -> None:
     """Show current logged-in user."""
     from src.cli.helpers import require_auth
+
     require_auth()
 
     with get_client() as client:
@@ -52,6 +55,8 @@ def whoami() -> None:
         console.print(f"[gold1]Rank:[/gold1] {data['rank']}")
         console.print(f"[green]XP:[/green] {data['total_xp']} pages read")
         if data.get("next_rank"):
-            console.print(f"[dim]Next rank: {data['next_rank']} ({data['xp_to_next_rank']} XP to go)[/dim]")
+            console.print(
+                f"[dim]Next rank: {data['next_rank']} ({data['xp_to_next_rank']} XP to go)[/dim]"
+            )
     else:
         console.print("[red]Session expired. Run 'overdue login' again.[/red]")

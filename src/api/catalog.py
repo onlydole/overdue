@@ -3,14 +3,13 @@
 from difflib import SequenceMatcher
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import or_, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.volumes import calculate_dewey_score, volume_to_response
 from src.config.settings import settings
 from src.db.engine import get_session
-from src.db.tables import VolumeRow, volume_bookmarks
-from src.models.catalog import CatalogQuery, CatalogResponse, CatalogResult, SuggestResponse
+from src.db.tables import VolumeRow
+from src.models.catalog import SuggestResponse
 
 router = APIRouter()
 

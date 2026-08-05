@@ -1,6 +1,6 @@
 """Librarian profile route."""
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.web_session import get_current_librarian_optional
@@ -19,16 +19,20 @@ async def librarian_profile(
     librarian_id: int,
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Render a librarian's profile page."""
     current_user = await get_current_librarian_optional(request, session)
     librarian = await session.get(LibrarianRow, librarian_id)
     if not librarian:
-        return templates.TemplateResponse(request, "dashboard.html", {
-            "request": request,
-            "current_user": current_user,
-            "error": "Librarian not found",
-        })
+        return templates.TemplateResponse(
+            request,
+            "dashboard.html",
+            {
+                "request": request,
+                "current_user": current_user,
+                "error": "Librarian not found",
+            },
+        )
 
     rank = get_rank(librarian.total_xp)
     next_rank, xp_to_next = get_next_rank(librarian.total_xp)
@@ -40,6 +44,7 @@ async def librarian_profile(
     progress = 0
     if next_rank and xp_to_next:
         from src.config.defaults import RANKS
+
         current_threshold = 0
         next_threshold = 0
         for rank_name, threshold in RANKS:
@@ -53,16 +58,20 @@ async def librarian_profile(
 
     avatar_id = librarian.avatar_id or "avatar_01"
 
-    return templates.TemplateResponse(request, "profile.html", {
-        "request": request,
-        "current_user": current_user,
-        "librarian": librarian,
-        "avatar_id": avatar_id,
-        "rank": rank,
-        "next_rank": next_rank,
-        "xp_to_next": xp_to_next,
-        "progress": progress,
-        "badges": badges,
-        "streak": streak,
-        "recent_awards": recent_awards,
-    })
+    return templates.TemplateResponse(
+        request,
+        "profile.html",
+        {
+            "request": request,
+            "current_user": current_user,
+            "librarian": librarian,
+            "avatar_id": avatar_id,
+            "rank": rank,
+            "next_rank": next_rank,
+            "xp_to_next": xp_to_next,
+            "progress": progress,
+            "badges": badges,
+            "streak": streak,
+            "recent_awards": recent_awards,
+        },
+    )

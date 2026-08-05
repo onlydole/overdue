@@ -69,15 +69,11 @@ class TestCLI:
         assert parsed["message"] == "95/100"
         assert parsed["color"] == "green"
 
-    def test_writes_to_file_when_output_given(
-        self, build_badge, tmp_path, capsys
-    ):
+    def test_writes_to_file_when_output_given(self, build_badge, tmp_path, capsys):
         report = tmp_path / "freshness.json"
         out_path = tmp_path / "badge.json"
         report.write_text(json.dumps([{"path": "a.md", "score": 70}]))
-        rc = build_badge.main(
-            ["--input", str(report), "--output", str(out_path)]
-        )
+        rc = build_badge.main(["--input", str(report), "--output", str(out_path)])
         assert rc == 0
         assert capsys.readouterr().out == ""
         parsed = json.loads(out_path.read_text())

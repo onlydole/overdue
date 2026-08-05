@@ -8,6 +8,7 @@ badge collection.
 
 import random
 from datetime import datetime, timedelta
+from typing import Any
 
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -38,7 +39,7 @@ _RANKS: list[tuple[str, int]] = [
 # ---------------------------------------------------------------------------
 # Difficulty profiles
 # ---------------------------------------------------------------------------
-DIFFICULTY_PROFILES: dict[str, dict] = {
+DIFFICULTY_PROFILES: dict[str, dict[str, Any]] = {
     "casual": {
         "xp_range": (50, 400),
         "volume_range": (1, 3),
@@ -73,17 +74,40 @@ DIFFICULTY_PROFILES: dict[str, dict] = {
 # ---------------------------------------------------------------------------
 NAME_POOLS: dict[str, list[str]] = {
     "casual": [
-        "bookworm", "reader", "browser", "skimmer", "flipper",
-        "scanner", "glancer", "peeker", "leafer", "drifter",
+        "bookworm",
+        "reader",
+        "browser",
+        "skimmer",
+        "flipper",
+        "scanner",
+        "glancer",
+        "peeker",
+        "leafer",
+        "drifter",
     ],
     "diligent": [
-        "scholar", "student", "learner", "seeker", "thinker",
-        "noter", "studier", "curator", "indexer", "reviewer",
+        "scholar",
+        "student",
+        "learner",
+        "seeker",
+        "thinker",
+        "noter",
+        "studier",
+        "curator",
+        "indexer",
+        "reviewer",
     ],
     "obsessive": [
-        "archivist_x", "libmaster", "tome_lord", "page_sage",
-        "book_dragon", "stack_king", "lore_keeper", "ink_wizard",
-        "shelf_titan", "data_monk",
+        "archivist_x",
+        "libmaster",
+        "tome_lord",
+        "page_sage",
+        "book_dragon",
+        "stack_king",
+        "lore_keeper",
+        "ink_wizard",
+        "shelf_titan",
+        "data_monk",
     ],
 }
 
@@ -220,6 +244,7 @@ _GENERIC_CONTENT_POOL: list[str] = [
 # Helper: rank lookup
 # =========================================================================
 
+
 def get_rank_for_xp(xp: int) -> str:
     """Return the rank name corresponding to the given XP total."""
     current_rank = _RANKS[0][0]
@@ -232,6 +257,7 @@ def get_rank_for_xp(xp: int) -> str:
 # =========================================================================
 # Create a single bot
 # =========================================================================
+
 
 async def create_bot(
     session: AsyncSession,
@@ -261,8 +287,7 @@ async def create_bot(
     """
     if difficulty not in DIFFICULTY_PROFILES:
         raise ValueError(
-            f"Unknown difficulty {difficulty!r}; "
-            f"choose from {list(DIFFICULTY_PROFILES)}"
+            f"Unknown difficulty {difficulty!r}; choose from {list(DIFFICULTY_PROFILES)}"
         )
 
     profile = DIFFICULTY_PROFILES[difficulty]
@@ -427,6 +452,7 @@ async def create_bot(
 # Remove bots
 # =========================================================================
 
+
 async def remove_bot(session: AsyncSession, username: str) -> bool:
     """Remove a single bot and all of its related data.
 
@@ -443,21 +469,11 @@ async def remove_bot(session: AsyncSession, username: str) -> bool:
         return False
 
     # Delete dependent rows that do not cascade automatically
-    await session.execute(
-        delete(ReviewRow).where(ReviewRow.librarian_id == bot.id)
-    )
-    await session.execute(
-        delete(VolumeRow).where(VolumeRow.author_id == bot.id)
-    )
-    await session.execute(
-        delete(XPLedgerRow).where(XPLedgerRow.librarian_id == bot.id)
-    )
-    await session.execute(
-        delete(BadgeRow).where(BadgeRow.librarian_id == bot.id)
-    )
-    await session.execute(
-        delete(StreakRow).where(StreakRow.librarian_id == bot.id)
-    )
+    await session.execute(delete(ReviewRow).where(ReviewRow.librarian_id == bot.id))
+    await session.execute(delete(VolumeRow).where(VolumeRow.author_id == bot.id))
+    await session.execute(delete(XPLedgerRow).where(XPLedgerRow.librarian_id == bot.id))
+    await session.execute(delete(BadgeRow).where(BadgeRow.librarian_id == bot.id))
+    await session.execute(delete(StreakRow).where(StreakRow.librarian_id == bot.id))
 
     await session.delete(bot)
     await session.flush()
@@ -482,7 +498,8 @@ async def remove_all_bots(session: AsyncSession) -> int:
 # List bots
 # =========================================================================
 
-async def list_bots(session: AsyncSession) -> list[dict]:
+
+async def list_bots(session: AsyncSession) -> list[dict[str, Any]]:
     """Return a summary list of all bot librarians."""
     result = await session.execute(
         select(LibrarianRow).where(LibrarianRow.is_bot == True)  # noqa: E712
@@ -505,10 +522,11 @@ async def list_bots(session: AsyncSession) -> list[dict]:
 # Simulate ongoing activity
 # =========================================================================
 
+
 async def simulate_bot_activity(
     session: AsyncSession,
     bot_username: str | None = None,
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """Simulate a round of activity for one or all bots.
 
     For each bot the simulation:
@@ -548,10 +566,12 @@ async def simulate_bot_activity(
         bots = list(result.scalars().all())
 
     now = datetime.utcnow()
-    changes: list[dict] = []
+    changes: list[dict[str, Any]] = []
 
     for bot in bots:
-        profile = DIFFICULTY_PROFILES.get(bot.bot_difficulty or "casual", DIFFICULTY_PROFILES["casual"])
+        profile = DIFFICULTY_PROFILES.get(
+            bot.bot_difficulty or "casual", DIFFICULTY_PROFILES["casual"]
+        )
 
         # -- award XP ------------------------------------------------------
         xp_gained = random.randint(*profile["activity_xp_range"])
@@ -566,9 +586,7 @@ async def simulate_bot_activity(
         session.add(ledger_entry)
 
         # -- maybe add a review --------------------------------------------
-        vol_result = await session.execute(
-            select(VolumeRow).where(VolumeRow.author_id == bot.id)
-        )
+        vol_result = await session.execute(select(VolumeRow).where(VolumeRow.author_id == bot.id))
         bot_volumes = vol_result.scalars().all()
         if bot_volumes and random.random() < profile["streak_continue_chance"]:
             vol = random.choice(bot_volumes)

@@ -1,6 +1,6 @@
 """How to Play route."""
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.web_session import get_current_librarian_optional
@@ -14,10 +14,14 @@ router = APIRouter()
 async def how_to_play(
     request: Request,
     session: AsyncSession = Depends(get_session),
-):
+) -> Response:
     """Render the How to Play page."""
     current_user = await get_current_librarian_optional(request, session)
-    return templates.TemplateResponse(request, "how_to_play.html", {
-        "request": request,
-        "current_user": current_user,
-    })
+    return templates.TemplateResponse(
+        request,
+        "how_to_play.html",
+        {
+            "request": request,
+            "current_user": current_user,
+        },
+    )

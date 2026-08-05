@@ -185,9 +185,7 @@ class TestRender:
 
 
 class TestCLI:
-    def test_main_reads_files_and_prints_to_stdout(
-        self, formatter, tmp_path, capsys
-    ):
+    def test_main_reads_files_and_prints_to_stdout(self, formatter, tmp_path, capsys):
         cur_path = tmp_path / "current.json"
         base_path = tmp_path / "main.json"
         cur_page = _page("docs/x.md", 80, missing=["fooBar"])
@@ -195,9 +193,7 @@ class TestCLI:
         cur_path.write_text(json.dumps([cur_page]))
         base_path.write_text(json.dumps([base_page]))
 
-        rc = formatter.main(
-            ["--current", str(cur_path), "--baseline", str(base_path)]
-        )
+        rc = formatter.main(["--current", str(cur_path), "--baseline", str(base_path)])
         out = capsys.readouterr().out
         assert rc == 0
         assert "95 → 80 (-15)" in out

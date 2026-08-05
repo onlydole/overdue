@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 
 def _build_rects(
     pixels: list[tuple[int, int, str]],
@@ -22,7 +24,7 @@ def render_icon_svg(
     size: int = 24,
     color: str | None = None,
     *,
-    _catalog: dict[str, str | list[tuple[int, int, str]]] | None = None,
+    _catalog: Mapping[str, str | list[tuple[int, int, str]]] | None = None,
 ) -> str:
     """Return an inline SVG string for the given icon.
 
@@ -56,16 +58,16 @@ def render_icon_svg(
         )
 
     # Handle new path data (assumed 24x24 viewBox)
-    # If color is provided, we use it for fill/stroke. 
+    # If color is provided, we use it for fill/stroke.
     # The data string should contain the inner SVG elements (paths, etc).
     # We can inject the fill color into the parent SVG or the paths if they use "currentColor".
     style = f'style="color: {color};"' if color else ""
-    
+
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"'
         f' width="{size}" height="{size}"'
         f' class="pixel-icon" role="img" aria-hidden="true"'
-        f' {style}>'
+        f" {style}>"
         f"{data}"
         f"</svg>"
     )
@@ -75,7 +77,7 @@ def render_icon_svg_bare(
     name: str,
     color: str | None = None,
     *,
-    _catalog: dict[str, str | list[tuple[int, int, str]]] | None = None,
+    _catalog: Mapping[str, str | list[tuple[int, int, str]]] | None = None,
 ) -> str | None:
     """Return a bare SVG string for static files."""
     if _catalog is None:

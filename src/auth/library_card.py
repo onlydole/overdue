@@ -1,10 +1,11 @@
 """JWT token (library card) generation and validation."""
 
 from datetime import datetime, timedelta
+from typing import Any
 
+import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-import jwt
 from jwt.exceptions import PyJWTError as JWTError
 
 from src.config.settings import settings
@@ -28,7 +29,7 @@ def create_library_card(librarian_id: int, username: str, role: str) -> str:
 
 def verify_library_card(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-) -> dict:
+) -> dict[str, Any]:
     """Validate a library card and return the decoded payload."""
     try:
         payload = jwt.decode(
