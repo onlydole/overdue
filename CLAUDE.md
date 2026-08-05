@@ -367,10 +367,11 @@ Defined in `src/config/defaults.py`:
 ## Testing
 
 - **Test runner**: `pytest`
-- **Linting**: `ruff check src/`
-- **Formatting**: `ruff format src/`
-- **Type checking**: `mypy` (strict mode)
-- Run the full check: `pytest && ruff check src/`
+- **Linting**: `ruff check src/ tests/ scripts/`
+- **Formatting**: `ruff format src/ tests/ scripts/` (CI uses `ruff format --check`)
+- **Type checking**: `mypy src/` (strict mode)
+- Run the full check: `pytest && ruff check src/ tests/ scripts/ && ruff format --check src/ tests/ scripts/ && mypy src/`
+- These four run as parallel required CI jobs on every PR -- see [docs/architecture/ci-cd.md](docs/architecture/ci-cd.md)
 - **CSS build**: `npm run css:build` (rebuild after Tailwind class changes)
 - **CSS watch**: `npm run css:watch` (auto-rebuild during development)
 
