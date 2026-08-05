@@ -135,16 +135,19 @@ Test configuration is in `pyproject.toml` under `[tool.pytest.ini_options]`:
 
 ```bash
 # Lint (errors, style, imports, naming, upgrades)
-ruff check src/
+ruff check src/ tests/ scripts/
 
 # Auto-fix lint issues
-ruff check src/ --fix
+ruff check src/ tests/ scripts/ --fix
 
 # Format code
-ruff format src/
+ruff format src/ tests/ scripts/
 
-# Full quality check
-pytest && ruff check src/
+# Check formatting without rewriting files (what CI runs)
+ruff format --check src/ tests/ scripts/
+
+# Full quality check -- the same four commands CI enforces
+pytest && ruff check src/ tests/ scripts/ && ruff format --check src/ tests/ scripts/ && mypy src/
 ```
 
 Ruff configuration (`pyproject.toml`):
@@ -159,6 +162,8 @@ mypy src/
 ```
 
 Configuration: strict mode, Python 3.12 target.
+
+`make check` runs lint, typecheck, and tests inside the running container; note that the Makefile targets scope ruff and mypy to `src/` only, while CI also lints `tests/` and `scripts/`.
 
 ## REST API Endpoints
 
@@ -317,6 +322,23 @@ docker compose down
 Install dev dependencies: `pip install -e ".[dev]"`
 
 ## Automation & CI
+
+### Tests, Lint and Types (`.github/workflows/checks.yml`)
+
+Runs the three checks CONTRIBUTING.md asks contributors to run locally, as independent parallel jobs on every pull request, every push to `main`, and on `workflow_dispatch`.
+
+| Job ID | Command |
+|---|---|
+| `test` | `uv run pytest` |
+| `lint` | `uv run ruff check src/ tests/ scripts/` then `uv run ruff format --check src/ tests/ scripts/` |
+| `types` | `uv run mypy src/` |
+
+- Separate jobs rather than steps in one job, so a type error can't mask a test failure -- each reports its own status.
+- No `paths:` filter, because GitHub never reports a required status check that a path filter skipped, which would leave PRs blocked on a run that never arrives.
+- Python 3.12, matching `[tool.mypy] python_version`. The `Dockerfile` ships 3.14, so CI does not exercise the version the image runs on.
+- No secrets and `contents: read` only, so the jobs run on fork PRs.
+
+See [docs/architecture/ci-cd.md](docs/architecture/ci-cd.md) for the required-status-check setup.
 
 ### Documentation Freshness (`.github/scripts/freshness.py`)
 
