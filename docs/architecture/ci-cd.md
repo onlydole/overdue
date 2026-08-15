@@ -12,7 +12,7 @@ freshness:
 
 # CI/CD and Automation
 
-Overdue uses GitHub Actions for continuous integration and automated documentation maintenance. This page describes the workflows, their triggers, and how to configure them.
+Overdue uses GitHub Actions for continuous integration, automated documentation maintenance, and on-demand agent runs. This page describes the workflows, their triggers, and how to configure them.
 
 ## Workflows
 
@@ -150,6 +150,40 @@ jq '[.[] | select(.score < 75)]' freshness.json         # below-floor pages
 ```
 
 The generated `freshness.json` is gitignored.
+
+### Pullfrog Agent (`pullfrog.yml`)
+
+Runs a [Pullfrog](https://github.com/pullfrog/pullfrog) coding agent against the repository on demand, so a maintainer can hand the agent a task from the Actions tab without opening a PR first.
+
+**Trigger:** `workflow_dispatch` only. There is no automatic trigger -- the workflow never runs on a push, a PR, or a schedule.
+
+**Inputs:**
+
+| Input | Required | Purpose |
+|---|---|---|
+| `prompt` | yes | The task handed to the agent |
+| `name` | no | Sets the run title via `run-name`; falls back to the workflow name |
+
+**Model:** the agent is served over an OpenAI-compatible BYOK endpoint (`model: openai-compatible/byok`) pointed at Ollama Cloud (`https://ollama.com/v1`) running `glm-5.2`. Because the model is not Anthropic-hosted, this workflow needs no `ANTHROPIC_API_KEY` -- unlike `doc-update.yml` and `freshness.yml`. Pullfrog requires both `OPENAI_COMPATIBLE_CONTEXT` and `OPENAI_COMPATIBLE_MAX_OUTPUT` to be set explicitly; the values in the workflow are GLM 5.2's published limits.
+
+**Safety guards:**
+
+| Guard | Purpose |
+|---|---|
+| `workflow_dispatch` only | No untrusted input path -- a maintainer with write access has to start every run |
+| `push: restricted` | Keeps the agent off `main`; it cannot push directly to the protected branch |
+| 90-minute timeout | Prevents runaway workflow costs |
+| SHA-pinned actions | Both `actions/checkout` and `pullfrog/pullfrog` are pinned to a commit SHA with the tag in a trailing comment, matching the convention in the other workflows |
+
+**Required repository configuration:**
+
+| Setting | Purpose |
+|---|---|
+| `OLLAMA_API_KEY` secret | Authenticates against the Ollama Cloud OpenAI-compatible endpoint |
+| `id-token: write` permission | OIDC authentication for the Pullfrog action |
+| `contents: read` permission | Reads the repo |
+
+To point the workflow at a different provider or model, change the `OPENAI_COMPATIBLE_BASE_URL`, `OPENAI_COMPATIBLE_MODEL`, and the two limit values in the `Run agent` step's `env` block, and store the matching key in the secret referenced by `OPENAI_COMPATIBLE_API_KEY`.
 
 ## Documentation structure
 
