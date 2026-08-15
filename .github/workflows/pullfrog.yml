@@ -1,0 +1,42 @@
+name: Pullfrog
+run-name: ${{ inputs.name || github.workflow }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        type: string
+        description: Agent prompt
+        required: true
+      name:
+        type: string
+        description: Run name
+
+permissions:
+  contents: read
+
+jobs:
+  pullfrog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 1
+
+      - name: Run agent
+        uses: pullfrog/pullfrog@0657d542f2e34565c6254d5c84581313e631cd90 # v0.1.57
+        with:
+          prompt: ${{ inputs.prompt }}
+          model: openai-compatible/byok
+          push: restricted
+        env:
+          OPENAI_COMPATIBLE_BASE_URL: https://ollama.com/v1
+          OPENAI_COMPATIBLE_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+          OPENAI_COMPATIBLE_MODEL: glm-5.2
+          # GLM 5.2 limits per docs.z.ai — Pullfrog requires both
+          OPENAI_COMPATIBLE_CONTEXT: "1000000"
+          OPENAI_COMPATIBLE_MAX_OUTPUT: "128000"
