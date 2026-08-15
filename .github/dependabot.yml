@@ -37,6 +37,12 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+    ignore:
+      # This prerelease landed before runtime dependencies published wheels.
+      # Keep production on 3.14 until a compatible Python release is available.
+      - dependency-name: "python"
+        versions:
+          - "3.15.0rc1"
     groups:
       docker-minor-patch:
         applies-to: "version-updates"
