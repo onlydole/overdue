@@ -78,7 +78,7 @@ Automatically detects when merged PRs introduce documentation drift and proposes
 
 Bash is allowed without restriction. This is a deliberate trade-off between tool-level command restrictions and workflow reliability:
 
-- **Why not individual patterns:** Restricting Bash to individual command patterns (e.g., `Bash(git diff *)`) is fragile — Claude naturally uses arbitrary shell commands (`find`, `cat`, compound commands, env-prefixed commands) that don't match specific patterns. Each denied command wastes a turn, and with `--max-turns 25`, a few denials can cause the workflow to fail without completing its task. This failure mode occurred repeatedly in PRs #29, #33, and #38.
+- **Why not individual patterns:** Restricting Bash to individual command patterns (e.g., `Bash(git diff *)`) is fragile — Claude naturally uses arbitrary shell commands (`find`, `cat`, compound commands, env-prefixed commands) that don't match specific patterns. Each denied command wastes a turn, and with a turn cap in place, a few denials can cause the workflow to fail without completing its task. This failure mode occurred repeatedly in PRs #29, #33, and #38.
 - **Residual risk:** Unrestricted Bash means Claude can execute any shell command on the runner, including network calls or reading environment variables. If PR metadata were crafted to manipulate Claude's behavior, this could be exploited.
 - **Mitigations:** The workflow only runs for `OWNER`, `MEMBER`, or `COLLABORATOR` PRs (not external contributors). PR metadata is wrapped in XML tags with explicit instructions to treat it as untrusted data. The runner is ephemeral (disposable VM) with no access to production systems. All changes go through PR review before merging. The `ANTHROPIC_API_KEY` secret is the only sensitive value on the runner and is not exposed to tool output.
 
@@ -91,7 +91,7 @@ Bash is allowed without restriction. This is a deliberate trade-off between tool
 | Author association check | Only runs for `OWNER`, `MEMBER`, or `COLLABORATOR` PRs |
 | Concurrency group | Cancels in-progress runs for the same PR |
 | 30-minute timeout | Prevents runaway workflow costs |
-| `--max-turns 25` | Caps Claude's iteration depth |
+| `--max-turns 100` | Caps Claude's iteration depth (25 proved too low: a 61-file merge in PR #130 needed 26 turns and failed; the 30-minute timeout remains the cost backstop) |
 
 **Required repository configuration:**
 
@@ -167,6 +167,10 @@ The doc-update workflow scans all files under `docs/` and any `README.md` in the
 ### Workflow fails with `error_max_turns` and `permission_denials_count > 0`
 
 Claude tried to use a tool that isn't in the `allowedTools` list. The CI logs only show the denial count, not which commands were denied, making individual patterns hard to debug. The fix is to allow `Bash` without restriction (see tool permissions above). If you need to restrict Bash, use broad patterns like `Bash(git *)` rather than individual subcommands, and note that the `:*` suffix syntax is deprecated in favor of ` *` (space-star).
+
+### Workflow fails with `error_max_turns` and `permission_denials_count: 0`
+
+The doc check legitimately ran out of turns — this happens on very large merges, where reading every changed file plus the full `docs/` tree exceeds the cap (a 61-file merge failed this way at the old cap of 25). The cap is now 100; if a merge still exhausts it, raise `--max-turns` in `doc-update.yml` — the 30-minute job timeout is the real cost backstop — or split unusually large PRs.
 
 ### Workflow fails with a 502 or OIDC error
 

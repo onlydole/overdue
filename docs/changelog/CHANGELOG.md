@@ -30,6 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Daily streak bonus increased from +15 XP to +20 XP per day (PR #42).
 
 ### Fixed
+- Post-merge documentation check failing with `error_max_turns` on large merges: raised the doc-update workflow's turn cap from 25 to 100 (the 30-minute job timeout remains the cost backstop).
 - Demo seed password mismatch: `seed_demo_data` now returns the demo password, which is printed by `overdue seed seed` and logged at auto-seed startup.
 - CLI overdue report always returning empty results.
 - XP farming via the API review endpoint: `POST /api/volumes/{id}/review` is now a no-op for volumes at Dewey >= 99.9, matching the web handler.
