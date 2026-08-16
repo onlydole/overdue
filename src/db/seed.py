@@ -4,7 +4,7 @@ import os
 import random
 import secrets
 import string
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,6 +20,7 @@ from src.db.tables import (
     XPLedgerRow,
     volume_bookmarks,
 )
+from src.utils import utcnow
 
 
 def _generate_demo_password() -> str:
@@ -39,9 +40,14 @@ async def is_db_empty(session: AsyncSession) -> bool:
     return result.scalar_one_or_none() is None
 
 
-async def seed_demo_data(session: AsyncSession) -> None:
-    """Populate database with demo data for an interesting initial experience."""
-    now = datetime.utcnow()
+async def seed_demo_data(session: AsyncSession) -> str:
+    """Populate database with demo data for an interesting initial experience.
+
+    Returns the demo account password so callers can surface it -- generating
+    it here and reporting it elsewhere would hand the user a password that was
+    never hashed into the database.
+    """
+    now = utcnow()
 
     # --- Librarians at varying XP levels ---
     # Password comes from OVERDUE_DEMO_PASSWORD env var or is randomly generated
@@ -231,3 +237,5 @@ async def seed_demo_data(session: AsyncSession) -> None:
     await create_bot(session, "casual", name="bookworm42")
     await create_bot(session, "diligent", name="scholar_jane")
     await session.commit()
+
+    return demo_password

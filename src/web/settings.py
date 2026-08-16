@@ -1,6 +1,6 @@
 """Settings page routes."""
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import RedirectResponse
@@ -12,6 +12,7 @@ from src.auth.web_session import get_current_librarian_required
 from src.db.engine import get_session
 from src.db.tables import LibrarianRow
 from src.game.avatars import AVATAR_CATALOG, get_avatar_choices
+from src.utils import utcnow
 from src.web.forms import form_str
 from src.web.templates import templates
 
@@ -62,8 +63,7 @@ async def settings_page(
 
 
 @router.post("/settings/card")
-@router.post("/settings/avatar")
-async def update_avatar(
+async def update_card(
     request: Request,
     session: AsyncSession = Depends(get_session),
 ) -> Response:
@@ -153,6 +153,6 @@ async def update_avatar(
         username=librarian.username,
         role=librarian.role,
     )
-    request.session["card_renewed_on"] = datetime.utcnow().strftime("%Y-%m-%d")
+    request.session["card_renewed_on"] = utcnow().strftime("%Y-%m-%d")
 
     return RedirectResponse(url="/settings?saved=1", status_code=302)

@@ -45,7 +45,6 @@
         {% set spine_font_sizes = ['1.2rem', '0.6rem', '1.25rem', '1.1rem'] %}
         {% set char_heights = [13, 9, 14, 12] %}
         <div class="flex flex-wrap gap-1 items-end min-h-[200px] p-3 border-b-4 border-pixel-border book-spine-container">
-            {% if volumes %}
             {% for vol in volumes %}
             {% set seed = vol.spine_seed if vol.spine_seed else vol.title|title_hash %}
             {% set ci = seed % spine_colors|length %}
@@ -67,12 +66,6 @@
                 <span class="book-spine-title">{{ vol.title }}</span>
             </a>
             {% endfor %}
-            {% else %}
-            <div class="w-full flex flex-col items-center justify-center py-8 text-center">
-                <div class="mb-3">{{ render_icon('book-open', 32) }}</div>
-                <p class="text-parchment-dark text-sm">This shelf is empty. Add some volumes!</p>
-            </div>
-            {% endif %}
         </div>
     </div>
 
@@ -116,6 +109,8 @@
     function handleKey(evt) {
         var tag = (evt.target.tagName || '').toLowerCase();
         if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+        // Let Enter activate a focused link/button instead of hijacking it
+        if (evt.key === 'Enter' && (tag === 'a' || tag === 'button')) return;
 
         if (evt.key === 'Enter') {
             // Find the most overdue volume (lowest dewey score)

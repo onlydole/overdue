@@ -1,6 +1,6 @@
 """Stats and analytics CLI commands."""
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any
 
 import typer
@@ -9,6 +9,7 @@ from rich.table import Table
 from rich.text import Text
 
 from src.cli.helpers import console, get_client, require_auth
+from src.utils import utcnow
 
 app = typer.Typer(help="Stats and analytics (CLI exclusive).")
 
@@ -140,7 +141,7 @@ def heatmap() -> None:
     recent = data.get("recent_awards", [])
 
     # Build a simple activity map for the last 4 weeks
-    today = datetime.utcnow().date()
+    today = utcnow().date()
     activity: dict[str, int] = {}
     for award in recent:
         date_str = award["created_at"][:10]

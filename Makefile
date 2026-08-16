@@ -54,24 +54,25 @@ shell: ## Open a shell inside the running container
 	$(COMPOSE) exec overdue /bin/bash
 
 # ──────────────────────────────────────────────────────────────
-# Quality (runs inside Docker)
+# Quality (runs in the local venv -- the Docker image ships without
+# dev tools, tests, or scripts, so exec'ing into it cannot work)
 # ──────────────────────────────────────────────────────────────
 
 .PHONY: lint
-lint: ## Run ruff linter
-	$(COMPOSE) exec overdue ruff check src/
+lint: venv ## Run ruff linter
+	$(VENV)/bin/ruff check src/
 
 .PHONY: format
-format: ## Run ruff formatter
-	$(COMPOSE) exec overdue ruff format src/
+format: venv ## Run ruff formatter
+	$(VENV)/bin/ruff format src/
 
 .PHONY: typecheck
-typecheck: ## Run mypy type checker
-	$(COMPOSE) exec overdue mypy src/
+typecheck: venv ## Run mypy type checker
+	$(VENV)/bin/mypy src/
 
 .PHONY: test
-test: ## Run the test suite
-	$(COMPOSE) exec overdue pytest
+test: venv ## Run the test suite
+	$(VENV)/bin/pytest
 
 .PHONY: check
 check: lint typecheck test ## Run lint + typecheck + tests
@@ -81,8 +82,8 @@ check: lint typecheck test ## Run lint + typecheck + tests
 # ──────────────────────────────────────────────────────────────
 
 .PHONY: icons
-icons: ## Rebuild pixel art icon and avatar SVGs
-	$(COMPOSE) exec overdue python scripts/build_icons.py
+icons: venv ## Rebuild pixel art icon and avatar SVGs
+	$(VENV)/bin/python scripts/build_icons.py
 
 # ──────────────────────────────────────────────────────────────
 # Help

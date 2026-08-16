@@ -12,8 +12,11 @@ from sqlalchemy import (
     String,
     Table,
     Text,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+from src.utils import utcnow
 
 
 class Base(DeclarativeBase):
@@ -39,13 +42,11 @@ class VolumeRow(Base):
     content: Mapped[str] = mapped_column(Text, nullable=False)
     shelf_id: Mapped[int] = mapped_column(Integer, ForeignKey("shelves.id"), nullable=False)
     author_id: Mapped[int] = mapped_column(Integer, ForeignKey("librarians.id"), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+        DateTime, default=utcnow, onupdate=utcnow, nullable=False
     )
-    last_reviewed_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
+    last_reviewed_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
     archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     spine_seed: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
@@ -64,7 +65,7 @@ class ShelfRow(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
     created_by: Mapped[int] = mapped_column(Integer, ForeignKey("librarians.id"), nullable=False)
 
     volumes: Mapped[list["VolumeRow"]] = relationship(
@@ -84,7 +85,7 @@ class LibrarianRow(Base):
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[str] = mapped_column(String(50), default="Page", nullable=False)
     total_xp: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
     is_bot: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     bot_difficulty: Mapped[str | None] = mapped_column(String(50), nullable=True)
     avatar_id: Mapped[str] = mapped_column(String(20), default="avatar_01", nullable=False)
@@ -113,7 +114,7 @@ class ReviewRow(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     volume_id: Mapped[int] = mapped_column(Integer, ForeignKey("volumes.id"), nullable=False)
     librarian_id: Mapped[int] = mapped_column(Integer, ForeignKey("librarians.id"), nullable=False)
-    reviewed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    reviewed_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
     dewey_score_before: Mapped[float] = mapped_column(Float, nullable=False)
 
     volume: Mapped["VolumeRow"] = relationship("VolumeRow", back_populates="reviews")
@@ -129,7 +130,7 @@ class XPLedgerRow(Base):
     librarian_id: Mapped[int] = mapped_column(Integer, ForeignKey("librarians.id"), nullable=False)
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
     reason: Mapped[str] = mapped_column(String(255), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
 
     librarian: Mapped["LibrarianRow"] = relationship("LibrarianRow", back_populates="xp_ledger")
 
@@ -138,11 +139,16 @@ class BadgeRow(Base):
     """Achievement badges earned by librarians."""
 
     __tablename__ = "badges"
+    # Concurrent reviews race grant_badge's check-then-insert; the constraint
+    # makes the database reject the duplicate the check misses.
+    __table_args__ = (
+        UniqueConstraint("librarian_id", "badge_name", name="uq_badges_librarian_badge"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     librarian_id: Mapped[int] = mapped_column(Integer, ForeignKey("librarians.id"), nullable=False)
     badge_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    earned_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    earned_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
 
     librarian: Mapped["LibrarianRow"] = relationship("LibrarianRow", back_populates="badges")
 
@@ -174,4 +180,4 @@ class BulletinRow(Base):
     secret: Mapped[str] = mapped_column(String(255), nullable=False, default="")
     librarian_id: Mapped[int] = mapped_column(Integer, ForeignKey("librarians.id"), nullable=False)
     active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)

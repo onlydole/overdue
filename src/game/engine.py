@@ -1,18 +1,19 @@
 """Game action orchestrator -- wires XP, badges, and streaks together."""
 
-from datetime import datetime
-
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.defaults import (
+    DEWEY_GOOD_SHAPE,
     DEWEY_OVERDUE,
     XP_DAILY_STREAK_BONUS,
     XP_RESCUE_BONUS,
     XP_REVIEW_CURRENT,
     XP_REVIEW_OVERDUE_MULTIPLIER,
+    XP_SHELF_BONUS,
     XP_SHELVE_VOLUME,
 )
-from src.db.tables import ReviewRow
+from src.db.tables import ReviewRow, VolumeRow
 from src.game.badges import check_badges_after_review, check_badges_after_shelve
 from src.game.streaks import update_streak
 from src.game.xp import (
@@ -20,9 +21,11 @@ from src.game.xp import (
     award_review_xp,
     award_shelve_xp,
     award_streak_bonus,
+    award_xp,
     get_rank,
 )
 from src.models.game import GameResult
+from src.utils import utcnow
 
 
 async def on_volume_shelved(
@@ -68,7 +71,7 @@ async def on_volume_reviewed(
     review = ReviewRow(
         volume_id=volume_id,
         librarian_id=librarian_id,
-        reviewed_at=datetime.utcnow(),
+        reviewed_at=utcnow(),
         dewey_score_before=dewey_score_before,
     )
     session.add(review)
@@ -101,6 +104,38 @@ async def on_volume_reviewed(
                 "reason": "Rescue bonus (saved from Overdue)",
             }
         )
+
+    # Shelf bonus: awarded when this review brings the last straggler on the
+    # shelf into good shape. Requiring the reviewed volume to have been below
+    # the threshold means an already-healthy shelf can't be re-farmed.
+    if dewey_score_before < DEWEY_GOOD_SHAPE:
+        from src.api.volumes import calculate_dewey_score
+
+        volume = await session.get(VolumeRow, volume_id)
+        if volume is not None:
+            siblings_result = await session.execute(
+                select(VolumeRow).where(
+                    VolumeRow.shelf_id == volume.shelf_id,
+                    VolumeRow.id != volume_id,
+                    VolumeRow.archived == False,  # noqa: E712
+                )
+            )
+            shelf_healthy = all(
+                calculate_dewey_score(v.last_reviewed_at) >= DEWEY_GOOD_SHAPE
+                for v in siblings_result.scalars()
+            )
+            if shelf_healthy:
+                await award_xp(
+                    session, librarian_id, XP_SHELF_BONUS, "Shelf bonus (all volumes healthy)"
+                )
+                xp_awarded += XP_SHELF_BONUS
+                total_xp += XP_SHELF_BONUS
+                xp_breakdown.append(
+                    {
+                        "amount": XP_SHELF_BONUS,
+                        "reason": "Shelf bonus (all volumes healthy)",
+                    }
+                )
 
     # Update streak
     streak_info = await update_streak(session, librarian_id)

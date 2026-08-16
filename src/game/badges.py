@@ -1,13 +1,14 @@
 """Achievement badge definitions and tracking."""
 
-from datetime import datetime
 from typing import Any
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.defaults import DEWEY_OVERDUE
 from src.db.tables import BadgeRow, ReviewRow, StreakRow, VolumeRow
+from src.utils import utcnow
 
 BADGE_DEFINITIONS = {
     "First Shelve": {
@@ -116,12 +117,19 @@ async def grant_badge(session: AsyncSession, librarian_id: int, badge_name: str)
     if await has_badge(session, librarian_id, badge_name):
         return False
 
-    badge = BadgeRow(
-        librarian_id=librarian_id,
-        badge_name=badge_name,
-    )
-    session.add(badge)
-    await session.flush()
+    # A concurrent session can grant the same badge between the check above and
+    # this insert; the savepoint absorbs the unique-constraint violation without
+    # rolling back the rest of the in-flight game transaction.
+    try:
+        async with session.begin_nested():
+            session.add(
+                BadgeRow(
+                    librarian_id=librarian_id,
+                    badge_name=badge_name,
+                )
+            )
+    except IntegrityError:
+        return False
     return True
 
 
@@ -151,7 +159,7 @@ async def check_badges_after_review(session: AsyncSession, librarian_id: int) ->
     awarded = []
 
     # Night Owl -- reviewed after midnight
-    now = datetime.utcnow()
+    now = utcnow()
     if now.hour < 5 and not await has_badge(session, librarian_id, "Night Owl"):
         await grant_badge(session, librarian_id, "Night Owl")
         awarded.append("Night Owl")

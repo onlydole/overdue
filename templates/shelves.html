@@ -58,14 +58,17 @@
     function handleKey(evt) {
         var tag = (evt.target.tagName || '').toLowerCase();
         if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+        // Let Enter activate a focused link/button instead of hijacking it
+        if (tag === 'a' || tag === 'button') return;
 
         if (evt.key === 'Enter') {
-            evt.preventDefault();
             var cards = Array.from(document.querySelectorAll('.shelf-card[data-dewey]'));
             if (!cards.length) return;
+            evt.preventDefault();
             cards.sort(function(a, b) {
                 return parseFloat(a.dataset.dewey) - parseFloat(b.dataset.dewey);
             });
+            if (window.playReviewActionSfx) window.playReviewActionSfx('next');
             cards[0].click();
         }
     }

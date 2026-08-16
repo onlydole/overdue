@@ -29,7 +29,7 @@ async def _build_reading_room_context(session: AsyncSession) -> dict[str, Any]:
     volumes = volumes_result.scalars().all()
     total_volumes = len(volumes)
 
-    distribution = {"pristine": 0, "good": 0, "attention": 0, "overdue": 0, "lost": 0}
+    distribution = {"pristine": 0, "good": 0, "attention": 0, "overdue": 0}
     scores = []
 
     for v in volumes:
@@ -39,7 +39,9 @@ async def _build_reading_room_context(session: AsyncSession) -> dict[str, Any]:
             distribution["pristine"] += 1
         elif score >= DEWEY_NEEDS_ATTENTION:
             distribution["good"] += 1
-        elif score >= DEWEY_OVERDUE:
+        elif score > DEWEY_OVERDUE:
+            # Strict comparison so a volume at exactly DEWEY_OVERDUE counts as
+            # overdue here, matching the game engine and the overdue report.
             distribution["attention"] += 1
         else:
             distribution["overdue"] += 1

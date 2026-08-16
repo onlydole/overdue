@@ -105,7 +105,9 @@ async def register_submit(
     """Process registration form submission."""
     form = await request.form()
     username = form_str(form, "username").strip()
-    email = form_str(form, "email").strip()
+    # Lowercase to match the settings page: the unique index is case-sensitive,
+    # so mixed-case registration would let Foo@x.com and foo@x.com coexist.
+    email = form_str(form, "email").strip().lower()
     password = form_str(form, "password")
     confirm = form_str(form, "confirm_password")
     avatar_id = form_str(form, "avatar_id", "avatar_01").strip()

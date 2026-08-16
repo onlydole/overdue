@@ -17,8 +17,13 @@ def get_base_url() -> str:
 
 
 def save_token(token: str) -> None:
+    # The token is a bearer credential: keep the directory and file private
+    # so other local users can't read it and impersonate the librarian.
     TOKEN_DIR.mkdir(parents=True, exist_ok=True)
-    TOKEN_FILE.write_text(token)
+    TOKEN_DIR.chmod(0o700)
+    fd = os.open(TOKEN_FILE, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
+        f.write(token)
 
 
 def load_token() -> str | None:

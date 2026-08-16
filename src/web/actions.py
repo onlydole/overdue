@@ -2,7 +2,6 @@
 
 import json
 import random
-from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -12,11 +11,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.volumes import calculate_dewey_score
 from src.auth.web_session import get_current_librarian_required
+from src.config.defaults import DEWEY_REVIEW_NOOP
 from src.config.settings import settings
 from src.db.engine import get_session
 from src.db.tables import ReviewRow, ShelfRow, VolumeRow, volume_bookmarks
 from src.game.engine import on_volume_reviewed, on_volume_shelved
 from src.models.game import GameResult
+from src.utils import utcnow
 from src.web.forms import form_str
 from src.web.templates import templates
 from src.web.volumes import REVIEWS_PER_PAGE
@@ -247,7 +248,7 @@ async def review_volume_web(
 
     dewey_score_before = calculate_dewey_score(volume.last_reviewed_at)
 
-    if dewey_score_before >= 99.9:
+    if dewey_score_before >= DEWEY_REVIEW_NOOP:
         # Volume is already pristine; no action taken
         from src.game.xp import get_rank
 
@@ -264,7 +265,7 @@ async def review_volume_web(
             streak_bonus_awarded=False,
         )
     else:
-        volume.last_reviewed_at = datetime.utcnow()
+        volume.last_reviewed_at = utcnow()
 
         game_result = await on_volume_reviewed(session, user["id"], volume_id, dewey_score_before)
         await session.commit()

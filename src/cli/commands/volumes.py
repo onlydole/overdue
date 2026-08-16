@@ -181,8 +181,8 @@ def list_overdue() -> None:
         raise SystemExit(1)
 
     data = resp.json()
-    overdue = data.get("overdue_items", [])
-    attention = data.get("needs_attention_items", [])
+    overdue = data.get("overdue", [])
+    attention = data.get("needs_attention", [])
 
     if not overdue and not attention:
         console.print("[green]No overdue volumes! Your stacks are pristine.[/green]")

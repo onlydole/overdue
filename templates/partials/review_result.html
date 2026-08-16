@@ -11,10 +11,16 @@
         <span>Next:</span>
         <span class="truncate">{{ next_volume.title }}</span>
     </a>
-    {% else %}
-    <button onclick="document.querySelector('.review-btn').click()" class="pixel-btn pixel-btn-green w-full shadow-lg">
+    {% elif dewey_score < 99.9 %}
+    <button onclick="document.querySelector('.review-btn')?.click()" class="pixel-btn pixel-btn-green w-full shadow-lg">
         Review Again
     </button>
+    {% else %}
+    {# Freshly reviewed volumes have no .review-btn (the desktop section shows
+       the disabled Pristine button), so offer the same exit as the done-btn #}
+    <a href="/shelves" hx-boost="true" class="pixel-btn pixel-btn-gold w-full shadow-lg text-center">
+        Back to Shelves
+    </a>
     {% endif %}
 </div>
 

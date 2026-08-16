@@ -1,6 +1,6 @@
 """High-fidelity pixel-vector icon system.
 
-Provides 28 crisp SVG icons (24x24 grid) for use throughout the UI.
+Provides 26 crisp SVG icons (24x24 grid) for use throughout the UI.
 Replaces the old 16x16 bitmap system with vector paths that scale perfectly.
 
 Public API:

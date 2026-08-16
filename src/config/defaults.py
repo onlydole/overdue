@@ -9,6 +9,10 @@ DEWEY_NEEDS_ATTENTION = 50
 DEWEY_OVERDUE = 25
 DEWEY_LOST = 0
 
+# Reviews of volumes at or above this score are no-ops: no review record, no
+# XP. Keeps rapid re-reviews of a pristine volume from farming pages read.
+DEWEY_REVIEW_NOOP = 99.9
+
 # Decay rate: points lost per unit time since last review
 # Unit is seconds (default: 10 seconds = fast demo mode)
 # For realistic mode, set OVERDUE_DEWEY_DECAY_SECONDS to 86400 (1 day)

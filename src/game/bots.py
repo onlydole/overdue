@@ -7,7 +7,7 @@ badge collection.
 """
 
 import random
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any
 
 from sqlalchemy import delete, select
@@ -22,7 +22,9 @@ from src.db.tables import (
     StreakRow,
     VolumeRow,
     XPLedgerRow,
+    volume_bookmarks,
 )
+from src.utils import utcnow
 
 # ---------------------------------------------------------------------------
 # Rank thresholds (mirrored from src.config.defaults for self-containment)
@@ -303,8 +305,9 @@ async def create_bot(
     role = get_rank_for_xp(total_xp)
 
     # -- avatar ------------------------------------------------------------
-    avatar_num = random.randint(1, 12)
-    avatar_id = f"avatar_{avatar_num:02d}"
+    from src.game.avatars import AVATAR_CATALOG
+
+    avatar_id = random.choice(list(AVATAR_CATALOG))
 
     # -- hashed password (bots cannot log in) ------------------------------
     dummy_password = f"bot-no-login-{random.randint(100000, 999999)}"
@@ -324,7 +327,7 @@ async def create_bot(
     session.add(bot)
     await session.flush()  # assigns bot.id
 
-    now = datetime.utcnow()
+    now = utcnow()
 
     # -- XP ledger entries (staggered over past days) ----------------------
     remaining_xp = total_xp
@@ -468,7 +471,19 @@ async def remove_bot(session: AsyncSession, username: str) -> bool:
     if bot is None:
         return False
 
-    # Delete dependent rows that do not cascade automatically
+    # Delete dependent rows that do not cascade automatically. Bulk deletes
+    # bypass ORM cascades, so reviews left by OTHER librarians on the bot's
+    # volumes (and the volumes' bookmark rows) must go explicitly before the
+    # volumes themselves, or they'd survive pointing at dead volume ids.
+    volume_ids_result = await session.execute(
+        select(VolumeRow.id).where(VolumeRow.author_id == bot.id)
+    )
+    volume_ids = [vid for (vid,) in volume_ids_result]
+    if volume_ids:
+        await session.execute(delete(ReviewRow).where(ReviewRow.volume_id.in_(volume_ids)))
+        await session.execute(
+            volume_bookmarks.delete().where(volume_bookmarks.c.volume_id.in_(volume_ids))
+        )
     await session.execute(delete(ReviewRow).where(ReviewRow.librarian_id == bot.id))
     await session.execute(delete(VolumeRow).where(VolumeRow.author_id == bot.id))
     await session.execute(delete(XPLedgerRow).where(XPLedgerRow.librarian_id == bot.id))
@@ -565,7 +580,7 @@ async def simulate_bot_activity(
         )
         bots = list(result.scalars().all())
 
-    now = datetime.utcnow()
+    now = utcnow()
     changes: list[dict[str, Any]] = []
 
     for bot in bots:

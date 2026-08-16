@@ -720,6 +720,9 @@ if (!window.__overdueHtmxBeforeRequestBound) {
         card.style.width = '90vw';
         card.style.position = 'relative';
         card.style.zIndex = '251';
+        card.setAttribute('role', 'dialog');
+        card.setAttribute('aria-modal', 'true');
+        card.setAttribute('aria-labelledby', 'reference-desk-heading');
 
         var icon = document.createElement('img');
         icon.src = '/static/icons/search.svg';
@@ -732,6 +735,7 @@ if (!window.__overdueHtmxBeforeRequestBound) {
 
         var heading = document.createElement('h2');
         heading.className = 'pixel-heading mb-4';
+        heading.id = 'reference-desk-heading';
         heading.textContent = 'THE REFERENCE DESK';
 
         var desc = document.createElement('p');
@@ -772,11 +776,16 @@ if (!window.__overdueHtmxBeforeRequestBound) {
         return backdrop;
     }
 
+    var previousFocus = null;
+
     function openModal() {
         if (!backdropEl) backdropEl = createModal();
+        previousFocus = document.activeElement;
         backdropEl.style.display = 'flex';
         backdropEl.classList.remove('loading-overlay-hidden');
         backdropEl.classList.add('loading-overlay-visible');
+        var actionBtn = backdropEl.querySelector('a');
+        if (actionBtn) actionBtn.focus();
         isOpen = true;
     }
 
@@ -786,6 +795,10 @@ if (!window.__overdueHtmxBeforeRequestBound) {
         backdropEl.classList.add('loading-overlay-hidden');
         backdropEl.style.display = 'none';
         isOpen = false;
+        if (previousFocus && typeof previousFocus.focus === 'function') {
+            previousFocus.focus();
+        }
+        previousFocus = null;
     }
 
     document.addEventListener('keydown', function(e) {
@@ -839,6 +852,9 @@ if (!window.__overdueHtmxBeforeRequestBound) {
     document.addEventListener('keydown', function(e) {
         if (e.repeat) return;
         if (e.key === 'Enter') handlePartyToggle(e);
+        // Space activates on keyup (native button behaviour), but the keydown
+        // must be cancelled here or the page scrolls before the toggle fires.
+        if (e.key === ' ' && e.target.closest('#party-toggle')) e.preventDefault();
     });
     document.addEventListener('keyup', function(e) {
         if (e.key === ' ') handlePartyToggle(e);

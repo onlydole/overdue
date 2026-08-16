@@ -32,7 +32,7 @@ def seed(
             async with engine.begin() as conn:
                 await conn.run_sync(Base.metadata.create_all)
 
-        from src.db.seed import _get_demo_password, is_db_empty, seed_demo_data
+        from src.db.seed import is_db_empty, seed_demo_data
 
         async with async_session() as session:
             if not await is_db_empty(session):
@@ -40,8 +40,7 @@ def seed(
                     "[yellow]Database already has data. Use --reset to clear first.[/yellow]"
                 )
                 return
-            demo_pw = _get_demo_password()
-            await seed_demo_data(session)
+            demo_pw = await seed_demo_data(session)
             console.print("[green]Demo data seeded successfully![/green]")
             console.print("[dim]Demo accounts: archie, paige, dewey[/dim]")
             console.print(
