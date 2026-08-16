@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ## [Unreleased]
 
 ### Added
+- Shelf bonus is now actually awarded: +50 XP when your review brings every non-archived volume on a shelf up to Dewey 75+ (only fires on shelves with two or more volumes, and only when the reviewed volume was below 75, so neither healthy shelves nor lone decaying volumes can be farmed).
 - Rescue bonus: reviewing a volume in Overdue territory (Dewey Score 0–24) now awards +20 XP on top of the existing 2x multiplier, for a total of 30 XP per overdue rescue. XP labels across toasts, review partials, and the How to Play page updated to `+N XP (N pages)` format.
 - Automated documentation update workflow using GitHub Actions and Claude Code Action to detect documentation drift after PRs are merged to main.
 - Observability improvements to doc-update workflow: reasoning displayed in GitHub Actions job summary via `display_report: true` for transparent automated documentation decisions. Removed `show_full_output: true` to prevent secrets exposure in logs and `use_sticky_comment: true` which only works in tag mode (PR #26, #27).
@@ -22,12 +23,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Daily streak bonus increased from +15 XP to +20 XP per day (PR #42).
 
 ### Fixed
+- Demo seed password mismatch: `seed_demo_data` now returns the demo password, which is printed by `overdue seed seed` and logged at auto-seed startup.
+- CLI overdue report always returning empty results.
+- XP farming via the API review endpoint: `POST /api/volumes/{id}/review` is now a no-op for volumes at Dewey >= 99.9, matching the web handler.
+- Volume `PATCH` now validates content size and target shelf existence.
+- Duplicate badges under concurrent reviews: unique constraint on `(librarian_id, badge_name)` plus an idempotent dedupe + unique-index startup migration.
+- Bot avatar ids out of range: bots now pick avatars from the actual `AVATAR_CATALOG`.
+- Orphaned reviews and bookmarks on bot/shelf deletion: SQLite foreign key enforcement is enabled via `PRAGMA foreign_keys=ON` on connect.
+- Dashboard overdue boundary now matches the engine (Dewey Score <= 25 is Overdue).
+- Keyboard navigation and accessibility fixes across templates.
+- Makefile quality targets (lint/format/typecheck/test/icons) now run via the local `.venv` instead of `docker compose exec`.
+- Replaced deprecated `datetime.utcnow()` with a shared naive-UTC `utcnow()` helper in `src/utils.py`.
 - Documentation update workflow authentication by adding required `id-token: write` permission for OIDC authentication with Claude Code Action.
 - Documentation update workflow by adding `--allowedTools "Bash(git:*),Bash(gh:*)"` to claude_args configuration. This resolved the "This command requires approval" error that was blocking Claude from creating branches, committing, pushing, and opening PRs (PR #29).
 - Documentation update workflow by adding file manipulation tools (Read, Edit, Write, Glob, Grep) to allowedTools. This resolved the root cause of PR #31's failure where Claude had 3 permission denials and couldn't read code changes or modify documentation files. The original allowedTools from PR #29 only included git/gh bash subcommands (PR #33).
 - Documentation update workflow by replacing individual `Bash(git diff *)`, `Bash(git log *)`, etc. patterns with unrestricted `Bash` in `--allowedTools`. Individual patterns caused repeated failures (PRs #29, #33, #38) because Claude uses arbitrary shell commands that don't match specific patterns. Unrestricted Bash is safe on ephemeral GHA runners with author-association guards (PR #40).
 
 ### Security
+- **CLI token file permissions:** the stored library card token file is now created with `0600` (owner read/write only).
+- **Email normalization:** emails are lowercased at registration (web and API) to prevent duplicate accounts differing only by case.
 - **Object-level authorization (IDOR fix):** updating or archiving a volume, and updating or deleting a shelf, now require the authenticated librarian to be the resource's owner (or a Head Librarian). Previously any librarian with a library card could modify or delete anyone's volumes and shelves — and deleting a shelf cascades to all its volumes.
 - **CORS hardening:** credentialed CORS is now disabled while `OVERDUE_ALLOWED_ORIGINS` is the `["*"]` wildcard, closing the wildcard-plus-credentials reflection that let any site make credentialed cross-origin requests.
 - **Session cookie:** the session cookie carrying the library card is now explicitly `SameSite=Lax`, with an opt-in `OVERDUE_SESSION_HTTPS_ONLY` flag to add `Secure` behind HTTPS.

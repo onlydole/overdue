@@ -16,7 +16,7 @@ Overdue is a retro pixel art-themed gamified knowledge library application. User
 - **Auth**: PyJWT (HS256) with HMAC-safe signing key derivation
 - **CLI**: Typer with subcommands for auth, shelves, volumes, bots, seed, stats
 - **Game layer**: XP engine, badge system, streaks, mood/dust decay, AI bots, pixel art avatars and icons
-- **Deployment**: Docker (Python 3.12-slim) with docker-compose, non-root user, healthcheck
+- **Deployment**: Docker (Python 3.14-slim image) with docker-compose, non-root user, healthcheck
 
 ## Key Conventions
 
@@ -75,6 +75,7 @@ All decorative visuals are custom-built pixel art SVGs. This is a hard rule:
 overdue/
   src/
     main.py                 # FastAPI app, lifespan, middleware
+    utils.py                # Shared helpers (naive-UTC utcnow())
     api/                    # REST API endpoints
       router.py             # API router aggregation
       volumes.py            # Volume CRUD endpoints
@@ -86,13 +87,13 @@ overdue/
       library_card.py       # Library card (JWT) creation/verification via PyJWT
       web_session.py        # Session-based browser auth (cookie)
       librarian.py          # Registration, login, refresh, leaderboard routes
-      dependencies.py       # FastAPI dependency injection for auth
+      passwords.py          # Password hashing via bcrypt
       circulation.py        # Object-level authorization (resource owner or Head Librarian)
     cli/                    # Typer CLI
       main.py               # Entry point (overdue command)
       helpers.py            # Shared CLI helper utilities
       commands/
-        auth.py             # User management (create/remove)
+        auth.py             # Authentication (login/logout/whoami)
         shelves.py          # Shelf management (list/create)
         volumes.py          # Volume management (list/create)
         bots.py             # Bot management (add/simulate/remove)
@@ -101,7 +102,7 @@ overdue/
     config/                 # Settings and constants
       settings.py           # Pydantic Settings with OVERDUE_ prefix, signing_secret_key
       defaults.py           # Game balance constants (XP rates, decay, ranks, moods)
-      quiet_hours.py        # Rate limiting middleware
+      quiet_hours.py        # Rate limiting policy dataclass (middleware lives in src/main.py)
     errors/                 # Exception handling
       incidents.py          # Custom exception classes (library-themed)
       handlers.py           # FastAPI exception handlers
@@ -138,7 +139,7 @@ overdue/
       shelves.py            # Shelf browsing routes
       volumes.py            # Volume browsing routes
       profile.py            # Librarian profile page
-      settings.py           # Library card settings (edit username, email, role, avatar)
+      settings.py           # Library card settings (edit username, email, avatar)
       leaderboard.py        # Leaderboard page
       how_to_play.py        # How to play guide
       my_library.py         # Personal library view
@@ -162,15 +163,9 @@ overdue/
     404.html                # Not found error page
     500.html                # Server error page
     partials/               # Reusable template fragments
-      activity_feed.html    # Reading room activity feed
-      badge_grid.html       # Badge display grid
-      dewey_gauge.html      # Dewey Score gauge
-      game_feedback.html    # XP/badge feedback after actions
       reading_room_live.html # Live-updating Reading Room partial
       review_history_page.html # Paginated review history partial
       review_result.html    # Review action result
-      streak_counter.html   # Streak display
-      volume_card.html      # Volume card component
   static/
     css/
       styles.css            # Library card styles + pixel art foundations + mood backdrop
@@ -188,7 +183,7 @@ overdue/
   docs/                     # Guides and API reference
     api/                    # endpoints.md, authentication.md, errors.md, rate-limiting.md
     guides/                 # installation.md, quickstart.md, gameplay.md, bots.md, configuration.md
-    architecture/           # overview.md
+    architecture/           # overview.md, database.md, pixel-art.md, ci-cd.md
     changelog/              # CHANGELOG.md
 ```
 
@@ -241,7 +236,7 @@ The settings page (`/settings`) renders a pixel art library card UI:
 1. `GET /settings` loads the current librarian's card data (username, email, role, avatar)
 2. Avatar selection uses an Alpine.js carousel with prev/next arrows
 3. `POST /settings/card` validates and saves all editable fields with uniqueness checks
-4. On success, a fresh JWT is issued to reflect any username/role changes
+4. On success, a fresh JWT is issued to reflect any username changes (role is display-only)
 5. Errors are rendered inline on the card form
 
 ### Adding a New Pixel Art Icon
@@ -281,6 +276,7 @@ Pages with interactive actions support keyboard shortcuts. Each page defines its
 | Volume detail | `Enter` | Click review/next/done button (priority order) |
 | Volume detail | `Escape` / `ArrowLeft` | Navigate back to shelf |
 | Volume detail | `ArrowRight` | Navigate to next volume |
+| Shelves listing | `Enter` | Navigate to most overdue shelf |
 | Shelf detail | `Enter` | Navigate to most overdue volume (lowest Dewey Score) |
 | Shelf detail | `Escape` / `ArrowLeft` | Navigate back to shelves list |
 
@@ -358,7 +354,7 @@ Defined in `src/config/defaults.py`:
 | `XP_SHELVE_VOLUME` | 10 | XP for creating a volume |
 | `XP_REVIEW_CURRENT` | 5 | XP for reviewing a current volume |
 | `XP_REVIEW_OVERDUE_MULTIPLIER` | 2x | Multiplier for overdue reviews |
-| `XP_RESCUE_BONUS` | 20 | Rescue bonus for reviewing overdue volumes (Dewey Score 0-24) |
+| `XP_RESCUE_BONUS` | 20 | Rescue bonus for reviewing overdue volumes (Dewey Score 0-25) |
 | `XP_DAILY_STREAK_BONUS` | 20 | Bonus XP for daily streak |
 | `XP_SHELF_BONUS` | 50 | Bonus when all shelf volumes are healthy |
 | Ranks | Page (0) -> Shelver (100) -> Librarian (500) -> Archivist (2000) -> Head Librarian (5000) -> Living Document (10000) | Rank thresholds |

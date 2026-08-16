@@ -48,7 +48,7 @@
                 <div class="hidden md:flex items-center gap-4">
                     {% if current_user %}
                     <a href="/my-library" class="nav-link {{ 'text-gold' if request.url.path == '/my-library' else '' }}" hx-boost="true">My Library</a>
-                    <a href="/settings" class="nav-link {{ 'text-gold' if request.url.path == '/settings' else '' }}" title="Settings" hx-boost="true">{{ render_icon('gear', 18) }}</a>
+                    <a href="/settings" class="nav-link {{ 'text-gold' if request.url.path == '/settings' else '' }}" title="Settings" aria-label="Settings" hx-boost="true">{{ render_icon('gear', 18) }}</a>
                     <a href="/profile/{{ current_user.id }}" class="flex items-center gap-2 font-pixel text-[8px] text-gold hover:text-gold-light" hx-boost="true">
                         <span class="w-6 h-6 inline-flex items-center justify-center">{{ render_avatar(current_user.avatar_id|default('avatar_01'), 24) }}</span>
                         {{ current_user.username }}
@@ -62,7 +62,7 @@
                     {% endif %}
                 </div>
                 <!-- Mobile menu button -->
-                <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"
+                <button onclick="var menu = document.getElementById('mobile-menu'); menu.classList.toggle('hidden'); this.setAttribute('aria-expanded', String(!menu.classList.contains('hidden')))"
                         class="md:hidden text-parchment hover:text-gold p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
                         aria-label="Toggle menu"
                         aria-expanded="false"

@@ -32,7 +32,7 @@ Icons are rendered for the templates through two public functions in `_renderer.
 | `render_icon_svg` | Full `<svg>` element with optional `color` and `size` overrides |
 | `render_icon_svg_bare` | Path content only -- used by the static asset build |
 
-`__init__.py` re-exports `render_icon_svg` and `get_icon_names`. Jinja2 binds the renderer as a global called `render_icon` in `src/web/templates.py`, so templates write `{{ render_icon("star", 24) }}`.
+`__init__.py` re-exports `render_icon_svg`, `render_icon_svg_bare`, and `get_icon_names` (the build script imports `render_icon_svg_bare` from the package). Jinja2 binds the renderer as a global called `render_icon` in `src/web/templates.py`, so templates write `{{ render_icon("star", 24) }}`.
 
 ## Avatars (32x32)
 
@@ -42,7 +42,7 @@ Eight heroic librarian silhouettes live in `src/game/avatars.py`. Each entry inc
 |---|---|
 | `render_avatar_svg` | Full `<svg>` with size override |
 | `render_avatar_svg_bare` | Path content only (for static export) |
-| `get_avatar_choices` | List of `{id, name, description}` records for the settings carousel |
+| `get_avatar_choices` | List of `{id, name, role_title, description, material}` records for the settings carousel |
 | `_get_avatar_svg_content` | Private helper that assembles path + accents from the catalog |
 
 ## Static Asset Build

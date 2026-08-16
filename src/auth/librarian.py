@@ -1,7 +1,7 @@
 """Librarian registration, login, and profile."""
 
 import re
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -17,6 +17,7 @@ from src.game.badges import get_earned_badges
 from src.game.streaks import get_streak
 from src.game.xp import get_next_rank, get_rank, get_recent_awards
 from src.models.librarian import LibrarianCreate, LibrarianLogin, LibrarianResponse, LibraryCard
+from src.utils import utcnow
 
 router = APIRouter()
 
@@ -48,16 +49,21 @@ async def register(
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=409, detail="That username is already taken.")
 
-    # Check for existing email
+    # Lowercase to match the web flows: the unique index is case-sensitive, so
+    # mixed-case registration would let Foo@x.com and foo@x.com coexist.
+    email = body.email.strip().lower()
+
+    # Check for existing email (case-insensitively, so rows stored mixed-case
+    # by earlier versions still block their lowercase duplicates)
     existing_email = await session.execute(
-        select(LibrarianRow).where(LibrarianRow.email == body.email)
+        select(LibrarianRow).where(func.lower(LibrarianRow.email) == email)
     )
     if existing_email.scalar_one_or_none():
         raise HTTPException(status_code=409, detail="That email is already registered.")
 
     librarian = LibrarianRow(
         username=body.username,
-        email=body.email,
+        email=email,
         hashed_password=hash_password(body.password),
     )
     session.add(librarian)
@@ -171,9 +177,9 @@ async def get_leaderboard(
     from src.db.tables import XPLedgerRow
 
     if timeframe == "week":
-        cutoff = datetime.utcnow() - timedelta(weeks=1)
+        cutoff = utcnow() - timedelta(weeks=1)
     elif timeframe == "month":
-        cutoff = datetime.utcnow() - timedelta(days=30)
+        cutoff = utcnow() - timedelta(days=30)
     else:
         cutoff = None
 

@@ -40,8 +40,8 @@ The relationship metadata lives directly on the ORM classes; see the `relationsh
 
 ## Migrations
 
-Schema lives entirely in `src/db/tables.py`; there is no Alembic migration history. On startup, the engine creates all tables from the declarative metadata, which is safe for the alpha because no schema has ever been removed -- only additive changes have shipped. Adding a destructive change means introducing migrations; that work is not yet planned.
+Schema lives entirely in `src/db/tables.py`; there is no Alembic migration history. On startup, the engine creates all tables from the declarative metadata, which is safe for the alpha because no schema has ever been removed -- only additive changes have shipped. The FastAPI lifespan in `src/main.py` also runs a small set of idempotent `ALTER TABLE` migrations for columns added since earlier releases (the `is_bot`, `bot_difficulty`, and `avatar_id` librarian columns and the `spine_seed` volume column) and deduplicates the `badges` table before enforcing a unique index on `(librarian_id, badge_name)`. SQLite foreign key enforcement is enabled per-connection via `PRAGMA foreign_keys=ON` in `src/db/engine.py`. Adding a destructive change means introducing migrations; that work is not yet planned.
 
 ## Seeding
 
-`src/db/seed.py` provides demo data (default shelves, sample volumes, bot players). It is invoked from the CLI (`overdue seed demo`) and from the FastAPI lifespan in development mode.
+`src/db/seed.py` provides demo data (default shelves, sample volumes, bot players). It is invoked from the CLI (`overdue seed seed`) and from the FastAPI lifespan in development mode.

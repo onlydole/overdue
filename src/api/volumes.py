@@ -10,12 +10,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.circulation import require_resource_owner
 from src.auth.library_card import verify_library_card
-from src.config.defaults import DEWEY_LOST, DEWEY_PRISTINE
+from src.config.defaults import DEWEY_LOST, DEWEY_PRISTINE, DEWEY_REVIEW_NOOP
 from src.config.settings import settings
 from src.db.engine import get_session
 from src.db.tables import ShelfRow, VolumeRow, volume_bookmarks
 from src.errors.incidents import VolumeTooLarge
 from src.models.volume import VolumeCreate, VolumeListResponse, VolumeResponse, VolumeUpdate
+from src.utils import utcnow
 
 router = APIRouter()
 
@@ -26,7 +27,7 @@ def calculate_dewey_score(last_reviewed_at: datetime) -> float:
     Decay is measured in configurable time units (default: 10 seconds for demo mode).
     Set OVERDUE_DEWEY_DECAY_SECONDS=86400 for realistic daily decay.
     """
-    seconds_elapsed = (datetime.utcnow() - last_reviewed_at).total_seconds()
+    seconds_elapsed = (utcnow() - last_reviewed_at).total_seconds()
     decay_units = seconds_elapsed / settings.dewey_decay_seconds
     score = DEWEY_PRISTINE - (decay_units * settings.dewey_decay_rate)
     return max(score, DEWEY_LOST)
@@ -171,6 +172,20 @@ async def update_volume(
     update_data = body.model_dump(exclude_unset=True)
     bookmarks_update = update_data.pop("bookmarks", None)
 
+    # Enforce the same limits as create_volume
+    if "content" in update_data:
+        content_size_kb = len(update_data["content"].encode("utf-8")) / 1024
+        if content_size_kb > settings.max_volume_size_kb:
+            raise VolumeTooLarge(max_size_kb=settings.max_volume_size_kb)
+
+    if "shelf_id" in update_data:
+        shelf = await session.get(ShelfRow, update_data["shelf_id"])
+        if not shelf:
+            raise HTTPException(
+                status_code=404,
+                detail="That shelf isn't in our library. Check the catalog and try again.",
+            )
+
     for key, value in update_data.items():
         setattr(volume, key, value)
 
@@ -225,7 +240,10 @@ async def review_volume(
 ) -> VolumeResponse:
     """Review a volume, resetting its Dewey Score to pristine."""
     volume = await session.get(VolumeRow, volume_id)
-    if not volume:
+    # Archived volumes are soft-deleted and hidden from listings; reviewing one
+    # would still award XP (and could farm the shelf bonus, since the bonus
+    # only considers active siblings), so treat them as not found.
+    if not volume or volume.archived:
         raise HTTPException(
             status_code=404,
             detail="That volume isn't on any of our shelves. Check the catalog and try again.",
@@ -234,15 +252,18 @@ async def review_volume(
     # Capture score before review for game mechanics
     dewey_score_before = calculate_dewey_score(volume.last_reviewed_at)
 
-    volume.last_reviewed_at = datetime.utcnow()
+    # Already-pristine volumes are a no-op (same guard as the web handler):
+    # without it, re-posting reviews in a loop farms XP.
+    if dewey_score_before < DEWEY_REVIEW_NOOP:
+        volume.last_reviewed_at = utcnow()
 
-    # Trigger game mechanics (creates ReviewRow, awards XP, updates streak, checks badges)
-    from src.game.engine import on_volume_reviewed
+        # Trigger game mechanics (creates ReviewRow, awards XP, updates streak, checks badges)
+        from src.game.engine import on_volume_reviewed
 
-    await on_volume_reviewed(session, int(payload["sub"]), volume_id, dewey_score_before)
+        await on_volume_reviewed(session, int(payload["sub"]), volume_id, dewey_score_before)
 
-    await session.commit()
-    await session.refresh(volume)
+        await session.commit()
+        await session.refresh(volume)
 
     bm_result = await session.execute(
         select(volume_bookmarks.c.bookmark).where(volume_bookmarks.c.volume_id == volume.id)

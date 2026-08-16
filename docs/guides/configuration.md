@@ -27,6 +27,7 @@ Overdue uses environment variables for configuration. All variables are prefixed
 | `OVERDUE_HOST` | `0.0.0.0` | Server bind address |
 | `OVERDUE_PORT` | `8000` | Server port |
 | `OVERDUE_ALLOWED_ORIGINS` | `["*"]` | CORS allowed origins. While `["*"]`, credentialed CORS is disabled (the wildcard + credentials combination is unsafe). Set explicit origins to allow credentialed cross-origin requests. |
+| `OVERDUE_CORS_ORIGINS` | `["*"]` | **Deprecated** -- use `OVERDUE_ALLOWED_ORIGINS`. When set to a non-wildcard value it overrides `OVERDUE_ALLOWED_ORIGINS` and a deprecation warning is emitted. |
 | `OVERDUE_SESSION_HTTPS_ONLY` | `false` | When `true`, marks the session cookie `Secure` so it is only sent over HTTPS. Leave `false` for local `http://` use; set `true` in any HTTPS deployment. |
 
 ### Authentication

@@ -36,7 +36,7 @@
                     <div class="flex items-center gap-2">
                         <div class="w-7 h-7 flex items-center justify-center">{{ render_avatar(entry.avatar_id, 28) }}</div>
                         <a href="/profile/{{ entry.librarian_id }}" class="text-parchment text-lg {% if entry.position <= 3 %}font-bold{% endif %} hover:text-gold transition-colors">{{ entry.username }}</a>
-                        {% if entry.is_bot %}<span title="Bot player">{{ render_icon('robot', 16) }}</span>{% endif %}
+                        {% if entry.is_bot %}<span title="Bot player" role="img" aria-label="Bot player">{{ render_icon('robot', 16) }}</span>{% endif %}
                     </div>
                 </div>
                 <span class="font-pixel text-[10px] text-dewey-pristine">{{ entry.total_xp }} XP</span>
@@ -93,7 +93,7 @@
                         <div class="flex items-center gap-2">
                             <div class="w-7 h-7 flex items-center justify-center">{{ render_avatar(entry.avatar_id, 28) }}</div>
                             <a href="/profile/{{ entry.librarian_id }}" class="text-parchment text-lg {% if entry.position <= 3 %}font-bold{% endif %} hover:text-gold transition-colors">{{ entry.username }}</a>
-                            {% if entry.is_bot %}<span title="Bot player">{{ render_icon('robot', 16) }}</span>{% endif %}
+                            {% if entry.is_bot %}<span title="Bot player" role="img" aria-label="Bot player">{{ render_icon('robot', 16) }}</span>{% endif %}
                         </div>
                     </td>
                     <td class="px-4 py-4">

@@ -33,8 +33,10 @@
               return name || 'Cardholder';
           }
       }"
-      @keydown.left.window="prevAvatar()"
-      @keydown.right.window="nextAvatar()"
+      {# Ignore arrow keys while typing in a field, or editing the name/email
+         would silently change the selected avatar #}
+      @keydown.left.window="if (!['INPUT','TEXTAREA','SELECT'].includes($event.target.tagName)) prevAvatar()"
+      @keydown.right.window="if (!['INPUT','TEXTAREA','SELECT'].includes($event.target.tagName)) nextAvatar()"
       @submit="isSaving = true">
     <input type="hidden" name="avatar_id" :value="selectedAvatar">
 
@@ -142,8 +144,7 @@
 
                             <div class="library-signature-strip mt-4">
                                 <p class="library-signature-label">Authorized Signature</p>
-                                <p class="signature-font mt-1 pl-2"
-                                   :class="avatarMaterials[selectedAvatar] !== 'matte' ? 'text-[#232342]' : ''"
+                                <p class="signature-font mt-1 pl-2 text-[#232342]"
                                    x-text="signatureName()">{{ card_form.username.title() }}</p>
                             </div>
                         </div>

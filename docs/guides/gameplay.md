@@ -37,7 +37,9 @@ Every action in the library earns you "pages read" -- your experience points. Ov
 | Review an overdue volume | +10 XP (10 pages, 2x multiplier) |
 | Rescue bonus (for overdue review) | +20 XP (20 pages) |
 | Daily streak bonus | +20 XP/day (20 pages) |
-| All volumes on a shelf above Dewey 75 | +50 XP (50 pages, shelf bonus) |
+| Shelf bonus: your review brings every volume on a shelf to Dewey 75+ | +50 XP (50 pages) |
+
+The shelf bonus only fires when the volume you just reviewed was below Dewey 75, and the shelf must hold at least two volumes -- an already-healthy shelf (or a single-volume shelf riding the decay cycle) can't be farmed for repeat bonuses.
 
 ## Ranks
 
@@ -74,7 +76,7 @@ Badges are achievements you unlock by hitting milestones. They come in two tiers
 | Badge | How to earn it |
 |---|---|
 | Marathon Reader | Maintain a 30-day review streak |
-| Dewey Devotee | Maintain an average Dewey Score above 90 |
+| Dewey Devotee | Maintain an average Dewey Score above 90 across your volumes |
 | Centurion | Review 100 volumes total |
 
 ## Streaks
@@ -91,8 +93,8 @@ Every volume has a freshness score from 0 to 100. It starts at 100 when you crea
 |---|---|---|
 | 75-100 | Pristine | Freshly reviewed, perfectly current |
 | 50-74 | Good | Slightly dusty, still reliable |
-| 25-49 | Dusty | Getting stale, needs attention soon |
-| 0-24 | Overdue | Significantly outdated -- review immediately |
+| 26-49 | Dusty | Getting stale, needs attention soon |
+| 0-25 | Overdue | Significantly outdated -- review immediately |
 
 ## Reading Room mood
 

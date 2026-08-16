@@ -10,7 +10,7 @@ from src.api.volumes import calculate_dewey_score
 from src.auth.circulation import is_curator, require_resource_owner
 from src.auth.library_card import verify_library_card
 from src.db.engine import get_session
-from src.db.tables import ShelfRow, VolumeRow
+from src.db.tables import ShelfRow, VolumeRow, volume_bookmarks
 from src.errors.incidents import InsufficientPermissions
 from src.models.shelf import ShelfCreate, ShelfListResponse, ShelfResponse, ShelfUpdate
 
@@ -62,7 +62,7 @@ async def create_shelf(
     if existing.scalar_one_or_none():
         raise HTTPException(
             status_code=409,
-            detail="A volume with that title is already shelved in this section.",
+            detail="A shelf with that name already exists.",
         )
 
     shelf = ShelfRow(
@@ -169,6 +169,18 @@ async def delete_shelf(
             raise InsufficientPermissions(
                 "This shelf holds volumes by other librarians; only a head librarian may delete it."
             )
+
+    # Bookmarks live in a plain association table with no ORM cascade; clear
+    # them before the shelf's volumes cascade away, or the rows linger and
+    # attach their tags to whichever future volume reuses the rowid.
+    volume_ids_result = await session.execute(
+        select(VolumeRow.id).where(VolumeRow.shelf_id == shelf_id)
+    )
+    volume_ids = [vid for (vid,) in volume_ids_result]
+    if volume_ids:
+        await session.execute(
+            volume_bookmarks.delete().where(volume_bookmarks.c.volume_id.in_(volume_ids))
+        )
 
     await session.delete(shelf)
     await session.commit()

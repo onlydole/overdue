@@ -93,12 +93,13 @@
                 {% endif %}
             </div>
         </div>
+    </div>
 </div>
 
 <!-- Mobile Sticky Action Bar -->
 <div class="md:hidden fixed bottom-0 left-0 right-0 bg-pixel-surface border-t-4 border-gold p-4 z-50 flex justify-center safe-area-pb" id="mobile-actions">
     {% if current_user %}
-    <button onclick="document.querySelector('.review-btn').click()" class="pixel-btn pixel-btn-green w-full shadow-lg">
+    <button onclick="document.querySelector('.review-btn')?.click()" class="pixel-btn pixel-btn-green w-full shadow-lg">
         {{ render_icon('play', 16) }} Review
     </button>
     {% endif %}
@@ -120,6 +121,8 @@
         // Don't intercept when typing in an input/textarea
         var tag = (evt.target.tagName || '').toLowerCase();
         if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+        // Let Enter activate a focused link/button instead of hijacking it
+        if (evt.key === 'Enter' && (tag === 'a' || tag === 'button')) return;
 
         if (evt.key === 'Enter') {
             evt.preventDefault();

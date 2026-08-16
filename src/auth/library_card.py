@@ -1,6 +1,6 @@
 """JWT token (library card) generation and validation."""
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any
 
 import jwt
@@ -9,6 +9,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt.exceptions import PyJWTError as JWTError
 
 from src.config.settings import settings
+from src.utils import utcnow
 
 ALGORITHM = "HS256"
 security = HTTPBearer()
@@ -16,13 +17,13 @@ security = HTTPBearer()
 
 def create_library_card(librarian_id: int, username: str, role: str) -> str:
     """Issue a new library card (JWT token)."""
-    expire = datetime.utcnow() + timedelta(minutes=settings.token_expiry_minutes)
+    expire = utcnow() + timedelta(minutes=settings.token_expiry_minutes)
     payload = {
         "sub": str(librarian_id),
         "username": username,
         "role": role,
         "exp": expire,
-        "iat": datetime.utcnow(),
+        "iat": utcnow(),
     }
     return jwt.encode(payload, settings.signing_secret_key, algorithm=ALGORITHM)
 

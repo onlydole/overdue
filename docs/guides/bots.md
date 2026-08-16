@@ -19,8 +19,8 @@ Bots are managed via CLI commands. Each bot has a **difficulty** profile that de
 | Difficulty | XP Range | Typical Rank | Behavior |
 |---|---|---|---|
 | `casual` | 50--400 | Page / Shelver | Few volumes, short streaks, things decay |
-| `diligent` | 400--1,500 | Librarian | Regular reviews, decent streaks |
-| `obsessive` | 1,500--4,500 | Archivist+ | Many volumes, long streaks, high XP |
+| `diligent` | 400--1,500 | Shelver / Librarian | Regular reviews, decent streaks |
+| `obsessive` | 1,500--4,500 | Librarian / Archivist | Many volumes, long streaks, high XP |
 
 Bots appear on the leaderboard with a robot indicator so real players can distinguish them.
 
@@ -32,22 +32,22 @@ The recommended way to run CLI commands is through Docker Compose. This ensures 
 
 ```bash
 # Add a single casual bot
-docker compose exec overdue python -m src.cli.main bots add casual
+docker compose exec overdue overdue bots add casual
 
 # Add 3 diligent bots
-docker compose exec overdue python -m src.cli.main bots add diligent --count 3
+docker compose exec overdue overdue bots add diligent --count 3
 
 # Add an obsessive bot with a custom name
-docker compose exec overdue python -m src.cli.main bots add obsessive --name overlord99
+docker compose exec overdue overdue bots add obsessive --name overlord99
 ```
 
 ### List bots
 
 ```bash
-docker compose exec overdue python -m src.cli.main bots list
+docker compose exec overdue overdue bots list
 ```
 
-Displays a table with each bot's username, difficulty, XP, rank, and avatar.
+Displays a table with each bot's ID, username, difficulty, XP, rank, and avatar.
 
 ### Simulate activity
 
@@ -55,10 +55,10 @@ Bot activity is automatically simulated each time the server starts. You can als
 
 ```bash
 # Simulate all bots
-docker compose exec overdue python -m src.cli.main bots simulate
+docker compose exec overdue overdue bots simulate
 
 # Simulate a specific bot
-docker compose exec overdue python -m src.cli.main bots simulate --name bookworm42
+docker compose exec overdue overdue bots simulate --name bookworm42
 ```
 
 Each simulation round awards XP, may add reviews, and updates streaks based on the bot's difficulty profile.
@@ -67,13 +67,13 @@ Each simulation round awards XP, may add reviews, and updates streaks based on t
 
 ```bash
 # Remove a specific bot
-docker compose exec overdue python -m src.cli.main bots remove bookworm42
+docker compose exec overdue overdue bots remove bookworm42
 
 # Remove all bots
-docker compose exec overdue python -m src.cli.main bots remove --all
+docker compose exec overdue overdue bots remove --all
 ```
 
-Removing a bot deletes all its related data (volumes, reviews, XP ledger, badges, streaks).
+Removing a bot deletes all its related data: volumes (including reviews left by *other* librarians on those volumes and the volumes' bookmark rows), the bot's own reviews, XP ledger, badges, streaks, and bulletins (webhook subscriptions). Shelves are never touched -- bots don't own shelves.
 
 ## Running locally (without Docker)
 

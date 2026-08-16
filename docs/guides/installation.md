@@ -38,6 +38,8 @@ cd overdue
 pip install -e ".[dev]"
 ```
 
+This also installs the `overdue` console script -- the canonical CLI entry point used throughout these docs (`overdue serve`, `overdue bots list`, ...).
+
 ### Verify the installation
 
 ```bash
@@ -66,6 +68,21 @@ If you modify icon or avatar source code:
 ```bash
 python scripts/build_icons.py
 ```
+
+## Configuration
+
+A fresh install works out of the box, but a few environment variables are worth knowing on day one:
+
+- `OVERDUE_DATABASE_URL` -- database connection string. Docker Compose points it at a named volume; source installs default to a local SQLite file.
+- `OVERDUE_SECRET_KEY` -- JWT signing secret. The docker-compose default is `change-me-in-production`, which triggers a loud insecure-secret warning at startup. Set your own value before exposing the server.
+- `OVERDUE_DEBUG` -- enable debug mode (defaults to `false`).
+- `OVERDUE_PORT` -- remaps the host port in the docker-compose port mapping (defaults to 8000).
+
+See the [configuration guide](configuration.md) for the full list of settings.
+
+## Demo credentials
+
+On first startup with an empty database, Overdue auto-seeds three demo librarians -- **archie**, **paige**, and **dewey** -- with a generated password that is printed to the server log. Set `OVERDUE_DEMO_PASSWORD` to control the password yourself, or run `overdue seed seed`, which prints the password it used.
 
 ## Development dependencies
 

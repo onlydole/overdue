@@ -41,3 +41,8 @@ app.add_typer(volumes_app, name="volumes")
 app.add_typer(stats_app, name="stats")
 app.add_typer(seed_app, name="seed")
 app.add_typer(bots_app, name="bots")
+
+if __name__ == "__main__":
+    # Makes `python -m src.cli.main` work; without it the module imports,
+    # builds the app, and exits 0 without running anything.
+    app()

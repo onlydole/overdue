@@ -1,13 +1,14 @@
 """Achievement badge definitions and tracking."""
 
-from datetime import datetime
 from typing import Any
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config.defaults import DEWEY_OVERDUE
 from src.db.tables import BadgeRow, ReviewRow, StreakRow, VolumeRow
+from src.utils import utcnow
 
 BADGE_DEFINITIONS = {
     "First Shelve": {
@@ -66,10 +67,10 @@ BADGE_DEFINITIONS = {
         "check": "current_streak >= 30",
     },
     "Dewey Devotee": {
-        "description": "Maintained average Dewey Score above 90 for 7 days",
+        "description": "Maintained average Dewey Score above 90",
         "icon": "award",
         "tier": "Rare",
-        "check": "avg_dewey_7d >= 90",
+        "check": "avg_dewey >= 90",
     },
     "Centurion": {
         "description": "Reviewed 100 volumes total",
@@ -116,12 +117,19 @@ async def grant_badge(session: AsyncSession, librarian_id: int, badge_name: str)
     if await has_badge(session, librarian_id, badge_name):
         return False
 
-    badge = BadgeRow(
-        librarian_id=librarian_id,
-        badge_name=badge_name,
-    )
-    session.add(badge)
-    await session.flush()
+    # A concurrent session can grant the same badge between the check above and
+    # this insert; the savepoint absorbs the unique-constraint violation without
+    # rolling back the rest of the in-flight game transaction.
+    try:
+        async with session.begin_nested():
+            session.add(
+                BadgeRow(
+                    librarian_id=librarian_id,
+                    badge_name=badge_name,
+                )
+            )
+    except IntegrityError:
+        return False
     return True
 
 
@@ -135,12 +143,10 @@ async def check_badges_after_shelve(session: AsyncSession, librarian_id: int) ->
     )
     volume_count = count_result.scalar() or 0
 
-    if volume_count >= 1 and not await has_badge(session, librarian_id, "First Shelve"):
-        await grant_badge(session, librarian_id, "First Shelve")
+    if volume_count >= 1 and await grant_badge(session, librarian_id, "First Shelve"):
         awarded.append("First Shelve")
 
-    if volume_count >= 50 and not await has_badge(session, librarian_id, "Encyclopedist"):
-        await grant_badge(session, librarian_id, "Encyclopedist")
+    if volume_count >= 50 and await grant_badge(session, librarian_id, "Encyclopedist"):
         awarded.append("Encyclopedist")
 
     return awarded
@@ -151,9 +157,8 @@ async def check_badges_after_review(session: AsyncSession, librarian_id: int) ->
     awarded = []
 
     # Night Owl -- reviewed after midnight
-    now = datetime.utcnow()
-    if now.hour < 5 and not await has_badge(session, librarian_id, "Night Owl"):
-        await grant_badge(session, librarian_id, "Night Owl")
+    now = utcnow()
+    if now.hour < 5 and await grant_badge(session, librarian_id, "Night Owl"):
         awarded.append("Night Owl")
 
     # Streak Freak! (7-day streak)
@@ -164,18 +169,16 @@ async def check_badges_after_review(session: AsyncSession, librarian_id: int) ->
     if (
         streak
         and streak.current_streak >= 7
-        and not await has_badge(session, librarian_id, "Streak Freak!")
+        and await grant_badge(session, librarian_id, "Streak Freak!")
     ):
-        await grant_badge(session, librarian_id, "Streak Freak!")
         awarded.append("Streak Freak!")
 
     # Marathon Reader (30-day streak)
     if (
         streak
         and streak.current_streak >= 30
-        and not await has_badge(session, librarian_id, "Marathon Reader")
+        and await grant_badge(session, librarian_id, "Marathon Reader")
     ):
-        await grant_badge(session, librarian_id, "Marathon Reader")
         awarded.append("Marathon Reader")
 
     # Dust Buster -- 10 reviews where score was overdue (<=25)
@@ -189,8 +192,7 @@ async def check_badges_after_review(session: AsyncSession, librarian_id: int) ->
             )
         )
         overdue_reviews = dust_result.scalar() or 0
-        if overdue_reviews >= 10:
-            await grant_badge(session, librarian_id, "Dust Buster")
+        if overdue_reviews >= 10 and await grant_badge(session, librarian_id, "Dust Buster"):
             awarded.append("Dust Buster")
 
     # Centurion -- 100 total reviews
@@ -203,8 +205,7 @@ async def check_badges_after_review(session: AsyncSession, librarian_id: int) ->
             )
         )
         total_reviews = total_result.scalar() or 0
-        if total_reviews >= 100:
-            await grant_badge(session, librarian_id, "Centurion")
+        if total_reviews >= 100 and await grant_badge(session, librarian_id, "Centurion"):
             awarded.append("Centurion")
 
     # Speed Reader -- 5 reviews in under 60 seconds
@@ -218,8 +219,7 @@ async def check_badges_after_review(session: AsyncSession, librarian_id: int) ->
         recent_times = [row[0] for row in recent_result]
         if len(recent_times) >= 5:
             span = (recent_times[0] - recent_times[-1]).total_seconds()
-            if span < 60:
-                await grant_badge(session, librarian_id, "Speed Reader")
+            if span < 60 and await grant_badge(session, librarian_id, "Speed Reader"):
                 awarded.append("Speed Reader")
 
     # Pristine Stacks -- all user's volumes have Dewey >= 75
@@ -234,10 +234,13 @@ async def check_badges_after_review(session: AsyncSession, librarian_id: int) ->
             )
         )
         user_volumes = user_volumes_result.scalars().all()
-        if user_volumes and all(
-            calculate_dewey_score(v.last_reviewed_at) >= DEWEY_GOOD_SHAPE for v in user_volumes
+        if (
+            user_volumes
+            and all(
+                calculate_dewey_score(v.last_reviewed_at) >= DEWEY_GOOD_SHAPE for v in user_volumes
+            )
+            and await grant_badge(session, librarian_id, "Pristine Stacks")
         ):
-            await grant_badge(session, librarian_id, "Pristine Stacks")
             awarded.append("Pristine Stacks")
 
     # Dewey Devotee -- all user's volumes average Dewey >= 90
@@ -255,8 +258,7 @@ async def check_badges_after_review(session: AsyncSession, librarian_id: int) ->
             avg = sum(calculate_dewey_score(v.last_reviewed_at) for v in dv_volumes) / len(
                 dv_volumes
             )
-            if avg >= 90:
-                await grant_badge(session, librarian_id, "Dewey Devotee")
+            if avg >= 90 and await grant_badge(session, librarian_id, "Dewey Devotee"):
                 awarded.append("Dewey Devotee")
 
     # Completionist -- has all other badges
@@ -270,10 +272,7 @@ async def check_badges_after_review(session: AsyncSession, librarian_id: int) ->
         )
     )
     earned_count = earned_result.scalar() or 0
-    if earned_count == len(all_other) and not await has_badge(
-        session, librarian_id, "Completionist"
-    ):
-        await grant_badge(session, librarian_id, "Completionist")
+    if earned_count == len(all_other) and await grant_badge(session, librarian_id, "Completionist"):
         awarded.append("Completionist")
 
     return awarded

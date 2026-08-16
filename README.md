@@ -33,9 +33,9 @@ Open `http://localhost:8000`, register your first librarian, and start shelving.
 The database, demo data, and bot players are all set up automatically. Manage the library with Docker Compose:
 
 ```bash
-docker compose exec overdue overdue bots simulate    # Shuffle the leaderboard
-docker compose exec overdue overdue stats             # Library statistics
-docker compose exec overdue overdue seed demo         # Re-seed demo data
+docker compose exec overdue overdue bots simulate     # Shuffle the leaderboard
+docker compose exec overdue overdue stats summary     # Personal stats summary (log in first)
+docker compose exec overdue overdue seed seed --reset # Re-seed demo data
 ```
 
 <details>
@@ -135,7 +135,7 @@ docs/           # Guides, API reference, architecture, changelog
 
 ## Documentation Freshness
 
-Every page under `docs/` gets a 0--100 score from three deterministic signals: how old the doc is relative to the source files it describes, whether it's past the `ttl_days` it declared in frontmatter, and whether the backticked symbols it references still exist in those source files. The CI workflow posts a sticky comment with per-page deltas on every PR, routes any 35--64 gray-zone page to Claude for a semantic STILL_ACCURATE / DRIFTED / NEEDS_HUMAN_REVIEW call, and fails the build when the median drops below 75 or any `critical: true` page below 60. The badge above is regenerated on every push to `main`.
+Every page under `docs/` gets a 0--100 score from three deterministic signals: how old the doc is relative to the source files it describes, whether it's past the `ttl_days` it declared in frontmatter, and whether the backticked symbols it references still exist in those source files. The CI workflow posts a sticky comment with per-page deltas on every PR, routes any 35--64 gray-zone page to Claude for a semantic STILL_ACCURATE / DRIFTED / NEEDS_HUMAN_REVIEW call, and fails the build when the median drops below 75 or any `critical: true` page scores 60 or below. The badge above is regenerated on every push to `main`.
 
 Recompute locally:
 

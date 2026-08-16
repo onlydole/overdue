@@ -15,7 +15,7 @@ freshness:
 
 # API Endpoints
 
-All API endpoints are prefixed with `/api`. Endpoints marked with a lock icon require a valid library card (JWT token) in the `Authorization` header.
+All API endpoints are prefixed with `/api`. Endpoints noted as "Requires library card" need a valid library card (JWT token) in the `Authorization` header.
 
 ## Librarians
 
