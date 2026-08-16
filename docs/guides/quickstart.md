@@ -54,13 +54,13 @@ Docker Compose commands for managing the library:
 docker compose exec overdue overdue bots simulate
 
 # Add more bots to the competition
-docker compose exec overdue overdue bots create obsessive --count 2
+docker compose exec overdue overdue bots add obsessive --count 2
 
-# Check library statistics
-docker compose exec overdue overdue stats
+# Check your stats summary (requires overdue auth login first)
+docker compose exec overdue overdue stats summary
 
 # Re-seed demo data
-docker compose exec overdue overdue seed demo
+docker compose exec overdue overdue seed seed --reset
 ```
 
 ## Using the API

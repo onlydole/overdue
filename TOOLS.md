@@ -35,12 +35,13 @@ The Overdue CLI is built with [Typer](https://typer.tiangolo.com/) and registere
 
 ### Subcommand Groups
 
-#### `overdue auth` -- Librarian management
+#### `overdue auth` -- Authentication
 
 | Command | Description |
 |---|---|
-| `overdue auth create` | Create a new librarian account |
-| `overdue auth remove` | Remove a librarian account |
+| `overdue auth login` | Log in and store your library card (JWT) locally |
+| `overdue auth logout` | Clear your stored library card |
+| `overdue auth whoami` | Show the current logged-in librarian's rank and XP |
 
 #### `overdue shelves` -- Shelf management
 
@@ -68,13 +69,15 @@ The Overdue CLI is built with [Typer](https://typer.tiangolo.com/) and registere
 
 | Command | Description |
 |---|---|
-| `overdue seed demo` | Seed the database with demo shelves, volumes, and bots |
+| `overdue seed seed` | Seed the database with demo shelves, volumes, and bots (`--reset` drops and recreates tables first) |
 
 #### `overdue stats` -- Statistics
 
 | Command | Description |
 |---|---|
-| `overdue stats` | Display library statistics (librarians, volumes, shelves, XP) |
+| `overdue stats summary` | Show personal stats summary |
+| `overdue stats decay-forecast` | Predict which volumes will go overdue soon (CLI exclusive) |
+| `overdue stats heatmap` | Show review activity heatmap (CLI exclusive) |
 
 ## Scripts
 
@@ -177,9 +180,9 @@ All API routes are mounted under `/api/`. Authentication uses JWT bearer tokens 
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET` | `/api/volumes` | Bearer | List volumes (filterable) |
+| `GET` | `/api/volumes` | None | List volumes (filterable) |
 | `POST` | `/api/volumes` | Bearer | Create a new volume |
-| `GET` | `/api/volumes/{id}` | Bearer | Get a single volume |
+| `GET` | `/api/volumes/{id}` | None | Get a single volume |
 | `PATCH` | `/api/volumes/{id}` | Bearer | Update a volume |
 | `DELETE` | `/api/volumes/{id}` | Bearer | Delete a volume |
 | `POST` | `/api/volumes/{id}/review` | Bearer | Review a volume (triggers game engine) |
@@ -188,23 +191,25 @@ All API routes are mounted under `/api/`. Authentication uses JWT bearer tokens 
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET` | `/api/shelves` | Bearer | List all shelves |
+| `GET` | `/api/shelves` | None | List all shelves |
 | `POST` | `/api/shelves` | Bearer | Create a new shelf |
-| `GET` | `/api/shelves/{id}` | Bearer | Get a shelf with its volumes |
+| `GET` | `/api/shelves/{id}` | None | Get a shelf with its volumes |
+| `PATCH` | `/api/shelves/{id}` | Bearer | Update a shelf |
 | `DELETE` | `/api/shelves/{id}` | Bearer | Delete a shelf |
 
 ### Catalog (`/api/catalog`)
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET` | `/api/catalog/autocomplete` | Bearer | Quick autocomplete suggestions |
+| `GET` | `/api/catalog/autocomplete` | None | Quick autocomplete suggestions |
 
 ### Reading Room (`/api/reading-room`)
 
 | Method | Path | Auth | Description |
 |---|---|---|---|
 | `GET` | `/api/reading-room/health` | None | Library health snapshot (used by Docker healthcheck) |
-| `GET` | `/api/reading-room/overdue` | Bearer | Report of overdue volumes |
+| `GET` | `/api/reading-room/overdue` | None | Report of overdue volumes |
+| `GET` | `/api/reading-room/last-recalc` | None | Timestamp of the last Dewey Score recalculation |
 
 ### Bulletins (`/api/bulletins`)
 
@@ -221,19 +226,21 @@ Web routes serve HTML pages via Jinja2 templates. Authentication uses session co
 | Path | Method | Description |
 |---|---|---|
 | `/` | GET | Reading room dashboard |
+| `/reading-room/live` | GET | Live-updating Reading Room partial (HTMX polling) |
 | `/login` | GET, POST | Login page and form handler |
 | `/register` | GET, POST | Registration page and form handler |
-| `/logout` | GET | Log out and clear session |
+| `/logout` | POST | Log out and clear session |
 | `/shelves` | GET | Browse all shelves |
 | `/shelves/create` | GET, POST | Create a new shelf |
 | `/shelves/{id}` | GET | View a shelf and its volumes |
 | `/volumes/{id}` | GET | View a volume with review action |
+| `/volumes/{id}/reviews` | GET | Paginated review history partial |
+| `/volumes/{id}/review` | POST | Review a volume (HTMX form action) |
 | `/volumes/create` | GET, POST | Create a new volume |
 | `/my-library` | GET | Personal library view |
 | `/profile/{id}` | GET | Librarian profile page |
 | `/settings` | GET | Library card editor |
-| `/settings/card` | POST | Save library card changes (username, email, role, avatar) |
-| `/settings/avatar` | POST | Legacy avatar update route (redirects to /settings/card) |
+| `/settings/card` | POST | Save library card changes (username, email, avatar) |
 | `/leaderboard` | GET | Leaderboard page |
 | `/how-to-play` | GET | How to play guide |
 
@@ -244,6 +251,7 @@ Web routes serve HTML pages via Jinja2 templates. Authentication uses session co
 | Volume detail (`/volumes/{id}`) | `Enter` | Review / next volume / done (priority order) |
 | Volume detail (`/volumes/{id}`) | `Escape` / `ArrowLeft` | Back to shelf |
 | Volume detail (`/volumes/{id}`) | `ArrowRight` | Next volume |
+| Shelves listing (`/shelves`) | `Enter` | Open the most overdue shelf |
 | Shelf detail (`/shelves/{id}`) | `Enter` | Open the most overdue volume for review |
 | Shelf detail (`/shelves/{id}`) | `Escape` / `ArrowLeft` | Back to shelves list |
 
@@ -273,7 +281,7 @@ docker compose down
 
 ### Container Details
 
-- **Base image**: `python:3.12-slim`
+- **Base image**: `python:3.14.7-slim`
 - **User**: `librarian` (non-root)
 - **Data volume**: `overdue-data` mounted at `/app/data/`
 - **Healthcheck**: `GET /api/reading-room/health` every 30 seconds
@@ -292,8 +300,7 @@ docker compose down
 | `pydantic[email]` | Data validation |
 | `pydantic-settings` | Settings from environment variables |
 | `PyJWT` | JWT library card encoding/decoding |
-| `passlib[bcrypt]` | Password hashing |
-| `bcrypt` | bcrypt backend |
+| `bcrypt` | Password hashing |
 | `typer` | CLI framework |
 | `rich` | CLI output formatting |
 | `jinja2` | Template engine |
@@ -327,7 +334,7 @@ Scores each documentation page by comparing its `freshness.sources` references a
 - Extracts symbol references from the document body (functions, classes, types mentioned in inline code or code blocks)
 - Compares those references against live symbols extracted from the declared source files
 - Applies penalties for: age (time since last edit), missing source files, and unrecognized references
-- Emits a JSON report and fails the CI check if any page scores below 80
+- Emits a JSON report and fails the CI check if the median score across pages drops below 75, or any `critical: true` page scores 60 or below
 
 **Multi-language symbol extraction:**
 - **Python (`.py`)**: Regex-based extraction of top-level `def`, `async def`, and `class` names
@@ -356,7 +363,7 @@ Registered in `src/web/templates.py` and available in all templates:
 
 | Name | Signature | Description |
 |---|---|---|
-| `render_avatar` | `(avatar_id: str, size: int = 32) -> Markup` | Render a monster librarian avatar as inline SVG |
+| `render_avatar` | `(avatar_id: str, size: int = 32) -> Markup` | Render a heroic librarian avatar as inline SVG |
 | `render_icon` | `(name: str, size: int = 16, color: str \| None = None) -> Markup` | Render a pixel art icon (static `<img>` or inline SVG for custom tints) |
 
 ### Filters
@@ -372,10 +379,15 @@ Registered in `src/web/templates.py` and available in all templates:
 The central game action processor. Call it from routes after a librarian action:
 
 ```python
-from src.game.engine import process_review
+from src.game.engine import on_volume_reviewed, on_volume_shelved
 
-result = await process_review(session, librarian_id, volume_id)
-# result = {"xp_gained": 10, "badges_earned": [...], "streak": 5, ...}
+# After creating a volume
+result = await on_volume_shelved(session, librarian_id, volume_id)
+
+# After reviewing a volume
+result = await on_volume_reviewed(session, librarian_id, volume_id, dewey_score_before)
+# result is a GameResult with xp_awarded, xp_breakdown, total_xp, rank,
+# rank_changed, badges_earned, streak info, ...
 ```
 
 ### Icon Rendering (`src/game/icons`)
