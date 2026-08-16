@@ -243,7 +243,9 @@ async def review_volume_web(
         return user
 
     volume = await session.get(VolumeRow, volume_id)
-    if not volume:
+    # Archived volumes are soft-deleted; reviewing one would still award XP
+    # (and could farm the shelf bonus), so treat them as not found.
+    if not volume or volume.archived:
         return RedirectResponse(url="/", status_code=302)
 
     dewey_score_before = calculate_dewey_score(volume.last_reviewed_at)

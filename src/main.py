@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
+from sqlalchemy.exc import DatabaseError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -86,28 +87,32 @@ async def lifespan(app: FastAPI):  # type: ignore[no-untyped-def]
     # Migrate badges table: enforce one badge per librarian. Skipped when the
     # table DDL already carries the unique constraint (fresh databases) so we
     # don't stack a second, redundant index on top of it; legacy tables get a
-    # dedupe pass first so the index creation succeeds.
-    async with engine.begin() as conn:
+    # dedupe pass first so the index creation succeeds. SQLite-only: other
+    # backends get the constraint from create_all and have no legacy history.
+    if engine.url.get_backend_name() == "sqlite":
         try:
-            ddl_result = await conn.execute(
-                text("SELECT sql FROM sqlite_master WHERE type='table' AND name='badges'")
-            )
-            badges_ddl = ddl_result.scalar() or ""
-            if "uq_badges_librarian_badge" not in badges_ddl:
-                await conn.execute(
-                    text(
-                        "DELETE FROM badges WHERE id NOT IN "
-                        "(SELECT MIN(id) FROM badges GROUP BY librarian_id, badge_name)"
-                    )
+            async with engine.begin() as conn:
+                ddl_result = await conn.execute(
+                    text("SELECT sql FROM sqlite_master WHERE type='table' AND name='badges'")
                 )
-                await conn.execute(
-                    text(
-                        "CREATE UNIQUE INDEX IF NOT EXISTS uq_badges_librarian_badge "
-                        "ON badges (librarian_id, badge_name)"
+                badges_ddl = ddl_result.scalar() or ""
+                if "uq_badges_librarian_badge" not in badges_ddl:
+                    await conn.execute(
+                        text(
+                            "DELETE FROM badges WHERE id NOT IN "
+                            "(SELECT MIN(id) FROM badges GROUP BY librarian_id, badge_name)"
+                        )
                     )
-                )
-        except Exception:
-            pass  # Non-SQLite backend or constraint already enforced
+                    await conn.execute(
+                        text(
+                            "CREATE UNIQUE INDEX IF NOT EXISTS uq_badges_librarian_badge "
+                            "ON badges (librarian_id, badge_name)"
+                        )
+                    )
+        except DatabaseError as exc:
+            # A swallowed failure here would leave duplicate badges possible
+            # with no operator signal, so say what happened.
+            logger.warning("Badge uniqueness migration skipped: %s", exc)
 
     # Auto-seed if database is empty (for docker compose demo experience)
     from src.db.seed import is_db_empty, seed_demo_data

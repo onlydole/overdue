@@ -240,7 +240,10 @@ async def review_volume(
 ) -> VolumeResponse:
     """Review a volume, resetting its Dewey Score to pristine."""
     volume = await session.get(VolumeRow, volume_id)
-    if not volume:
+    # Archived volumes are soft-deleted and hidden from listings; reviewing one
+    # would still award XP (and could farm the shelf bonus, since the bonus
+    # only considers active siblings), so treat them as not found.
+    if not volume or volume.archived:
         raise HTTPException(
             status_code=404,
             detail="That volume isn't on any of our shelves. Check the catalog and try again.",

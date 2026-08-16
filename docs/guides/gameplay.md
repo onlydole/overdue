@@ -76,7 +76,7 @@ Badges are achievements you unlock by hitting milestones. They come in two tiers
 | Badge | How to earn it |
 |---|---|
 | Marathon Reader | Maintain a 30-day review streak |
-| Dewey Devotee | Maintain an average Dewey Score above 90 for 7 days |
+| Dewey Devotee | Maintain an average Dewey Score above 90 across your volumes |
 | Centurion | Review 100 volumes total |
 
 ## Streaks

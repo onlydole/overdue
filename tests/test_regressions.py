@@ -99,6 +99,26 @@ async def test_api_review_of_decayed_volume_awards_xp(client, session_factory): 
     assert xp_rows  # review XP (plus overdue/rescue/streak bonuses)
 
 
+async def test_review_of_archived_volume_is_rejected(client, session_factory):  # noqa: F811
+    owner = await _make_librarian(session_factory, "owner")
+    shelf = await _make_shelf(session_factory, owner)
+    volume = await _make_volume_reviewed_at(session_factory, owner, shelf, _overdue_timestamp())
+
+    async with session_factory() as s:
+        row = await s.get(VolumeRow, volume)
+        row.archived = True
+        await s.commit()
+
+    resp = await client.post(f"/api/volumes/{volume}/review", headers=_auth(owner, "owner", "Page"))
+    assert resp.status_code == 404
+
+    async with session_factory() as s:
+        reviews = (await s.execute(select(ReviewRow))).scalars().all()
+        xp_rows = (await s.execute(select(XPLedgerRow))).scalars().all()
+    assert reviews == []
+    assert xp_rows == []
+
+
 # --- Volume PATCH validation -------------------------------------------------
 
 

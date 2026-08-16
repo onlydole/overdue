@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.passwords import hash_password
 from src.db.tables import (
     BadgeRow,
+    BulletinRow,
     LibrarianRow,
     ReviewRow,
     ShelfRow,
@@ -489,6 +490,12 @@ async def remove_bot(session: AsyncSession, username: str) -> bool:
     await session.execute(delete(XPLedgerRow).where(XPLedgerRow.librarian_id == bot.id))
     await session.execute(delete(BadgeRow).where(BadgeRow.librarian_id == bot.id))
     await session.execute(delete(StreakRow).where(StreakRow.librarian_id == bot.id))
+    await session.execute(delete(BulletinRow).where(BulletinRow.librarian_id == bot.id))
+    # Shelves are deliberately NOT cleaned up here: no code path creates
+    # bot-owned shelves, and one appearing would mean human volumes could be
+    # riding on it -- with FK enforcement on, deleting the bot then fails
+    # loudly instead of leaving a dangling created_by, which is the behavior
+    # we want for that (unexpected) state.
 
     await session.delete(bot)
     await session.flush()

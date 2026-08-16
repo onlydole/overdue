@@ -67,10 +67,10 @@ BADGE_DEFINITIONS = {
         "check": "current_streak >= 30",
     },
     "Dewey Devotee": {
-        "description": "Maintained average Dewey Score above 90 for 7 days",
+        "description": "Maintained average Dewey Score above 90",
         "icon": "award",
         "tier": "Rare",
-        "check": "avg_dewey_7d >= 90",
+        "check": "avg_dewey >= 90",
     },
     "Centurion": {
         "description": "Reviewed 100 volumes total",
