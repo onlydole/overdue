@@ -158,6 +158,24 @@ async def test_shelf_bonus_awarded_when_last_straggler_reviewed(session_factory)
     assert result.xp_awarded >= XP_SHELF_BONUS
 
 
+async def test_no_shelf_bonus_on_single_volume_shelf(session_factory):  # noqa: F811
+    owner = await _make_librarian(session_factory, "owner")
+    shelf = await _make_shelf(session_factory, owner)
+    only = await _make_volume_reviewed_at(
+        session_factory, owner, shelf, _overdue_timestamp(), title="Only"
+    )
+
+    async with session_factory() as s:
+        vol = await s.get(VolumeRow, only)
+        vol.last_reviewed_at = utcnow()
+        result = await on_volume_reviewed(s, owner, only, dewey_score_before=10.0)
+        await s.commit()
+
+    # A lone volume decaying and being re-reviewed must not mint +50 each cycle
+    reasons = [entry["reason"] for entry in result.xp_breakdown]
+    assert "Shelf bonus (all volumes healthy)" not in reasons
+
+
 async def test_no_shelf_bonus_while_other_volumes_unhealthy(session_factory):  # noqa: F811
     owner = await _make_librarian(session_factory, "owner")
     shelf = await _make_shelf(session_factory, owner)

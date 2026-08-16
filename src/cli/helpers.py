@@ -23,6 +23,9 @@ def save_token(token: str) -> None:
     TOKEN_DIR.chmod(0o700)
     fd = os.open(TOKEN_FILE, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, "w") as f:
+        # os.open's mode only applies at creation; tighten files that already
+        # existed with wider permissions from earlier versions.
+        os.fchmod(f.fileno(), 0o600)
         f.write(token)
 
 

@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ## [Unreleased]
 
 ### Added
-- Shelf bonus is now actually awarded: +50 XP when your review brings every non-archived volume on a shelf up to Dewey 75+ (only fires when the reviewed volume was below 75, so healthy shelves can't be re-farmed).
+- Shelf bonus is now actually awarded: +50 XP when your review brings every non-archived volume on a shelf up to Dewey 75+ (only fires on shelves with two or more volumes, and only when the reviewed volume was below 75, so neither healthy shelves nor lone decaying volumes can be farmed).
 - Rescue bonus: reviewing a volume in Overdue territory (Dewey Score 0–24) now awards +20 XP on top of the existing 2x multiplier, for a total of 30 XP per overdue rescue. XP labels across toasts, review partials, and the How to Play page updated to `+N XP (N pages)` format.
 - Automated documentation update workflow using GitHub Actions and Claude Code Action to detect documentation drift after PRs are merged to main.
 - Observability improvements to doc-update workflow: reasoning displayed in GitHub Actions job summary via `display_report: true` for transparent automated documentation decisions. Removed `show_full_output: true` to prevent secrets exposure in logs and `use_sticky_comment: true` which only works in tag mode (PR #26, #27).

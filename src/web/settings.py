@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import RedirectResponse
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.library_card import create_library_card
@@ -103,9 +103,11 @@ async def update_card(
             errors.append("That username is already taken.")
 
     if email != librarian.email:
+        # Case-insensitive, so rows stored mixed-case by earlier versions
+        # still block their lowercase duplicates
         existing_email = await session.execute(
             select(LibrarianRow.id).where(
-                LibrarianRow.email == email,
+                func.lower(LibrarianRow.email) == email,
                 LibrarianRow.id != librarian.id,
             ),
         )

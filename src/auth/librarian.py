@@ -53,8 +53,11 @@ async def register(
     # mixed-case registration would let Foo@x.com and foo@x.com coexist.
     email = body.email.strip().lower()
 
-    # Check for existing email
-    existing_email = await session.execute(select(LibrarianRow).where(LibrarianRow.email == email))
+    # Check for existing email (case-insensitively, so rows stored mixed-case
+    # by earlier versions still block their lowercase duplicates)
+    existing_email = await session.execute(
+        select(LibrarianRow).where(func.lower(LibrarianRow.email) == email)
+    )
     if existing_email.scalar_one_or_none():
         raise HTTPException(status_code=409, detail="That email is already registered.")
 

@@ -120,9 +120,12 @@ async def on_volume_reviewed(
                     VolumeRow.archived == False,  # noqa: E712
                 )
             )
-            shelf_healthy = all(
-                calculate_dewey_score(v.last_reviewed_at) >= DEWEY_GOOD_SHAPE
-                for v in siblings_result.scalars()
+            siblings = siblings_result.scalars().all()
+            # Require at least one sibling: a single-volume shelf would turn
+            # every decay-review cycle into a guaranteed +50, which is exactly
+            # the farming loop this bonus is guarded against.
+            shelf_healthy = bool(siblings) and all(
+                calculate_dewey_score(v.last_reviewed_at) >= DEWEY_GOOD_SHAPE for v in siblings
             )
             if shelf_healthy:
                 await award_xp(

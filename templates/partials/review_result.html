@@ -11,7 +11,7 @@
         <span>Next:</span>
         <span class="truncate">{{ next_volume.title }}</span>
     </a>
-    {% elif dewey_score < 99.9 %}
+    {% elif dewey_score < DEWEY_REVIEW_NOOP %}
     <button onclick="document.querySelector('.review-btn')?.click()" class="pixel-btn pixel-btn-green w-full shadow-lg">
         Review Again
     </button>
@@ -39,7 +39,7 @@
 
         <!-- Action buttons -->
         <div class="flex flex-col md:flex-row gap-3 mt-4">
-            {% if dewey_score < 99.9 %}
+            {% if dewey_score < DEWEY_REVIEW_NOOP %}
             <button hx-post="/volumes/{{ volume.id }}/review"
                     hx-target="#review-section"
                     hx-swap="outerHTML"

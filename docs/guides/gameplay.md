@@ -39,7 +39,7 @@ Every action in the library earns you "pages read" -- your experience points. Ov
 | Daily streak bonus | +20 XP/day (20 pages) |
 | Shelf bonus: your review brings every volume on a shelf to Dewey 75+ | +50 XP (50 pages) |
 
-The shelf bonus only fires when the volume you just reviewed was below Dewey 75 -- an already-healthy shelf can't be re-farmed by reviewing it again.
+The shelf bonus only fires when the volume you just reviewed was below Dewey 75, and the shelf must hold at least two volumes -- an already-healthy shelf (or a single-volume shelf riding the decay cycle) can't be farmed for repeat bonuses.
 
 ## Ranks
 

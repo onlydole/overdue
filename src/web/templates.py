@@ -4,10 +4,15 @@ from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from markupsafe import Markup
 
+from src.config.defaults import DEWEY_REVIEW_NOOP
 from src.game.avatars import render_avatar_svg
 from src.game.icons import render_icon_svg
 
 templates = Jinja2Templates(directory="templates")
+
+# Templates gate "Review Again" buttons on the same threshold the handlers use
+# for the no-op guard, so UI and server can't drift apart.
+templates.env.globals["DEWEY_REVIEW_NOOP"] = DEWEY_REVIEW_NOOP
 
 _GREEN_TINT_STATIC_ICONS = {"checkmark", "play"}
 _GOLD_TINT_STATIC_ICONS = {

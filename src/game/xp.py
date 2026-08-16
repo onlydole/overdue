@@ -53,21 +53,23 @@ async def award_xp(
     session.add(entry)
 
     # Update total atomically in the database: a read-modify-write through the
-    # ORM loses awards when two sessions review at the same time.
-    await session.execute(
+    # ORM loses awards when two sessions review at the same time. RETURNING
+    # gives back the fresh total without a per-award refresh SELECT.
+    result = await session.execute(
         update(LibrarianRow)
         .where(LibrarianRow.id == librarian_id)
         .values(total_xp=LibrarianRow.total_xp + amount)
+        .returning(LibrarianRow.total_xp)
     )
-    await session.refresh(librarian)
+    new_total = result.scalar_one()
 
     # Check for rank up
-    new_rank = get_rank(librarian.total_xp)
+    new_rank = get_rank(new_total)
     if new_rank != librarian.role:
         librarian.role = new_rank
 
     await session.flush()
-    return librarian.total_xp
+    return new_total
 
 
 async def award_shelve_xp(session: AsyncSession, librarian_id: int) -> int:
