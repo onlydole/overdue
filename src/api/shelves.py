@@ -62,7 +62,7 @@ async def create_shelf(
     if existing.scalar_one_or_none():
         raise HTTPException(
             status_code=409,
-            detail="A volume with that title is already shelved in this section.",
+            detail="A shelf with that name already exists.",
         )
 
     shelf = ShelfRow(
