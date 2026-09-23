@@ -21,6 +21,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - Documentation update workflow triggers on all merged PRs instead of only those touching `docs/` or `src/` paths.
 - XP display labels updated from "+N pages" format to "+N XP (N pages)" format throughout the UI for clarity.
 - Daily streak bonus increased from +15 XP to +20 XP per day (PR #42).
+- **Dependencies:** refreshed to current releases -- `fastapi` 0.139 → 0.140, `uvicorn[standard]` 0.49.0 → 0.51.0, `sqlalchemy[asyncio]` 2.0.50 → 2.0.51, `typer` 0.26.8 → 0.27.0, `ruff` 0.15.21 → 0.16.0, and `mypy` 2.2 → 2.3.0 (PRs #112, #113, #114).
+- **CSS toolchain:** `@tailwindcss/cli` 4.3.1 → 4.3.3, with `static/css/tailwind.css` rebuilt so the checked-in artifact matches the pinned toolchain. The rebuild picks up two upstream defaults: `--font-sans` now leads with `-apple-system`/`BlinkMacSystemFont`, and `:-moz-focusring` is narrowed to `:where(:not(iframe))`. The pixel art headings (Press Start 2P) and body text (VT323) are unaffected (PRs #111, #115).
+- **CI:** `astral-sh/setup-uv` 8.2.0 → 9.0.0 in the freshness workflows. v9's only breaking change is `prune-cache` defaulting to `false`; the inputs Overdue uses (`enable-cache`, `cache-dependency-glob`, `python-version`) are unchanged (PR #110).
 
 ### Fixed
 - Post-merge documentation check failing with `error_max_turns` on large merges: raised the doc-update workflow's turn cap from 25 to 100 (the 30-minute job timeout remains the cost backstop).
