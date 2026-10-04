@@ -19,8 +19,11 @@
 #     can read intent at a glance.
 #   - Untrusted PR base ref is routed through env before reaching any shell.
 #     fetch-depth: 0 is required for the git age signal but otherwise we
-#     run as a fork-safe PR job (no secrets needed for the deterministic
-#     path; Claude step gates on the gray-zone count being non-zero).
+#     run as a fork-safe PR job (no secrets or OIDC token permission needed
+#     for the deterministic path).
+#   - The Claude/OIDC semantic check is isolated to a separate trusted-context
+#     job and does not run on pull_request events because this workflow checks
+#     out and executes PR-controlled code.
 
 name: Documentation Freshness
 
@@ -54,10 +57,11 @@ jobs:
   freshness:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    outputs:
+      gray_count: ${{ steps.gray.outputs.count }}
     permissions:
       contents: read
       pull-requests: write
-      id-token: write  # claude-code-action authenticates to the Anthropic API via OIDC
     steps:
       # fetch-depth: 0 — git age signal needs full history
       - name: Checkout
@@ -126,20 +130,13 @@ jobs:
           count=$(jq '[.[] | select(.score >= 35 and .score < 65)] | length' freshness.current.json)
           echo "count=$count" >> "$GITHUB_OUTPUT"
 
-      - name: Claude semantic check
-        if: steps.gray.outputs.count != '0'
-        uses: anthropics/claude-code-action@dde2242db6af13460b916652159b6ba19a598f30 # v1.0.120
+      - name: Upload gray-zone list
+        if: github.event_name != 'pull_request' && steps.gray.outputs.count != '0'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          claude_args: |
-            --max-turns 8
-            --allowedTools "Read,Glob,Grep"
-            --model claude-sonnet-4-6
-          prompt: |
-            Read each page listed in /tmp/gray.txt and the source files in its
-            frontmatter `sources` block. For each, decide whether the
-            documented behavior still matches the code. Respond with one of
-            STILL_ACCURATE, DRIFTED, or NEEDS_HUMAN_REVIEW and a one-line reason.
+          name: freshness-gray-zone
+          path: /tmp/gray.txt
+          retention-days: 1
 
       - name: Build PR comment body
         if: github.event_name == 'pull_request'
@@ -181,3 +178,39 @@ jobs:
               sys.exit(1)
           print(f'::notice::Docs freshness OK (median={int(median)}, pages={len(scores)})')
           PY
+
+
+  claude-semantic-check:
+    if: github.event_name != 'pull_request' && needs.freshness.outputs.gray_count != '0'
+    needs: freshness
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write  # claude-code-action authenticates to the Anthropic API via OIDC
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download gray-zone list
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
+        with:
+          name: freshness-gray-zone
+          path: /tmp
+
+      - name: Claude semantic check
+        uses: anthropics/claude-code-action@dde2242db6af13460b916652159b6ba19a598f30 # v1.0.120
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: |
+            --max-turns 8
+            --allowedTools "Read,Glob,Grep"
+            --model claude-sonnet-4-6
+          prompt: |
+            Read each page listed in /tmp/gray.txt and the source files in its
+            frontmatter `sources` block. For each, decide whether the
+            documented behavior still matches the code. Respond with one of
+            STILL_ACCURATE, DRIFTED, or NEEDS_HUMAN_REVIEW and a one-line reason.
