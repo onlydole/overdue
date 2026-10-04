@@ -181,7 +181,8 @@ jobs:
 
 
   claude-semantic-check:
-    if: github.event_name != 'pull_request' && needs.freshness.outputs.gray_count != '0'
+    # Preserve semantic diagnostics even when the freshness SLO gate fails.
+    if: ${{ !cancelled() && github.event_name != 'pull_request' && needs.freshness.outputs.gray_count > 0 }}
     needs: freshness
     runs-on: ubuntu-latest
     timeout-minutes: 10
