@@ -36,7 +36,6 @@ on:
       - 'pyproject.toml'
       - 'uv.lock'
       - '.github/scripts/freshness.py'
-      - '.github/scripts/format_pr_comment.py'
       - '.github/freshness-allowlist.txt'
       - '.github/workflows/freshness.yml'
   push:
@@ -175,7 +174,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      actions: read
       pull-requests: write
     steps:
       - name: Download freshness report
@@ -193,13 +191,17 @@ jobs:
       - name: Build PR comment body
         run: |
           set -euo pipefail
-          python <<'PY' > /tmp/comment.md
+          python - --current /tmp/freshness-current/freshness.current.json \
+            --baseline /tmp/freshness-baseline/freshness.main.json <<'PY' > /tmp/comment.md
+          import argparse
           import json
           import re
           import statistics
+          import sys
           from pathlib import Path
 
           SAFE_PATH = re.compile(r"^docs/[A-Za-z0-9._/-]+\.md$")
+          SAFE_SYMBOL = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*$")
 
           def load_report(path):
               raw = json.loads(Path(path).read_text())
@@ -216,14 +218,17 @@ jobs:
                       continue
                   if ".." in Path(doc_path).parts:
                       continue
-                  if not isinstance(score, int) or score < 0 or score > 100:
+                  if type(score) is not int or score < 0 or score > 100:
                       continue
+                  missing = item.get("missing_symbols", [])
                   records.append(
                       {
                           "path": doc_path,
                           "score": score,
-                          "missing_symbols": item.get("missing_symbols", [])
-                          if isinstance(item.get("missing_symbols"), list)
+                          "missing_symbols": [
+                              s for s in missing if isinstance(s, str) and SAFE_SYMBOL.fullmatch(s)
+                          ]
+                          if isinstance(missing, list)
                           else [],
                           "ttl_days": item.get("ttl_days"),
                           "doc_age_days": item.get("doc_age_days", 0),
@@ -239,8 +244,9 @@ jobs:
           def reason_for(current, baseline):
               current_missing = {s for s in current["missing_symbols"] if isinstance(s, str)}
               baseline_missing = {s for s in baseline["missing_symbols"] if isinstance(s, str)}
-              if current_missing - baseline_missing:
-                  return "signature drift"
+              new_missing = sorted(current_missing - baseline_missing)
+              if new_missing:
+                  return f"signature drift on {new_missing[0]}"
 
               ttl = current["ttl_days"]
               age = current["doc_age_days"]
@@ -256,41 +262,65 @@ jobs:
 
               return "score decreased"
 
-          current = load_report("/tmp/freshness-current/freshness.current.json")
-          baseline = load_report("/tmp/freshness-baseline/freshness.main.json")
-          baseline_by_path = {r["path"]: r for r in baseline}
-          drops = []
-          for record in current:
-              before = baseline_by_path.get(record["path"])
-              if before is None or record["score"] >= before["score"]:
-                  continue
-              drops.append(
-                  {
-                      "path": record["path"],
-                      "before": before["score"],
-                      "after": record["score"],
-                      "reason": reason_for(record, before),
-                      "delta": record["score"] - before["score"],
-                  }
-              )
-          drops.sort(key=lambda item: (item["delta"], item["path"]))
-
-          current_median = median(current)
-          baseline_median = median(baseline)
-          delta = current_median - baseline_median
-          sign = "+" if delta >= 0 else ""
-          print(f"Documentation freshness: {baseline_median} -> {current_median} ({sign}{delta})")
-          print()
-          if not drops:
-              print("No pages dropped.")
-          else:
-              print(f"{len(drops)} pages dropped:")
-              path_col = max(len(item["path"]) for item in drops) + 7
-              for item in drops:
-                  print(
-                      f"  {item['path']:<{path_col}}"
-                      f"{item['before']} -> {item['after']}  ({item['reason']})"
+          def compute_diff(current, baseline):
+              baseline_by_path = {r["path"]: r for r in baseline}
+              drops = []
+              for record in current:
+                  before = baseline_by_path.get(record["path"])
+                  if before is None or record["score"] >= before["score"]:
+                      continue
+                  drops.append(
+                      {
+                          "path": record["path"],
+                          "before": before["score"],
+                          "after": record["score"],
+                          "reason": reason_for(record, before),
+                          "delta": record["score"] - before["score"],
+                      }
                   )
+              drops.sort(key=lambda item: (item["delta"], item["path"]))
+              current_median = median(current)
+              baseline_median = median(baseline)
+              return {
+                  "current_median": current_median,
+                  "baseline_median": baseline_median,
+                  "delta": current_median - baseline_median,
+                  "drops": drops,
+              }
+
+          def render(diff):
+              delta = diff["delta"]
+              sign = "+" if delta >= 0 else ""
+              lines = [
+                  f"Documentation freshness: {diff['baseline_median']} -> "
+                  f"{diff['current_median']} ({sign}{delta})",
+                  "",
+              ]
+              drops = diff["drops"]
+              if not drops:
+                  lines.append("No pages dropped.")
+              else:
+                  lines.append(f"{len(drops)} pages dropped:")
+                  path_col = max(len(item["path"]) for item in drops) + 7
+                  for item in drops:
+                      lines.append(
+                          f"  {item['path']:<{path_col}}"
+                          f"{item['before']} -> {item['after']}  ({item['reason']})"
+                      )
+              return "\n".join(lines) + "\n"
+
+          def main(argv=None):
+              parser = argparse.ArgumentParser(description="Render sanitized freshness deltas")
+              parser.add_argument("--current", type=Path, required=True)
+              parser.add_argument("--baseline", type=Path, required=True)
+              args = parser.parse_args(argv)
+              current = load_report(args.current)
+              baseline = load_report(args.baseline)
+              sys.stdout.write(render(compute_diff(current, baseline)))
+              return 0
+
+          if __name__ == "__main__":
+              raise SystemExit(main())
           PY
           cat /tmp/comment.md
 

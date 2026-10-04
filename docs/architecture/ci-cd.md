@@ -65,18 +65,22 @@ Bash is allowed without restriction. This is a deliberate trade-off between tool
 
 ### Documentation Freshness (`freshness.yml`)
 
+<!-- updated by /doc-it -->
+
 Scores every doc page on a 0--100 scale on every PR and gates the merge against an SLO.
 
-**Trigger:** Runs on PRs touching `docs/`, `src/`, the freshness script, the allowlist, or this workflow file. Also runs on `push` to `main` to refresh the baseline artifact.
+**Trigger:** Runs on PRs touching `docs/`, `src/`, dependency manifests, deployment files, the freshness script, the allowlist, or this workflow file. Also runs on `push` to `main` and manual `workflow_dispatch`.
 
 **How it works:**
 
-1. Checks out the PR ref with full history (`fetch-depth: 0`)
-2. Runs `.github/scripts/freshness.py` to score each page from three deterministic signals (git age delta, frontmatter TTL, symbol drift)
-3. Adds a `git worktree` for the PR base ref and scores the baseline so the comment formatter can show per-page deltas
-4. Pages in the 35--64 gray zone are routed to a conditional [Claude Code Action](https://github.com/anthropics/claude-code-action) step that classifies each as `STILL_ACCURATE`, `DRIFTED`, or `NEEDS_HUMAN_REVIEW`
-5. `marocchino/sticky-pull-request-comment@v2` posts (or updates) a single PR comment with the median delta and per-page drops
-6. The SLO gate fails the job when the median drops below 75 or any `critical: true` page drops below 60
+1. The read-only `freshness` job checks out the current ref with full history (`fetch-depth: 0`) and without persisted credentials
+2. Runs `.github/scripts/freshness.py` to score each page from three deterministic signals (git age delta, frontmatter TTL, symbol drift), uploading `freshness.current.json` as the `freshness-report` artifact
+3. On PR runs, adds a `git worktree` for the PR base ref and scores the baseline, uploading `freshness.main.json` as the `freshness-baseline` artifact
+4. On trusted `push` and `workflow_dispatch` runs only, pages in the 35--64 gray zone are routed to a conditional [Claude Code Action](https://github.com/anthropics/claude-code-action) step that classifies each as `STILL_ACCURATE`, `DRIFTED`, or `NEEDS_HUMAN_REVIEW`. `ANTHROPIC_API_KEY` is never supplied on PR runs
+5. The SLO gate fails `freshness` when the median drops below 75 or any `critical: true` page drops below 60
+6. A separate `pr-comment` job downloads both PR artifacts, validates their paths, scores, and symbol names, and renders the median delta and per-page drops. It runs no PR-controlled code or dependency installs. `marocchino/sticky-pull-request-comment@v3.0.4` posts (or updates) a single PR comment, including when the SLO gate fails
+
+The comment renderer lives in the workflow itself; `tests/test_format_pr_comment.py` loads and tests that implementation. The write-scoped job never checks out the PR or executes artifact contents as code.
 
 **Tool permissions for the semantic check:** `Read`, `Glob`, `Grep` only -- the step reads source files and docs and does not write anything.
 
@@ -84,9 +88,11 @@ Scores every doc page on a 0--100 scale on every PR and gates the merge against 
 
 | Setting | Purpose |
 |---|---|
-| `ANTHROPIC_API_KEY` secret | Authenticates the gray-zone semantic check |
-| `contents: read` permission | Reads the repo |
-| `pull-requests: write` permission | Posts the sticky PR comment |
+| `ANTHROPIC_API_KEY` secret | Authenticates the gray-zone semantic check on trusted non-PR runs only |
+| `contents: read` permission on `freshness` | Reads the repo without write access |
+| `pull-requests: write` permission on `pr-comment` | Posts the sticky PR comment from validated artifacts only |
+
+Top-level `permissions: {}` disables default token scopes; each job opts in only to the permissions above. Same-run artifact downloads require no `actions: read` permission.
 
 **Required status check setup:**
 
@@ -97,7 +103,7 @@ To make merges actually wait on the freshness gate, mark this workflow as a requ
 3. Search for and select **freshness** (the job ID from this workflow)
 4. Save
 
-Authors will still see the comment with the median delta on every PR even without protection rules, but only the required-status-check setup blocks merges on a failing SLO.
+For same-repository PRs, the separate comment job posts the median delta even without protection rules, but only the required-status-check setup blocks merges on a failing SLO. Fork PR tokens remain read-only, so posting the comment may fail; keep `freshness` required, not `pr-comment`.
 
 **Local check:**
 
