@@ -95,12 +95,15 @@ Full list: [docs/guides/configuration.md](docs/guides/configuration.md)
 ## Development
 
 ```bash
-pytest                          # Run the test suite
-ruff check src/ tests/          # Lint
-ruff format src/ tests/         # Format
-npm run css:build               # Rebuild Tailwind CSS
-python scripts/build_icons.py   # Regenerate pixel art SVGs
+pytest                                  # Run the test suite
+ruff check src/ tests/ scripts/         # Lint
+ruff format src/ tests/ scripts/        # Format
+mypy src/                               # Type check (strict)
+npm run css:build                       # Rebuild Tailwind CSS
+python scripts/build_icons.py           # Regenerate pixel art SVGs
 ```
+
+The first four run as parallel CI jobs on every pull request -- see [CI/CD and Automation](docs/architecture/ci-cd.md).
 
 ## Project Structure
 
@@ -131,6 +134,7 @@ docs/           # Guides, API reference, architecture, changelog
 - [API Endpoints](docs/api/endpoints.md)
 - [Authentication](docs/api/authentication.md)
 - [Architecture](docs/architecture/overview.md)
+- [CI/CD and Automation](docs/architecture/ci-cd.md) -- test/lint/type checks, docs freshness gate
 - [Changelog](CHANGELOG.md)
 
 ## Documentation Freshness
