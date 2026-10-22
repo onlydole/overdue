@@ -81,7 +81,9 @@ Create a new volume (shelve knowledge).
 }
 ```
 
-**Response:** `201 Created` with the new volume including its Dewey Score.
+**Response:** `201 Created` with the new volume including its Dewey Score. Repeated
+`bookmarks` entries are collapsed to their first occurrence. The volume and the XP it
+earns are committed together, so a failed award leaves no orphaned volume behind.
 
 ### `GET /api/volumes/`
 List all volumes in the library.
@@ -102,7 +104,10 @@ Get a specific volume by ID.
 Update a volume's title, content, shelf, or bookmarks. Requires library card.
 Only the volume's author (or a Head Librarian) may update it; others receive `403`.
 
-**Request body:** Any subset of volume fields.
+**Request body:** Any subset of volume fields. Omitted fields are left untouched, and
+sending an explicit `null` for `title`, `content`, or `shelf_id` is rejected with `422`
+rather than clearing the column. Repeated `bookmarks` entries are collapsed to their
+first occurrence.
 
 **Response:** Updated volume.
 
@@ -113,7 +118,10 @@ Archive a volume (soft delete). Requires library card. Only the volume's author
 **Response:** `204 No Content`
 
 ### `POST /api/volumes/{volume_id}/review`
-Review a volume, resetting its Dewey Score to 100 (pristine).
+Review a volume, resetting its Dewey Score to 100 (pristine). Reviewing an
+already-pristine volume is a no-op that awards nothing. If two reviews of the same
+volume arrive at the same moment, only one of them records a review and awards pages
+read; the other returns the refreshed volume without awarding anything.
 
 **Response:** Updated volume with reset score.
 
@@ -140,7 +148,9 @@ Get a specific shelf by ID.
 
 ### `PATCH /api/shelves/{shelf_id}`
 Update a shelf's name or description. Requires library card. Only the shelf's
-creator (or a Head Librarian) may update it; others receive `403`.
+creator (or a Head Librarian) may update it; others receive `403`. Shelf names stay
+unique: renaming a shelf to a name another shelf already uses returns `409`, and an
+explicit `null` name is rejected with `422`.
 
 ### `DELETE /api/shelves/{shelf_id}`
 Delete a shelf and all its volumes. Requires library card. Only the shelf's
