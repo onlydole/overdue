@@ -72,7 +72,11 @@ jobs:
       - name: Verify generated icons
         run: |
           uv run --locked python scripts/build_icons.py
-          git diff --exit-code -- static/icons/
+          changes=$(git status --porcelain --untracked-files=all -- static/icons/)
+          if [ -n "$changes" ]; then
+            printf '%s\n' "$changes"
+            exit 1
+          fi
 
   lint:
     name: lint
@@ -178,7 +182,7 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Audit dependencies
-        run: npm audit
+        run: npm audit --audit-level=low
 
       - name: Check application JavaScript
         run: |
@@ -189,4 +193,8 @@ jobs:
         run: |
           npm run js:build
           npm run css:build
-          git diff --exit-code -- static/css/tailwind.css static/js/htmx.min.js static/js/alpine.min.js
+          changes=$(git status --porcelain --untracked-files=all -- static/css/tailwind.css static/js/htmx.min.js static/js/alpine.min.js)
+          if [ -n "$changes" ]; then
+            printf '%s\n' "$changes"
+            exit 1
+          fi

@@ -30,7 +30,7 @@ Runs Python tests, lint, types, and frontend asset checks as independent jobs. E
 | `lint` | `uv run --locked ruff check src/ tests/ scripts/` then `uv run --locked ruff format --check src/ tests/ scripts/` |
 | `types` | `uv run --locked mypy src/` |
 | `runtime` | `uv run --locked pytest` on Python 3.14 |
-| `frontend` | `npm ci --ignore-scripts`, `npm audit`, JavaScript syntax checks, and reproducible asset builds |
+| `frontend` | `npm ci --ignore-scripts`, `npm audit --audit-level=low`, JavaScript syntax checks, and reproducible asset builds |
 
 The jobs run concurrently, so a type error does not hide a test failure.
 
@@ -39,6 +39,10 @@ The jobs run concurrently, so a type error does not hide a test failure.
 **Python versions:** the `test` job covers Python 3.12, the minimum supported version. The `runtime` job covers Python 3.14, matching Docker. Both install development dependencies with `uv sync --locked --extra dev`. The test job also regenerates icons and checks that they match the committed SVGs.
 
 The frontend job uses Node.js 24. It rebuilds CSS and the vendored HTMX and Alpine.js files, then rejects changes to the committed assets. Browser libraries are development dependencies because the app serves their generated files without a Node.js runtime. Tailwind scans the configured template and JavaScript paths, with automatic repository scanning disabled.
+
+Both asset checks inspect Git status, including untracked files, after regeneration. They reject generated files missing from the branch as well as modified or deleted assets.
+
+The npm audit gate deliberately fails on low, moderate, high, and critical advisories, including development and transitive dependencies. These tools execute during builds, so development dependencies remain in scope. This policy can block an unrelated PR when a new advisory appears; fix the dependency or review a policy change rather than silently raising the threshold. The explicit `--audit-level=low` flag records that choice.
 
 Docker uses Python 3.14.9 and installs runtime dependencies from `uv.lock` with `uv sync --locked --no-dev`. Compose Watch rebuilds the image when the lockfile changes. The project stays editable so source syncing still works.
 
@@ -56,7 +60,7 @@ Docker uses Python 3.14.9 and installs runtime dependencies from `uv.lock` with 
 ```bash
 make check
 npm ci --ignore-scripts
-npm audit
+npm audit --audit-level=low
 npm run js:build
 npm run css:build
 uv run --locked python scripts/build_icons.py
