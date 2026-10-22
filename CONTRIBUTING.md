@@ -64,7 +64,21 @@ ruff format src/ tests/ scripts/
 mypy src/
 ```
 
-CI runs these as required checks on every PR (see [CI/CD and Automation](docs/architecture/ci-cd.md)), so it's quicker to catch failures locally first.
+`make check` runs the lint, format check, type check, and tests together.
+
+CI runs these as required checks on every PR (see [CI/CD and Automation](docs/architecture/ci-cd.md)), so it's quicker to catch failures locally first. The test suite also runs on Python 3.14, the version the Docker image ships.
+
+## Generated Assets
+
+CSS, the vendored browser libraries, and the pixel art SVGs are committed to the repo, and CI rebuilds them and fails if the result differs from your branch. If you touch templates, icons, avatars, or the pinned HTMX/Alpine.js versions, regenerate and commit the output:
+
+```bash
+npm ci --ignore-scripts
+npm audit --audit-level=low
+npm run css:build
+npm run js:build
+uv run --locked python scripts/build_icons.py
+```
 
 ## Commit Conventions
 
