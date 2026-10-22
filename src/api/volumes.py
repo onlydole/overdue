@@ -15,6 +15,7 @@ from src.config.settings import settings
 from src.db.engine import get_session
 from src.db.tables import ShelfRow, VolumeRow, volume_bookmarks
 from src.errors.incidents import VolumeTooLarge
+from src.game.reviews import claim_review
 from src.models.volume import VolumeCreate, VolumeListResponse, VolumeResponse, VolumeUpdate
 from src.utils import utcnow
 
@@ -84,14 +85,12 @@ async def create_volume(
     for tag in body.bookmarks:
         await session.execute(volume_bookmarks.insert().values(volume_id=volume.id, bookmark=tag))
 
-    await session.commit()
-    await session.refresh(volume)
-
     # Trigger game mechanics
     from src.game.engine import on_volume_shelved
 
     await on_volume_shelved(session, int(payload["sub"]), volume.id)
     await session.commit()
+    await session.refresh(volume)
 
     return volume_to_response(volume, body.bookmarks)
 
@@ -254,9 +253,7 @@ async def review_volume(
 
     # Already-pristine volumes are a no-op (same guard as the web handler):
     # without it, re-posting reviews in a loop farms XP.
-    if dewey_score_before < DEWEY_REVIEW_NOOP:
-        volume.last_reviewed_at = utcnow()
-
+    if dewey_score_before < DEWEY_REVIEW_NOOP and await claim_review(session, volume):
         # Trigger game mechanics (creates ReviewRow, awards XP, updates streak, checks badges)
         from src.game.engine import on_volume_reviewed
 

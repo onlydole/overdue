@@ -31,6 +31,8 @@ services:
         - action: rebuild
           path: ./pyproject.toml
         - action: rebuild
+          path: ./uv.lock
+        - action: rebuild
           path: ./Dockerfile
     ports:
       - "${OVERDUE_PORT:-8000}:8000"

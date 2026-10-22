@@ -7,6 +7,7 @@ import time
 from collections import defaultdict
 from contextlib import asynccontextmanager
 from datetime import datetime
+from importlib.metadata import version
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -148,7 +149,7 @@ async def lifespan(app: FastAPI):  # type: ignore[no-untyped-def]
 app = FastAPI(
     title=settings.app_name,
     description="Don't let your knowledge expire.",
-    version="0.6.0",
+    version=version("overdue"),
     lifespan=lifespan,
 )
 
@@ -204,11 +205,13 @@ async def server_error_handler(request: Request, exc: Exception) -> Response:
 
 # Simple in-memory rate limiting (quiet hours)
 _request_counts: dict[str, list[float]] = defaultdict(list)
+_next_quiet_hours_cleanup = 0.0
 
 
 @app.middleware("http")
 async def quiet_hours_middleware(request: Request, call_next):  # type: ignore[no-untyped-def]
     """Enforce quiet hours (rate limiting)."""
+    global _next_quiet_hours_cleanup
     # Exclude static files from rate limiting to prevent asset loading from blocking the app
     if request.url.path.startswith("/static") or request.url.path.startswith("/favicon.ico"):
         return await call_next(request)
@@ -217,8 +220,14 @@ async def quiet_hours_middleware(request: Request, call_next):  # type: ignore[n
     now = time.time()
     window = 60.0  # 1 minute window
 
-    # Clean old entries; drop drained IPs entirely so the map doesn't grow
-    # without bound as one-off clients (scanners, crawlers) come and go
+    # Also expire clients that never return to trigger their own cleanup.
+    if now >= _next_quiet_hours_cleanup:
+        for ip, timestamps in list(_request_counts.items()):
+            if not timestamps or now - timestamps[-1] >= window:
+                _request_counts.pop(ip, None)
+        _next_quiet_hours_cleanup = now + window
+
+    # Keep only this client's requests within the current window.
     recent = [t for t in _request_counts[client_ip] if now - t < window]
     if recent:
         _request_counts[client_ip] = recent

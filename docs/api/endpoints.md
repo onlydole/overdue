@@ -187,7 +187,7 @@ Get the timestamp of the last background Dewey Score recalculation.
 ## Bulletins
 
 ### `POST /api/bulletins/`
-Subscribe to webhook notifications for library events.
+Store a bulletin subscription for library events. The current implementation stores subscriptions and provides a signing helper, but does not deliver events to the registered URL.
 
 ### `GET /api/bulletins/`
 List your webhook subscriptions.

@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class VolumeCreate(BaseModel):
@@ -13,6 +13,11 @@ class VolumeCreate(BaseModel):
     shelf_id: int
     bookmarks: list[str] = Field(default_factory=list)
 
+    @field_validator("bookmarks")
+    @classmethod
+    def unique_bookmarks(cls, value: list[str]) -> list[str]:
+        return list(dict.fromkeys(value))
+
 
 class VolumeUpdate(BaseModel):
     """Request body for updating a volume."""
@@ -21,6 +26,18 @@ class VolumeUpdate(BaseModel):
     content: str | None = Field(None, min_length=1)
     shelf_id: int | None = None
     bookmarks: list[str] | None = None
+
+    @field_validator("title", "content", "shelf_id")
+    @classmethod
+    def reject_null(cls, value: str | int | None) -> str | int:
+        if value is None:
+            raise ValueError("This field cannot be null.")
+        return value
+
+    @field_validator("bookmarks")
+    @classmethod
+    def unique_bookmarks(cls, value: list[str] | None) -> list[str] | None:
+        return list(dict.fromkeys(value)) if value is not None else None
 
 
 class VolumeResponse(BaseModel):

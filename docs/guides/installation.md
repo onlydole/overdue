@@ -17,7 +17,7 @@ freshness:
 ## Prerequisites
 
 - Python 3.12 or higher
-- pip (or your preferred Python package manager)
+- uv for the locked development environment
 - Node.js and npm (for Tailwind CSS builds, optional)
 
 ## Option 1: Docker (fastest)
@@ -35,7 +35,8 @@ Open `http://localhost:8000`. Done. The database, demo data, and bot players are
 ```bash
 git clone https://github.com/onlydole/overdue.git
 cd overdue
-pip install -e ".[dev]"
+uv sync --locked --extra dev
+source .venv/bin/activate
 ```
 
 This also installs the `overdue` console script -- the canonical CLI entry point used throughout these docs (`overdue serve`, `overdue bots list`, ...).
@@ -57,9 +58,15 @@ You should see a JSON response with the library's mood and health stats.
 If you modify templates and add new Tailwind classes:
 
 ```bash
-npm install
+npm ci --ignore-scripts
 npm run css:build
 ```
+
+### Rebuild browser libraries
+
+HTMX and Alpine.js versions live in `package.json` and `package-lock.json`. After updating them, run `npm run js:build` to copy their distributions into `static/js/`.
+
+Tailwind currently pins an older file watcher that depends on vulnerable pattern parsers. The npm override selects `@parcel/watcher` 2.6 or later, which uses picomatch instead. Keep the override until the Tailwind CLI no longer needs it.
 
 ### Regenerate pixel art assets (optional)
 

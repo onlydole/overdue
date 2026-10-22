@@ -34,12 +34,9 @@ The app will be running at [http://localhost:8000](http://localhost:8000).
 git clone https://github.com/onlydole/overdue.git
 cd overdue
 
-# Create and activate a virtual environment
-python -m venv .venv
+# Install the locked development dependencies
+uv sync --locked --extra dev
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
-
-# Install with dev dependencies
-pip install -e ".[dev]"
 
 # Start the dev server
 uvicorn src.main:app --reload

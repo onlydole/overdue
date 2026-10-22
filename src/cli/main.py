@@ -1,5 +1,7 @@
 """Overdue CLI entry point."""
 
+from importlib.metadata import version as package_version
+
 import typer
 
 from src.cli.commands.auth import app as auth_app
@@ -19,7 +21,7 @@ app = typer.Typer(
 @app.command()
 def version() -> None:
     """Show the Overdue version."""
-    typer.echo("overdue 0.1.0a1")
+    typer.echo(f"overdue {package_version('overdue')}")
 
 
 @app.command()

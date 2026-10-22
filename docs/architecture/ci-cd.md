@@ -18,7 +18,7 @@ Overdue uses GitHub Actions for continuous integration and automated documentati
 
 ### Tests, Lint and Types (`checks.yml`)
 
-Runs the three checks CONTRIBUTING.md asks contributors to run locally, as independent parallel jobs.
+Runs Python tests, lint, types, and frontend asset checks as independent jobs. Every install uses the committed lockfiles.
 
 **Trigger:** Every pull request, every push to `main`, and `workflow_dispatch`.
 
@@ -26,15 +26,21 @@ Runs the three checks CONTRIBUTING.md asks contributors to run locally, as indep
 
 | Job ID | Command |
 |---|---|
-| `test` | `uv run pytest` |
-| `lint` | `uv run ruff check src/ tests/ scripts/` then `uv run ruff format --check src/ tests/ scripts/` |
-| `types` | `uv run mypy src/` |
+| `test` | `uv run --locked pytest` |
+| `lint` | `uv run --locked ruff check src/ tests/ scripts/` then `uv run --locked ruff format --check src/ tests/ scripts/` |
+| `types` | `uv run --locked mypy src/` |
+| `runtime` | `uv run --locked pytest` on Python 3.14 |
+| `frontend` | `npm ci --ignore-scripts`, `npm audit`, JavaScript syntax checks, and reproducible asset builds |
 
-The jobs run concurrently rather than as steps in one job, so a type error can't mask a test failure -- each reports its own status independently.
+The jobs run concurrently, so a type error does not hide a test failure.
 
 **Why there is no `paths:` filter:** these are intended to be required status checks, and GitHub never reports a required check that was skipped by a path filter, leaving the PR blocked on a run that will never arrive. Running on every PR costs a couple of cached minutes and always reports.
 
-**Python version:** 3.12, matching `[tool.mypy] python_version` and the other workflows. Note that `Dockerfile` ships Python 3.14 -- CI does not currently exercise the version the image runs on.
+**Python versions:** the `test` job covers Python 3.12, the minimum supported version. The `runtime` job covers Python 3.14, matching Docker. Both install development dependencies with `uv sync --locked --extra dev`. The test job also regenerates icons and checks that they match the committed SVGs.
+
+The frontend job uses Node.js 24. It rebuilds CSS and the vendored HTMX and Alpine.js files, then rejects changes to the committed assets. Browser libraries are development dependencies because the app serves their generated files without a Node.js runtime. Tailwind scans the configured template and JavaScript paths, with automatic repository scanning disabled.
+
+Docker uses Python 3.14.9 and installs runtime dependencies from `uv.lock` with `uv sync --locked --no-dev`. Compose Watch rebuilds the image when the lockfile changes. The project stays editable so source syncing still works.
 
 **Required repository configuration:** none. The jobs use no secrets and opt into `contents: read` only, so they run on fork PRs.
 
@@ -42,16 +48,18 @@ The jobs run concurrently rather than as steps in one job, so a type error can't
 
 1. Settings -> Branches -> Add rule (or edit the existing rule for `main`)
 2. Enable **Require status checks to pass before merging**
-3. Search for and select **test**, **lint**, and **types**
+3. Search for and select **test**, **lint**, **types**, **runtime**, and **frontend**
 4. Save
 
 **Local equivalent:**
 
 ```bash
-uv run pytest
-uv run ruff check src/ tests/ scripts/
-uv run ruff format --check src/ tests/ scripts/
-uv run mypy src/
+make check
+npm ci --ignore-scripts
+npm audit
+npm run js:build
+npm run css:build
+uv run --locked python scripts/build_icons.py
 ```
 
 ### Auto-Update Documentation (`doc-update.yml`)
