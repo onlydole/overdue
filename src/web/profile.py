@@ -26,12 +26,13 @@ async def librarian_profile(
     if not librarian:
         return templates.TemplateResponse(
             request,
-            "dashboard.html",
+            "404.html",
             {
                 "request": request,
                 "current_user": current_user,
                 "error": "Librarian not found",
             },
+            status_code=404,
         )
 
     rank = get_rank(librarian.total_xp)

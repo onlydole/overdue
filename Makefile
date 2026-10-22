@@ -2,7 +2,7 @@
 # Overdue – Makefile
 # ──────────────────────────────────────────────────────────────
 SHELL      := /bin/sh
-PYTHON     := python3
+UV         := uv
 VENV       := .venv
 COMPOSE    := docker compose
 
@@ -13,13 +13,11 @@ COMPOSE    := docker compose
 # ──────────────────────────────────────────────────────────────
 
 .PHONY: venv
-venv: $(VENV)/.installed ## Create a local venv for editor intelligence (autocomplete, go-to-def)
+venv: $(VENV)/.installed ## Sync the locked development environment with uv
 
-$(VENV)/.installed: pyproject.toml
+$(VENV)/.installed: pyproject.toml uv.lock
 	@echo "⟳  Syncing editor venv…"
-	$(PYTHON) -m venv $(VENV)
-	$(VENV)/bin/pip install --quiet --upgrade pip
-	$(VENV)/bin/pip install --quiet -e ".[dev]"
+	$(UV) sync --locked --extra dev
 	@touch $@
 
 .PHONY: venv-clean
@@ -60,11 +58,12 @@ shell: ## Open a shell inside the running container
 
 .PHONY: lint
 lint: venv ## Run ruff linter
-	$(VENV)/bin/ruff check src/
+	$(VENV)/bin/ruff check src/ tests/ scripts/
+	$(VENV)/bin/ruff format --check src/ tests/ scripts/
 
 .PHONY: format
 format: venv ## Run ruff formatter
-	$(VENV)/bin/ruff format src/
+	$(VENV)/bin/ruff format src/ tests/ scripts/
 
 .PHONY: typecheck
 typecheck: venv ## Run mypy type checker

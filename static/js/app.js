@@ -832,6 +832,27 @@ if (!window.__overdueHtmxBeforeRequestBound) {
 })();
 
 /* ============================================================
+   FORM VALIDATION
+   ============================================================ */
+
+(function() {
+    if (window.__overdueFormErrorsInit) return;
+    window.__overdueFormErrorsInit = true;
+
+    document.addEventListener('htmx:beforeSwap', function(evt) {
+        var detail = evt.detail;
+        if (!detail || !detail.xhr || !detail.requestConfig) return;
+        var contentType = detail.xhr.getResponseHeader('Content-Type') || '';
+        if (detail.xhr.status === 400 && detail.requestConfig.verb === 'post' &&
+                contentType.indexOf('text/html') === 0) {
+            // Show the submitted form with its validation errors.
+            detail.shouldSwap = true;
+            detail.isError = false;
+        }
+    });
+})();
+
+/* ============================================================
    PARTY TOGGLE (Settings barcode easter egg, #party-toggle)
    ============================================================ */
 

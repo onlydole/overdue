@@ -125,6 +125,12 @@ async def update_shelf(
     )
 
     update_data = body.model_dump(exclude_unset=True)
+    if "name" in update_data:
+        existing = await session.execute(
+            select(ShelfRow.id).where(ShelfRow.name == body.name, ShelfRow.id != shelf_id)
+        )
+        if existing.scalar_one_or_none() is not None:
+            raise HTTPException(status_code=409, detail="A shelf with that name already exists.")
     for key, value in update_data.items():
         setattr(shelf, key, value)
 

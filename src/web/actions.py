@@ -16,8 +16,8 @@ from src.config.settings import settings
 from src.db.engine import get_session
 from src.db.tables import ReviewRow, ShelfRow, VolumeRow, volume_bookmarks
 from src.game.engine import on_volume_reviewed, on_volume_shelved
+from src.game.reviews import claim_review
 from src.models.game import GameResult
-from src.utils import utcnow
 from src.web.forms import form_str
 from src.web.templates import templates
 from src.web.volumes import REVIEWS_PER_PAGE
@@ -74,15 +74,22 @@ async def shelf_create_submit(
     name = form_str(form, "name").strip()
     description = form_str(form, "description").strip()
 
-    if not name:
+    if not name or len(name) > 255:
         return templates.TemplateResponse(
             request,
             "shelf_create.html",
             {
                 "request": request,
                 "current_user": user,
-                "error": "Shelf name is required.",
+                "error": (
+                    "Shelf name is required."
+                    if not name
+                    else "Shelf name must be 255 characters or fewer."
+                ),
+                "name": name,
+                "description": description,
             },
+            status_code=400,
         )
 
     # Check duplicate
@@ -163,14 +170,22 @@ async def volume_create_submit(
         errors.append("Title must be 60 characters or fewer.")
     if not content:
         errors.append("Content is required.")
-    if not shelf_id:
-        errors.append("Please select a shelf.")
+    try:
+        selected_shelf = int(shelf_id)
+    except ValueError:
+        selected_shelf = None
+    if (
+        selected_shelf is None
+        or selected_shelf <= 0
+        or not await session.get(ShelfRow, selected_shelf)
+    ):
+        errors.append("Please select a valid shelf.")
+
+    content_size_kb = len(content.encode("utf-8")) / 1024
+    if content_size_kb > settings.max_volume_size_kb:
+        errors.append(f"Content exceeds maximum size of {settings.max_volume_size_kb}KB.")
 
     if errors:
-        try:
-            selected_shelf = int(shelf_id) if shelf_id else None
-        except (ValueError, TypeError):
-            selected_shelf = None
         return templates.TemplateResponse(
             request,
             "volume_create.html",
@@ -184,30 +199,13 @@ async def volume_create_submit(
                 "selected_shelf_id": selected_shelf,
                 "bookmarks": bookmarks_str,
             },
-        )
-
-    # Check content size
-    content_size_kb = len(content.encode("utf-8")) / 1024
-    if content_size_kb > settings.max_volume_size_kb:
-        return templates.TemplateResponse(
-            request,
-            "volume_create.html",
-            {
-                "request": request,
-                "current_user": user,
-                "shelves": shelves,
-                "errors": [f"Content exceeds maximum size of {settings.max_volume_size_kb}KB."],
-                "title": title,
-                "content": content,
-                "selected_shelf_id": int(shelf_id),
-                "bookmarks": bookmarks_str,
-            },
+            status_code=400,
         )
 
     volume = VolumeRow(
         title=title,
         content=content,
-        shelf_id=int(shelf_id),
+        shelf_id=selected_shelf,
         author_id=user["id"],
         spine_seed=random.randint(0, 9999),
     )
@@ -216,17 +214,15 @@ async def volume_create_submit(
 
     # Add bookmarks
     if bookmarks_str:
-        for tag in [t.strip() for t in bookmarks_str.split(",") if t.strip()]:
+        for tag in dict.fromkeys(t.strip() for t in bookmarks_str.split(",") if t.strip()):
             await session.execute(
                 volume_bookmarks.insert().values(volume_id=volume.id, bookmark=tag)
             )
 
-    await session.commit()
-    await session.refresh(volume)
-
     # Trigger game mechanics
     await on_volume_shelved(session, user["id"], volume.id)
     await session.commit()
+    await session.refresh(volume)
 
     return RedirectResponse(url=f"/volumes/{volume.id}", status_code=302)
 
@@ -250,7 +246,7 @@ async def review_volume_web(
 
     dewey_score_before = calculate_dewey_score(volume.last_reviewed_at)
 
-    if dewey_score_before >= DEWEY_REVIEW_NOOP:
+    if dewey_score_before >= DEWEY_REVIEW_NOOP or not await claim_review(session, volume):
         # Volume is already pristine; no action taken
         from src.game.xp import get_rank
 
@@ -267,8 +263,6 @@ async def review_volume_web(
             streak_bonus_awarded=False,
         )
     else:
-        volume.last_reviewed_at = utcnow()
-
         game_result = await on_volume_reviewed(session, user["id"], volume_id, dewey_score_before)
         await session.commit()
         await session.refresh(volume)

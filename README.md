@@ -44,9 +44,8 @@ docker compose exec overdue overdue seed seed --reset # Re-seed demo data
 ```bash
 git clone https://github.com/onlydole/overdue.git
 cd overdue
-python -m venv .venv
+uv sync --locked --extra dev
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
 uvicorn src.main:app --reload
 ```
 

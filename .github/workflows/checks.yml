@@ -1,6 +1,6 @@
 # Tests, Lint and Types
 #
-# The three checks CLAUDE.md and CONTRIBUTING.md ask contributors to run,
+# The Python checks CLAUDE.md and CONTRIBUTING.md ask contributors to run,
 # enforced on every PR as independent parallel jobs so one failure doesn't
 # mask the others:
 #
@@ -14,9 +14,9 @@
 #     forever waiting on a run that will never report. Running them on
 #     every PR costs a couple of cached minutes and always reports.
 #   - Separate jobs rather than sequential steps in one job: a type error
-#     shouldn't hide a test failure, and the three run concurrently.
-#   - Python 3.12 matches [tool.mypy] python_version and the other
-#     workflows. Note the Dockerfile ships 3.14 -- see docs/architecture/ci-cd.md.
+#     shouldn't hide a test failure, and the jobs run concurrently.
+#   - Python 3.12 covers the minimum supported version. The runtime job
+#     also runs the tests on Python 3.14, matching the Docker image.
 #
 # Security choices:
 #   - Top-level permissions: {} denies the default GITHUB_TOKEN scope; each
@@ -64,10 +64,19 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: uv sync --extra dev
+        run: uv sync --locked --extra dev
 
       - name: Run tests
-        run: uv run pytest
+        run: uv run --locked pytest
+
+      - name: Verify generated icons
+        run: |
+          uv run --locked python scripts/build_icons.py
+          changes=$(git status --porcelain --untracked-files=all -- static/icons/)
+          if [ -n "$changes" ]; then
+            printf '%s\n' "$changes"
+            exit 1
+          fi
 
   lint:
     name: lint
@@ -91,14 +100,14 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: uv sync --extra dev
+        run: uv sync --locked --extra dev
 
       # Two steps, not `&&`, so the annotation points at whichever failed.
       - name: Ruff lint
-        run: uv run ruff check src/ tests/ scripts/
+        run: uv run --locked ruff check src/ tests/ scripts/
 
       - name: Ruff format
-        run: uv run ruff format --check src/ tests/ scripts/
+        run: uv run --locked ruff format --check src/ tests/ scripts/
 
   types:
     name: types
@@ -122,7 +131,70 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: uv sync --extra dev
+        run: uv sync --locked --extra dev
 
       - name: Run mypy
-        run: uv run mypy src/
+        run: uv run --locked mypy src/
+
+  runtime:
+    name: runtime
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: true
+          python-version: "3.14"
+
+      - name: Install dependencies
+        run: uv sync --locked --extra dev
+
+      - name: Test production Python version
+        run: uv run --locked pytest
+
+  frontend:
+    name: frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=low
+
+      - name: Check application JavaScript
+        run: |
+          node --check static/js/app.js
+          node --check static/js/gauges.js
+
+      - name: Verify generated CSS and browser libraries
+        run: |
+          npm run js:build
+          npm run css:build
+          changes=$(git status --porcelain --untracked-files=all -- static/css/tailwind.css static/js/htmx.min.js static/js/alpine.min.js)
+          if [ -n "$changes" ]; then
+            printf '%s\n' "$changes"
+            exit 1
+          fi

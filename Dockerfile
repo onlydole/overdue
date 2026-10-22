@@ -1,25 +1,25 @@
-FROM python:3.14.7-slim AS base
+FROM ghcr.io/astral-sh/uv:0.12.23 AS uv
+FROM python:3.14.9-slim AS base
 
 # Prevent stale .pyc bytecode and ensure real-time log output
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    OVERDUE_DATABASE_URL=sqlite+aiosqlite:////app/data/overdue.db
+    OVERDUE_DATABASE_URL=sqlite+aiosqlite:////app/data/overdue.db \
+    PATH="/app/.venv/bin:$PATH" \
+    UV_PYTHON_DOWNLOADS=never
 
 WORKDIR /app
-
-# Install system dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends gcc && \
-    rm -rf /var/lib/apt/lists/*
+COPY --from=uv /uv /usr/local/bin/uv
 
 # Copy everything needed for the build
-COPY pyproject.toml README.md ./
+COPY pyproject.toml uv.lock README.md ./
 COPY src/ src/
 
 # Editable install so Python reads from /app/src directly.
 # This is critical for Compose Watch: synced file changes take
 # effect immediately instead of being shadowed by site-packages.
-RUN pip install --no-cache-dir -e .
+RUN uv sync --locked --no-dev --no-cache && \
+    /usr/local/bin/python -m pip uninstall --yes pip
 
 # Copy runtime assets
 COPY templates/ templates/

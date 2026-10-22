@@ -7,6 +7,9 @@ freshness:
     - "src/db/tables.py"
     - "src/db/engine.py"
     - "src/db/seed.py"
+    - "src/game/reviews.py"
+    - "src/api/volumes.py"
+    - "src/web/actions.py"
     - "src/models/*.py"
 ---
 
@@ -37,6 +40,10 @@ Overdue persists state through SQLAlchemy 2.x with an async engine. Tables are d
 A `VolumeRow` belongs to one shelf (`ShelfRow`) and one author (`LibrarianRow`), and owns many reviews (`ReviewRow`) -- reviews cascade-delete with the volume. A `ShelfRow` owns many volumes; deleting a shelf cascades to the volumes on it. A `LibrarianRow` owns the volumes they created and the reviews they performed, with the same cascade semantics.
 
 The relationship metadata lives directly on the ORM classes; see the `relationship(...)` assignments in `src/db/tables.py` for cascade rules and back-populates.
+
+## Review transactions
+
+API and browser review handlers call `claim_review` before awarding pages. It updates the volume only when its stored review timestamp still matches the timestamp the handler read. A simultaneous request that loses this update refreshes the volume and awards nothing. The timestamp, review record, pages, streak, and badges commit together. Volume creation also commits with its game awards, so a failed award cannot leave a partially completed action.
 
 ## Migrations
 

@@ -1,0 +1,153 @@
+{
+  "date": "2026-10-22",
+  "base_commit": "abcbb4356e79722de45565926e66d7d2489fa28f",
+  "branch": "teedole/project-health-audit",
+  "tests": {
+    "python_3_12": 258,
+    "python_3_14": 258,
+    "baseline": 238
+  },
+  "statement_coverage_percent": 67.2,
+  "python_dependency_advisories": 0,
+  "npm_dependency_advisories": 0,
+  "container": {
+    "os": "Debian 13.7",
+    "high_package_findings": 44,
+    "critical_package_findings": 0,
+    "unique_high_cves": 8,
+    "fixable_high_findings": 0,
+    "python_high_findings": 0,
+    "uv_high_findings": 0,
+    "remaining_cves": {
+      "CVE-2026-76642": {
+        "severity": "HIGH",
+        "title": "util-linux: util-linux: failed external mount helper still runs privileged X-mount post-hooks",
+        "fixed_version": null,
+        "source": "https://avd.aquasec.com/nvd/cve-2026-76642",
+        "packages": [
+          "bsdutils",
+          "libblkid1",
+          "liblastlog2-2",
+          "libmount1",
+          "libsmartcols1",
+          "libuuid1",
+          "login",
+          "mount",
+          "util-linux"
+        ]
+      },
+      "CVE-2026-78408": {
+        "severity": "HIGH",
+        "title": "util-linux: util-linux: nsenter --join-cgroup leaks root cgroup migration authority",
+        "fixed_version": null,
+        "source": "https://avd.aquasec.com/nvd/cve-2026-78408",
+        "packages": [
+          "bsdutils",
+          "libblkid1",
+          "liblastlog2-2",
+          "libmount1",
+          "libsmartcols1",
+          "libuuid1",
+          "login",
+          "mount",
+          "util-linux"
+        ]
+      },
+      "CVE-2026-78409": {
+        "severity": "HIGH",
+        "title": "util-linux: util-linux: X-mount.subdir detached-tree resolution can escape via intermediate symlinks",
+        "fixed_version": null,
+        "source": "https://avd.aquasec.com/nvd/cve-2026-78409",
+        "packages": [
+          "bsdutils",
+          "libblkid1",
+          "liblastlog2-2",
+          "libmount1",
+          "libsmartcols1",
+          "libuuid1",
+          "login",
+          "mount",
+          "util-linux"
+        ]
+      },
+      "CVE-2026-78410": {
+        "severity": "HIGH",
+        "title": "util-linux: util-linux: restricted bind mounts do not pin the source, allowing X-mount.owner/group/mode redirection",
+        "fixed_version": null,
+        "source": "https://avd.aquasec.com/nvd/cve-2026-78410",
+        "packages": [
+          "bsdutils",
+          "libblkid1",
+          "liblastlog2-2",
+          "libmount1",
+          "libsmartcols1",
+          "libuuid1",
+          "login",
+          "mount",
+          "util-linux"
+        ]
+      },
+      "CVE-2026-54369": {
+        "severity": "HIGH",
+        "title": "acl: Symlink traversal privilege escalation via libacl functions",
+        "fixed_version": null,
+        "source": "https://avd.aquasec.com/nvd/cve-2026-54369",
+        "packages": [
+          "libacl1"
+        ]
+      },
+      "CVE-2025-69720": {
+        "severity": "HIGH",
+        "title": "ncurses: ncurses: Buffer overflow vulnerability may lead to arbitrary code execution.",
+        "fixed_version": null,
+        "source": "https://avd.aquasec.com/nvd/cve-2025-69720",
+        "packages": [
+          "libncursesw6",
+          "libtinfo6",
+          "ncurses-base",
+          "ncurses-bin"
+        ]
+      },
+      "CVE-2026-16742": {
+        "severity": "HIGH",
+        "title": "systemd: systemd-homed: Local privilege escalation via missing home-record signature verification",
+        "fixed_version": null,
+        "source": "https://avd.aquasec.com/nvd/cve-2026-16742",
+        "packages": [
+          "libsystemd0",
+          "libudev1"
+        ]
+      },
+      "CVE-2026-9538": {
+        "severity": "HIGH",
+        "title": "perl-Archive-Tar: perl-Archive-Tar: Denial of Service via crafted tar header with large entry size",
+        "fixed_version": null,
+        "source": "https://avd.aquasec.com/nvd/cve-2026-9538",
+        "packages": [
+          "perl-base"
+        ]
+      }
+    },
+    "image_id": "sha256:72988bc91a54ac9c1f4b9d43383b0553526253a73e3c2385142e20f715b9bff6"
+  },
+  "websockets": {
+    "version": "17.3",
+    "python_3_12_transports": [
+      "auto",
+      "websockets-sansio",
+      "websockets"
+    ],
+    "python_3_14_transports": [
+      "auto",
+      "websockets-sansio",
+      "websockets"
+    ],
+    "exchanges": [
+      "text",
+      "binary",
+      "ping",
+      "close"
+    ],
+    "container_transport_check": "passed"
+  }
+}

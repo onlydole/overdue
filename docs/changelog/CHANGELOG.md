@@ -25,11 +25,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 - `OVERDUE_SESSION_HTTPS_ONLY` setting (default `false`) to mark the session cookie `Secure` for HTTPS deployments.
 
 ### Changed
+- Updated locked Python dependencies, raised the PyJWT minimum to 2.15.1, and upgraded WebSockets to 17.3, HTMX to 1.9.12, and Alpine.js to 3.17.5. A targeted `@parcel/watcher` override removes vulnerable CSS toolchain dependencies.
+- Updated the container to `python:3.14.9-slim` and locked runtime installs with uv. Removed unused compiler and pip tooling. Compose now rebuilds the image when `uv.lock` changes.
+- Added Python 3.14 and frontend CI checks, reproducible browser assets, and generated-asset checks that also catch untracked files. The npm gate explicitly rejects advisories at every severity.
 - Documentation update workflow triggers on all merged PRs instead of only those touching `docs/` or `src/` paths.
 - XP display labels updated from "+N pages" format to "+N XP (N pages)" format throughout the UI for clarity.
 - Daily streak bonus increased from +15 XP to +20 XP per day (PR #42).
 
 ### Fixed
+- Volume creation and game awards now commit together, so failed awards roll back the volume. Simultaneous reviews create one review and award pages once.
+- Reject null PATCH values for required fields and duplicate shelf names. Deduplicate bookmarks and validate web shelf selections and shelf name length before saving.
+- Show HTMX form validation errors and return a proper 404 page for missing librarian profiles.
+- Expire inactive Quiet Hours clients that never return, and read API and CLI versions from package metadata.
 - Post-merge documentation check failing with `error_max_turns` on large merges: raised the doc-update workflow's turn cap from 25 to 100 (the 30-minute job timeout remains the cost backstop).
 - Demo seed password mismatch: `seed_demo_data` now returns the demo password, which is printed by `overdue seed seed` and logged at auto-seed startup.
 - CLI overdue report always returning empty results.

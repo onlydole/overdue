@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class ShelfCreate(BaseModel):
@@ -17,6 +17,13 @@ class ShelfUpdate(BaseModel):
 
     name: str | None = Field(None, min_length=1, max_length=255)
     description: str | None = None
+
+    @field_validator("name")
+    @classmethod
+    def reject_null_name(cls, value: str | None) -> str:
+        if value is None:
+            raise ValueError("Shelf name cannot be null.")
+        return value
 
 
 class ShelfResponse(BaseModel):
