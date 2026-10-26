@@ -932,7 +932,7 @@ requires-dist = [
     { name = "pyyaml", marker = "extra == 'dev'", specifier = ">=6.0" },
     { name = "rich", specifier = ">=15.0.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.16.6" },
-    { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.52" },
+    { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.1.6" },
     { name = "tree-sitter", marker = "extra == 'dev'", specifier = ">=0.26.0" },
     { name = "tree-sitter-typescript", marker = "extra == 'dev'", specifier = ">=0.23" },
     { name = "typer", specifier = ">=0.27.2" },
