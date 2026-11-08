@@ -21,7 +21,7 @@ classifiers = [
 ]
 dependencies = [
     "fastapi>=0.162.0",
-    "uvicorn[standard]>=0.52.3",
+    "uvicorn[standard]>=0.54.0",
     "sqlalchemy[asyncio]>=2.1.8",
     "aiosqlite>=0.22.1",
     "pydantic[email]>=2.14.3",
