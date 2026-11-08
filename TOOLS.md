@@ -281,7 +281,7 @@ docker compose down
 
 ### Container Details
 
-- **Base image**: `python:3.14.7-slim`
+- **Base image**: `python:3.15.0-slim`
 - **User**: `librarian` (non-root)
 - **Data volume**: `overdue-data` mounted at `/app/data/`
 - **Healthcheck**: `GET /api/reading-room/health` every 30 seconds
