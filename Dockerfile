@@ -1,5 +1,5 @@
-FROM ghcr.io/astral-sh/uv:0.12.23 AS uv
-FROM python:3.14.9-slim AS base
+FROM ghcr.io/astral-sh/uv:0.13.5 AS uv
+FROM python:3.15.0-slim AS base
 
 # Prevent stale .pyc bytecode and ensure real-time log output
 ENV PYTHONDONTWRITEBYTECODE=1 \
