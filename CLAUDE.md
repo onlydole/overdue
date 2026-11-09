@@ -113,6 +113,7 @@ overdue/
       streaks.py            # Daily review streak tracking
       mood.py               # Volume mood / Dewey Score decay
       engine.py             # Game action processor (review -> XP + badges + streak)
+      reviews.py            # claim_review(): one award per review, even for simultaneous requests
       avatars.py            # 8 heroic librarian silhouettes (32x32 SVG paths)
       icons/                # Pixel art icon system (24x24 SVG paths)
         __init__.py          # Re-exports render_icon_svg, get_icon_names
@@ -145,6 +146,7 @@ overdue/
       my_library.py         # Personal library view
   scripts/
     build_icons.py          # Pre-render icons + avatars to static/icons/ as SVG files
+    build_vendor.mjs        # Copy pinned HTMX + Alpine.js builds into static/js/
   templates/                # Jinja2 HTML templates
     base.html               # Base layout (fonts, nav, footer)
     dashboard.html          # Reading room dashboard
@@ -216,10 +218,13 @@ Server endpoints return HTML fragments for HTMX to swap in.
 When a librarian performs an action (e.g., reviewing a volume), the flow is:
 
 1. Web/API route receives the request
-2. Route calls `src/game/engine.py` to process the action
-3. Engine awards XP, checks badge unlocks, updates streak
-4. Engine returns a result dict with XP gained, badges earned, etc.
-5. Route renders the result (HTML partial for web, JSON for API)
+2. For reviews, the route first calls `claim_review` in `src/game/reviews.py`, which stamps `last_reviewed_at` only if it still matches the value the route read. A simultaneous request that loses the race refreshes the volume and awards nothing
+3. Route calls `src/game/engine.py` to process the action
+4. Engine awards XP, checks badge unlocks, updates streak
+5. Engine returns a result dict with XP gained, badges earned, etc.
+6. Route renders the result (HTML partial for web, JSON for API)
+
+The action and its awards share one transaction -- a single `session.commit()` after the engine call -- so a failed award rolls back the volume or review that triggered it.
 
 ### Authentication Flow
 
@@ -362,13 +367,16 @@ Defined in `src/config/defaults.py`:
 
 ## Testing
 
-- **Test runner**: `pytest`
-- **Linting**: `ruff check src/`
-- **Formatting**: `ruff format src/`
+- **Dev environment**: `uv sync --locked --extra dev` (or `make venv`) -- installs from the committed `uv.lock`
+- **Test runner**: `pytest` (CI runs the suite on Python 3.12 and 3.14)
+- **Linting**: `ruff check src/ tests/ scripts/`
+- **Formatting**: `ruff format src/ tests/ scripts/` (CI enforces `ruff format --check`)
 - **Type checking**: `mypy` (strict mode)
-- Run the full check: `pytest && ruff check src/`
+- Run the full check: `make check` (lint, format check, types, tests)
 - **CSS build**: `npm run css:build` (rebuild after Tailwind class changes)
 - **CSS watch**: `npm run css:watch` (auto-rebuild during development)
+- **Browser libraries**: `npm run js:build` (re-copy the pinned HTMX and Alpine.js builds into `static/js/`)
+- CI regenerates icons, CSS, and the vendored JS, then fails if the committed assets differ -- commit regenerated assets with the change that caused them
 
 ## Commit Conventions
 

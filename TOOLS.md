@@ -16,13 +16,13 @@ This document catalogs every tool, command, and script available for developing,
 
 ## CLI (`overdue`)
 
-The Overdue CLI is built with [Typer](https://typer.tiangolo.com/) and registered as a console script via `pyproject.toml`. Install with `pip install -e .` to get the `overdue` command.
+The Overdue CLI is built with [Typer](https://typer.tiangolo.com/) and registered as a console script via `pyproject.toml`. Install the locked environment with `uv sync --locked --extra dev` and activate `.venv` to get the `overdue` command.
 
 ### Top-Level Commands
 
 | Command | Description |
 |---|---|
-| `overdue version` | Print the current version (`0.1.0a1`) |
+| `overdue version` | Print the installed package version (currently `0.1.0a1`, read from package metadata) |
 | `overdue serve` | Start the FastAPI server via uvicorn |
 
 **`overdue serve` options:**
@@ -101,6 +101,21 @@ python scripts/build_icons.py
 
 **When to run:** After any change to icon pixel maps (`src/game/icons/_*.py`), avatar definitions (`src/game/avatars.py`), or tint configuration.
 
+### `scripts/build_vendor.mjs`
+
+Copies the pinned HTMX and Alpine.js distributions out of `node_modules/` into `static/js/`, so the browser libraries the app serves are reproducible from the npm lockfile.
+
+```bash
+npm ci --ignore-scripts
+npm run js:build
+```
+
+**What it does:**
+- Copies `htmx.org/dist/htmx.min.js` to `static/js/htmx.min.js`
+- Copies `alpinejs/dist/cdn.min.js` to `static/js/alpine.min.js`
+
+**When to run:** After bumping the HTMX or Alpine.js versions in `package.json`. CI regenerates these files and fails if the committed copies differ.
+
 ## CSS Build (Tailwind)
 
 Overdue uses Tailwind CSS with a custom configuration. The built output lives at `static/css/tailwind.css`.
@@ -138,16 +153,19 @@ Test configuration is in `pyproject.toml` under `[tool.pytest.ini_options]`:
 
 ```bash
 # Lint (errors, style, imports, naming, upgrades)
-ruff check src/
+ruff check src/ tests/ scripts/
 
 # Auto-fix lint issues
-ruff check src/ --fix
+ruff check src/ tests/ scripts/ --fix
 
 # Format code
-ruff format src/
+ruff format src/ tests/ scripts/
 
-# Full quality check
-pytest && ruff check src/
+# Check formatting without rewriting files (what CI enforces)
+ruff format --check src/ tests/ scripts/
+
+# Full quality check (lint, format check, types, tests)
+make check
 ```
 
 Ruff configuration (`pyproject.toml`):
@@ -281,13 +299,16 @@ docker compose down
 
 ### Container Details
 
-- **Base image**: `python:3.14.7-slim`
+- **Base image**: `python:3.14.9-slim`
+- **Dependencies**: installed from the committed `uv.lock` with `uv sync --locked --no-dev`; the compiler toolchain and bundled pip are not part of the final image
 - **User**: `librarian` (non-root)
 - **Data volume**: `overdue-data` mounted at `/app/data/`
 - **Healthcheck**: `GET /api/reading-room/health` every 30 seconds
 - **Restart policy**: `unless-stopped`
 
 ## Dependencies
+
+Version ranges live in `pyproject.toml`; exact resolved versions are pinned in `uv.lock`, which Docker, CI, and `make check` all install with `--locked`.
 
 ### Runtime (from `pyproject.toml`)
 
@@ -321,7 +342,7 @@ docker compose down
 | `tree-sitter` | AST parsing framework (freshness script) |
 | `tree-sitter-typescript` | TypeScript grammar for tree-sitter |
 
-Install dev dependencies: `pip install -e ".[dev]"`
+Install dev dependencies: `uv sync --locked --extra dev` (or `make venv`)
 
 ## Automation & CI
 
