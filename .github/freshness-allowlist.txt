@@ -9,10 +9,12 @@
 *.py
 *.css
 *.js
+*.mjs
 *.json
 *.yml
 *.yaml
 *.toml
+*.lock
 *.svg
 *.png
 

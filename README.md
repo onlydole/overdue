@@ -94,11 +94,13 @@ Full list: [docs/guides/configuration.md](docs/guides/configuration.md)
 ## Development
 
 ```bash
-pytest                          # Run the test suite
-ruff check src/ tests/          # Lint
-ruff format src/ tests/         # Format
-npm run css:build               # Rebuild Tailwind CSS
-python scripts/build_icons.py   # Regenerate pixel art SVGs
+make check                        # Lint, format check, types, and tests
+pytest                            # Run the test suite
+ruff check src/ tests/ scripts/   # Lint
+ruff format src/ tests/ scripts/  # Format
+npm run css:build                 # Rebuild Tailwind CSS
+npm run js:build                  # Re-vendor the pinned HTMX and Alpine.js builds
+python scripts/build_icons.py     # Regenerate pixel art SVGs
 ```
 
 ## Project Structure
